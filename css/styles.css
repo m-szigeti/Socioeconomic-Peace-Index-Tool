@@ -28,7 +28,12 @@ body {
     align-items: center;
 }
 
-.logo-image {
+.logo-image_left {
+    height: 70px;
+    margin: 0 30px;
+}
+
+.logo-image_right {
     height: 100px;
     margin: 0 10px;
 }
@@ -155,7 +160,7 @@ body {
     width: 100%;
     padding: 10px 10px;
     margin: 0;
-    color: white;
+    color: white !important;
     font-weight: bold;
     font-size: 14px;
     cursor: pointer;
@@ -181,6 +186,7 @@ body {
 .pillars-section .layer-checkbox label::before {
     content: '';
     margin-right: 10px;
+    color: white;
     font-size: 20px;
 }
 
@@ -189,7 +195,7 @@ body {
     content: '✓';
     margin-left: 10px;
     background: rgba(255, 255, 255, 0.3);
-    color: white;
+    color: white !important;
     border-radius: 50%;
     width: 20px;
     height: 20px;
@@ -200,6 +206,11 @@ body {
     font-weight: bold;
 }
 
+/* Force white text for SEPI and Pillars buttons */
+.sepi-section .layer-checkbox label,
+.pillars-section .layer-checkbox label {
+    color: white !important;
+}
 /* =========================================
    * Layer Controls (Shared) - FIXED COLORS
    * ========================================= */

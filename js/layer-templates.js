@@ -8,7 +8,7 @@ export class LayerTemplates {
             <div class="sepi-section" style="margin-bottom: 20px;">
                 <div class="layer-checkbox">
                     <input type="checkbox" id="sepiLayer">
-                    <label for="sepiLayer" style="font-weight: bold; font-size: 16px; color: #d8d8d8;"> Socioeconomic Peace Index</label>
+                    <label for="sepiLayer" style="font-weight: bold; font-size: 16px; color:rgb(255, 255, 255);"> Socioeconomic Peace Index</label>
                 </div>
                 
                 <div class="layer-controls">
@@ -43,7 +43,7 @@ export class LayerTemplates {
             <div class="pillars-section" style="margin-bottom: 20px;">
                 <div class="layer-checkbox">
                     <input type="checkbox" id="pillarsToggle" style="display: none;">
-                    <label for="pillarsToggle" style="font-weight: bold; font-size: 16px; color: #d8d8d8; cursor: pointer; display: flex; align-items: center; justify-content: center; width: 100%; padding: 10px; margin: 0; background: transparent; border: none; user-select: none;">
+                    <label for="pillarsToggle" style="font-weight: bold; font-size: 16px; color:rgb(255, 255, 255); cursor: pointer; display: flex; align-items: center; justify-content: center; width: 100%; padding: 10px; margin: 0; background: transparent; border: none; user-select: none;">
                      Peacebuilding Pillars
                     </label>
                 </div>
