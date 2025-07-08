@@ -21,6 +21,152 @@
             margin: 0;
             padding: 0;
         }
+        
+        /* Fix for layout squishing - prevent flex-shrink on special sections */
+        .sepi-section, .pillars-section {
+            flex-shrink: 0 !important;
+            min-height: auto !important;
+        }
+        
+        /* Ensure dropdown containers don't interfere with button styling */
+        .dropdown-container {
+            flex-shrink: 1;
+        }
+        
+        /* Override any conflicting flex properties */
+        #sidebar > * {
+            flex-shrink: 0;
+        }
+        
+        #sidebar .layer-group {
+            flex-shrink: 1;
+        }
+
+        /* =========================================
+         * Green Theme for Pillars Section
+         * ========================================= */
+
+        /* Override pillars section to use green theme like SEPI */
+        .pillars-section.pillars-green-theme {
+            background: linear-gradient(135deg, #2c5f2d, #4a8b3a) !important;
+            border: none !important;
+        }
+
+        .pillars-section.pillars-green-theme .pillars-header {
+            background: transparent !important;
+            padding: 15px 20px;
+            margin: 0;
+        }
+
+        .pillars-section.pillars-green-theme .pillars-header h3 {
+            color: white !important;
+            margin: 0;
+            font-size: 16px;
+            font-weight: bold;
+            text-align: center;
+        }
+
+        .pillars-section.pillars-green-theme .pillar-selector {
+            padding: 15px 20px;
+        }
+
+        .pillars-section.pillars-green-theme .pillar-selector label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: white !important;
+            font-size: 14px;
+        }
+
+        .pillars-section.pillars-green-theme .pillar-selector select {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #2c5f2d;
+            border-radius: 6px;
+            background: white;
+            color: #2c5f2d;
+            font-weight: 500;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+        .pillars-section.pillars-green-theme .pillar-selector select:focus {
+            outline: none;
+            border-color: #4a8b3a;
+            box-shadow: 0 0 8px rgba(44, 95, 45, 0.3);
+        }
+
+        /* Opacity controls styling for green theme */
+        .pillars-section.pillars-green-theme #pillarOpacityContainer {
+            background: rgba(255, 255, 255, 0.2) !important;
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 15px;
+        }
+
+        .pillars-section.pillars-green-theme .opacity-control label {
+            color: white !important;
+            font-weight: 600 !important;
+            font-size: 12px !important;
+            margin-bottom: 1px !important;
+            margin-right: auto;
+            display: block;
+        }
+
+        .pillars-section.pillars-green-theme .opacity-control span {
+            color: white !important;
+            font-weight: bold;
+            font-size: 11px;
+        }
+
+        .pillars-section.pillars-green-theme .opacity-control input[type="range"] {
+            width: 100%;
+            margin: 3px 0;
+            -webkit-appearance: none;
+            appearance: none;
+            background: rgba(255, 255, 255, 0.3);
+            height: 4px;
+            border-radius: 3px;
+            outline: none;
+        }
+
+        .pillars-section.pillars-green-theme .opacity-control input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: white;
+            cursor: pointer;
+            border: 2px solid #2c5f2d;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        /* Hover effect for green pillars section */
+        .pillars-section.pillars-green-theme:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(44, 95, 45, 0.4);
+        }
+
+        /* Pillar tooltip styling - green theme */
+        .pillar-tooltip {
+            background: rgba(255, 255, 255, 0.95) !important;
+            border: 2px solid #2c5f2d !important;
+            border-radius: 8px !important;
+            box-shadow: 0 4px 12px rgba(44, 95, 45, 0.2) !important;
+            font-family: 'Calibri', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif !important;
+            font-size: 13px !important;
+            padding: 8px 12px !important;
+            color: #333 !important;
+            z-index: 1000 !important;
+        }
+
+        /* Pillar hover effects */
+        .leaflet-interactive[data-pillar]:hover {
+            stroke-width: 4px !important;
+            stroke: #2c5f2d !important;
+            fill-opacity: 0.9 !important;
+            cursor: pointer !important;
+        }
     </style>
 </head>
 <body>
@@ -29,9 +175,9 @@
         <div class="navbar-logo navbar-logo-left">
             <img src="assets/pigeon2.png" alt="SDG AI Logo" class="logo-image">
         </div>
-            <div class="navbar-logo navbar-logo-left">
-        <h1 class="tool-title">Socio Economic Peace Index Tool</h1>
-    </div>
+        <div class="navbar-logo navbar-logo-left">
+            <h1 class="tool-title">Socio Economic Peace Index Tool</h1>
+        </div>
         
         <ul class="navbar-menu">
             <li><a href="index.html" class="larger-nav-link">Map</a></li>
@@ -47,335 +193,13 @@
     <div class="main-container">
         <!-- Sidebar with layer controls -->
         <div id="sidebar">
-            <!-- <h3>Datasets</h3> -->
-            
-            <!-- Vector Layers Dropdown -->
-            <div class="layer-group">
-                <button class="dropdown-btn"><strong>Subnational Statistics</strong></button>
-                <div class="dropdown-container">
-                    <!-- Admin Level 1 Layer -->
-                    <div class="layer-checkbox">
-                        <input type="checkbox" id="geojsonLayer">
-                        <label for="geojsonLayer">Admin Level 1 Statistics</label>
-                    </div>
-                    
-                    <div class="layer-controls">
-                        <div class="opacity-control">
-                            <label for="geojsonOpacity">Opacity</label>
-                            <input type="range" id="geojsonOpacity" min="0" max="1" step="0.1" value="0.5">
-                            <span id="geojsonOpacityValue">50%</span>
-                        </div>
-                        
-                        <div class="attribute-selector">
-                            <label for="vectorAttribute1">Attribute to Display:</label>
-                            <select id="vectorAttribute1"></select>
-                        </div>
-                        
-                        <div class="color-ramp-selector">
-                            <label for="vectorColorRamp1">Color Scheme:</label>
-                            <select id="vectorColorRamp1"></select>
-                            <div id="vectorColorPreview1" class="color-preview"></div>
-                        </div>
-                    </div>
-                    
-                    <!-- Admin Level 2 Layer -->
-                    <div class="layer-checkbox">
-                        <input type="checkbox" id="geojsonLayer2">
-                        <label for="geojsonLayer2">Admin Level 2 Statistics</label>
-                    </div>
-                    
-                    <div class="layer-controls">
-                        <div class="opacity-control">
-                            <label for="geojsonOpacity2">Opacity</label>
-                            <input type="range" id="geojsonOpacity2" min="0" max="1" step="0.1" value="0.4">
-                            <span id="geojsonOpacityValue2">50%</span>
-                        </div>
-                        
-                        <div class="attribute-selector">
-                            <label for="vectorAttribute2">Attribute to Display:</label>
-                            <select id="vectorAttribute2"></select>
-                        </div>
-                        
-                        <div class="color-ramp-selector">
-                            <label for="vectorColorRamp2">Color Scheme:</label>
-                            <select id="vectorColorRamp2"></select>
-                            <div id="vectorColorPreview2" class="color-preview"></div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Raster Layers Dropdown -->
-            <div class="layer-group">
-                <button class="dropdown-btn"><strong>High Resolution Maps</strong></button>
-                <div class="dropdown-container">
-                    <!-- Raster layer controls -->
-                    <template id="raster-layer-template">
-                        <div class="layer-checkbox">
-                            <input type="checkbox" id="layerId">
-                            <label for="layerId">Layer Name</label>
-                        </div>
-                        <div class="opacity-control">
-                            <label for="opacityId">Opacity</label>
-                            <input type="range" id="opacityId" min="0" max="1" step="0.1" value="1">
-                            <span id="opacityValueId">100%</span>
-                        </div>
-                    </template>
-                    <!-- NDVI Change Layers -->
-                    <div class="layer-checkbox">
-                        <input type="checkbox" id="tiffLayer1">
-                        <label for="tiffLayer1">NDVI Change (2015-2023)</label>
-                    </div>
-                    <div class="opacity-control">
-                        <label for="tiffOpacity1">Opacity</label>
-                        <input type="range" id="tiffOpacity1" min="0" max="1" step="0.1" value="1">
-                        <span id="tiffOpacityValue1">100%</span>
-                    </div>
-                    
-                    <div class="layer-checkbox">
-                        <input type="checkbox" id="tiffLayer2">
-                        <label for="tiffLayer2">NDVI Change (2022-2023)</label>
-                    </div>
-                    <div class="opacity-control">
-                        <label for="tiffOpacity2">Opacity</label>
-                        <input type="range" id="tiffOpacity2" min="0" max="1" step="0.1" value="1">
-                        <span id="tiffOpacityValue2">100%</span>
-                    </div>
-                    
-                    <div class="layer-checkbox">
-                        <input type="checkbox" id="tiffLayer3">
-                        <label for="tiffLayer3">NDVI Change (2021-2022)</label>
-                    </div>
-                    <div class="opacity-control">
-                        <label for="tiffOpacity3">Opacity</label>
-                        <input type="range" id="tiffOpacity3" min="0" max="1" step="0.1" value="1">
-                        <span id="tiffOpacityValue3">100%</span>
-                    </div>
-                    
-                    <div class="layer-checkbox">
-                        <input type="checkbox" id="tiffLayer4">
-                        <label for="tiffLayer4">NDVI Change (2020-2021)</label>
-                    </div>
-                    <div class="opacity-control">
-                        <label for="tiffOpacity4">Opacity</label>
-                        <input type="range" id="tiffOpacity4" min="0" max="1" step="0.1" value="1">
-                        <span id="tiffOpacityValue4">100%</span>
-                    </div>
-                    
-                    <div class="layer-checkbox">
-                        <input type="checkbox" id="tiffLayer5">
-                        <label for="tiffLayer5">NDVI Change (2019-2020)</label>
-                    </div>
-                    <div class="opacity-control">
-                        <label for="tiffOpacity5">Opacity</label>
-                        <input type="range" id="tiffOpacity5" min="0" max="1" step="0.1" value="1">
-                        <span id="tiffOpacityValue5">100%</span>
-                    </div>
-                    
-                    <div class="layer-checkbox">
-                        <input type="checkbox" id="tiffLayer6">
-                        <label for="tiffLayer6">NDVI Change (2018-2019)</label>
-                    </div>
-                    <div class="opacity-control">
-                        <label for="tiffOpacity6">Opacity</label>
-                        <input type="range" id="tiffOpacity6" min="0" max="1" step="0.1" value="1">
-                        <span id="tiffOpacityValue6">100%</span>
-                    </div>
-                    
-                    <div class="layer-checkbox">
-                        <input type="checkbox" id="tiffLayer7">
-                        <label for="tiffLayer7">NDVI Change (2017-2018)</label>
-                    </div>
-                    <div class="opacity-control">
-                        <label for="tiffOpacity7">Opacity</label>
-                        <input type="range" id="tiffOpacity7" min="0" max="1" step="0.1" value="1">
-                        <span id="tiffOpacityValue7">100%</span>
-                    </div>
-                    
-                    <div class="layer-checkbox">
-                        <input type="checkbox" id="tiffLayer8">
-                        <label for="tiffLayer8">NDVI Change (2016-2017)</label>
-                    </div>
-                    <div class="opacity-control">
-                        <label for="tiffOpacity8">Opacity</label>
-                        <input type="range" id="tiffOpacity8" min="0" max="1" step="0.1" value="1">
-                        <span id="tiffOpacityValue8">100%</span>
-                    </div>
-                    
-                    <div class="layer-checkbox">
-                        <input type="checkbox" id="tiffLayer9">
-                        <label for="tiffLayer9">NDVI Change (2015-2016)</label>
-                    </div>
-                    <div class="opacity-control">
-                        <label for="tiffOpacity9">Opacity</label>
-                        <input type="range" id="tiffOpacity9" min="0" max="1" step="0.1" value="1">
-                        <span id="tiffOpacityValue9">100%</span>
-                    </div>
-                    
-                    <!-- Service Areas -->
-                    <div class="layer-checkbox">
-                        <input type="checkbox" id="tiffLayer10">
-                        <label for="tiffLayer10">Service Coverage Areas</label>
-                    </div>
-                    <div class="opacity-control">
-                        <label for="tiffOpacity10">Opacity</label>
-                        <input type="range" id="tiffOpacity10" min="0" max="1" step="0.1" value="1">
-                        <span id="tiffOpacityValue10">100%</span>
-                    </div>
-                    
-                    <!-- Nighttime Lights -->
-                    <div class="layer-checkbox">
-                        <input type="checkbox" id="tiffLayer11">
-                        <label for="tiffLayer11">Nighttime Lights (2024)</label>
-                    </div>
-                    <div class="opacity-control">
-                        <label for="tiffOpacity11">Opacity</label>
-                        <input type="range" id="tiffOpacity11" min="0" max="1" step="0.1" value="1">
-                        <span id="tiffOpacityValue11">100%</span>
-                    </div>
-                    
-                    <!-- Environmental Layers -->
-                    <div class="layer-checkbox">
-                        <input type="checkbox" id="tiffLayer12">
-                        <label for="tiffLayer12">Elevation</label>
-                    </div>
-                    <div class="opacity-control">
-                        <label for="tiffOpacity12">Opacity</label>
-                        <input type="range" id="tiffOpacity12" min="0" max="1" step="0.1" value="1">
-                        <span id="tiffOpacityValue12">100%</span>
-                    </div>
-                    
-                    <div class="layer-checkbox">
-                        <input type="checkbox" id="tiffLayer13">
-                        <label for="tiffLayer13">Soil Moisture</label>
-                    </div>
-                    <div class="opacity-control">
-                        <label for="tiffOpacity13">Opacity</label>
-                        <input type="range" id="tiffOpacity13" min="0" max="1" step="0.1" value="1">
-                        <span id="tiffOpacityValue13">100%</span>
-                    </div>
-                    
-                    <div class="layer-checkbox">
-                        <input type="checkbox" id="tiffLayer14">
-                        <label for="tiffLayer14">Temperature</label>
-                    </div>
-                    <div class="opacity-control">
-                        <label for="tiffOpacity14">Opacity</label>
-                        <input type="range" id="tiffOpacity14" min="0" max="1" step="0.1" value="1">
-                        <span id="tiffOpacityValue14">100%</span>
-                    </div>
-                    
-                    <div class="layer-checkbox">
-                        <input type="checkbox" id="tiffLayer15">
-                        <label for="tiffLayer15">Rainfall</label>
-                    </div>
-                    <div class="opacity-control">
-                        <label for="tiffOpacity15">Opacity</label>
-                        <input type="range" id="tiffOpacity15" min="0" max="1" step="0.1" value="1">
-                        <span id="tiffOpacityValue15">100%</span>
-                    </div>
-                    
-                    <!-- Infrastructure & Socioeconomic -->
-                    <div class="layer-checkbox">
-                        <input type="checkbox" id="tiffLayer16">
-                        <label for="tiffLayer16">Population Density</label>
-                    </div>
-                    <div class="opacity-control">
-                        <label for="tiffOpacity16">Opacity</label>
-                        <input type="range" id="tiffOpacity16" min="0" max="1" step="0.1" value="1">
-                        <span id="tiffOpacityValue16">100%</span>
-                    </div>
-                    
-                    <div class="layer-checkbox">
-                        <input type="checkbox" id="tiffLayer17">
-                        <label for="tiffLayer17">Road Network</label>
-                    </div>
-                    <div class="opacity-control">
-                        <label for="tiffOpacity17">Opacity</label>
-                        <input type="range" id="tiffOpacity17" min="0" max="1" step="0.1" value="1">
-                        <span id="tiffOpacityValue17">100%</span>
-                    </div>
-                    
-                    <div class="layer-checkbox">
-                        <input type="checkbox" id="tiffLayer18">
-                        <label for="tiffLayer18">Education Access</label>
-                    </div>
-                    <div class="opacity-control">
-                        <label for="tiffOpacity18">Opacity</label>
-                        <input type="range" id="tiffOpacity18" min="0" max="1" step="0.1" value="1">
-                        <span id="tiffOpacityValue18">100%</span>
-                    </div>
-                    
-                    <div class="layer-checkbox">
-                        <input type="checkbox" id="tiffLayer19">
-                        <label for="tiffLayer19">Health Facility Access</label>
-                    </div>
-                    <div class="opacity-control">
-                        <label for="tiffOpacity19">Opacity</label>
-                        <input type="range" id="tiffOpacity19" min="0" max="1" step="0.1" value="1">
-                        <span id="tiffOpacityValue19">100%</span>
-                    </div>
-                    
-                    <div class="layer-checkbox">
-                        <input type="checkbox" id="tiffLayer20">
-                        <label for="tiffLayer20">Cell Tower Coverage</label>
-                    </div>
-                    <div class="opacity-control">
-                        <label for="tiffOpacity20">Opacity</label>
-                        <input type="range" id="tiffOpacity20" min="0" max="1" step="0.1" value="1">
-                        <span id="tiffOpacityValue20">100%</span>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Point Layers Dropdown -->
-            <div class="layer-group">
-                <button class="dropdown-btn"><strong>Survey Data</strong></button>
-                <div class="dropdown-container">
-                    <div class="layer-checkbox">
-                        <input type="checkbox" id="pointLayer">
-                        <label for="pointLayer">DHS Statistics</label>
-                    </div>
-                    <div class="opacity-control">
-                        <label for="pointOpacity">Opacity</label>
-                        <input type="range" id="pointOpacity" min="0" max="1" step="0.1" value="1">
-                        <span id="pointOpacityValue">100%</span>
-                    </div>
-                    <div class="attribute-selector">
-                        <label for="pointValueSelector">Value to Display:</label>
-                        <select id="pointValueSelector"></select>
-                    </div>
-                    <div class="color-ramp-selector">
-                        <label for="pointColorRamp">Color Scheme:</label>
-                        <select id="pointColorRamp"></select>
-                        <div id="pointColorPreview" class="color-preview"></div>
-                    </div>
-                    <div class="layer-checkbox">
-                        <input type="checkbox" id="pointLayer2">
-                        <label for="pointLayer2">Cities</label>
-                    </div>
-                    <div class="opacity-control">
-                        <label for="pointOpacity2">Opacity</label>
-                        <input type="range" id="pointOpacity2" min="0" max="1" step="0.1" value="1">
-                        <span id="pointOpacityValue2">100%</span>
-                    </div>
-                    <div class="attribute-selector">
-                        <label for="pointValueSelector2">Value to Display:</label>
-                        <select id="pointValueSelector2"></select>
-                    </div>
-                    <div class="color-ramp-selector">
-                        <label for="pointColorRamp2">Color Scheme:</label>
-                        <select id="pointColorRamp2"></select>
-                        <div id="pointColorPreview2" class="color-preview2"></div>
-                    </div>
-                </div>
-            </div>
+            <!-- Layer controls will be generated by JavaScript templates -->
         </div>
         
         <!-- Statistics container -->
         <div id="stats-container" style="display: none; position: absolute; top: 10px; right: 10px; z-index: 1000; padding: 10px; background: white; border: 1px solid #ccc; border-radius: 5px; box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);"></div>
         
-        <!-- Map container left -->
+        <!-- Map container -->
         <div id="map"></div>
     </div>
  
@@ -390,70 +214,278 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/proj4js/2.15.0/proj4.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/leaflet.sync@0.2.4/L.Map.Sync.min.js"></script>
     
-    <!-- Application scripts -->
-     
-    <script type="module" src="js/split-map.js"></script>
-    <script type="module" src="js/color_scales.js"></script>
-    <script type="module" src="js/color_ramp_selector.js"></script>
-    <script type="module" src="js/zoom-adaptive-tiff-loader.js"></script>
-    <script type="module" src="js/vector_layers.js"></script>
-    <script type="module" src="js/layer_controls.js"></script>
-    <script type="module" src="js/legend.js"></script>
-    <script type="module" src="js/basemaps.js"></script>
+    <!-- Application scripts - Using optimized main.js as entry point -->
     <script type="module" src="js/main.js"></script>
     
-    <!-- UI initialization script -->
-    <script>
+    <!-- Layer templates initialization -->
+    <script type="module">
+        import { LayerTemplates } from './js/layer-templates.js';
+        import { populateColorRampSelector } from './js/layer_config.js';
+        
         document.addEventListener('DOMContentLoaded', function() {
+            // Generate layer controls using JavaScript templates
+            const sidebar = document.getElementById('sidebar');
+            if (sidebar) {
+                sidebar.innerHTML = LayerTemplates.generateAllLayerControls();
+            }
+            
+            // Initialize control event listeners
+            initializeLayerControls();
+            
+            // Initialize color ramp selectors after DOM is ready
+            initializeColorRampSelectors();
+        });
+        
+        function initializeLayerControls() {
             // Hide all selectors initially
             document.querySelectorAll('.attribute-selector, .color-ramp-selector').forEach(function(elem) {
                 elem.style.display = 'none';
             });
             
-            // Handle Admin Level 1
+            // Setup layer control visibility handlers
             setupLayerControls('geojsonLayer');
-            
-            // Handle Admin Level 2
             setupLayerControls('geojsonLayer2');
-            
-            // Handle Point Layer
             setupPointControls();
-            
-            // Helper function to set up layer control visibility
-            function setupLayerControls(layerId) {
-                const checkbox = document.getElementById(layerId);
-                const controlsContainer = checkbox.closest('.layer-checkbox').nextElementSibling;
-                
-                if (checkbox && controlsContainer) {
-                    checkbox.addEventListener('change', function() {
-                        const attributeSelector = controlsContainer.querySelector('.attribute-selector');
-                        const colorSelector = controlsContainer.querySelector('.color-ramp-selector');
-                        
-                        if (attributeSelector) attributeSelector.style.display = this.checked ? 'block' : 'none';
-                        if (colorSelector) colorSelector.style.display = this.checked ? 'block' : 'none';
-                    });
-                }
-            }
-            
-            // Set up point layer controls
-            function setupPointControls() {
-    const pointCheckbox = document.getElementById('pointLayer');
-    const pointSelector = document.getElementById('pointValueSelector');
-    const colorSelector = document.getElementById('pointColorRamp').parentElement;
-    
-    if (pointCheckbox && pointSelector) {
-        // Initially hide the selectors
-        pointSelector.parentElement.style.display = 'none';
-        if (colorSelector) colorSelector.style.display = 'none';
+            setupSEPIControls();
+            setupSimplifiedPillarsControls(); // UPDATED - simplified function
+            setupDropdownToggles();
+            setupOpacityDisplays();
+        }
         
-        pointCheckbox.addEventListener('change', function() {
-            // Show/hide the selectors based on checkbox state
-            pointSelector.parentElement.style.display = this.checked ? 'block' : 'none';
-            if (colorSelector) colorSelector.style.display = this.checked ? 'block' : 'none';
+        function initializeColorRampSelectors() {
+            // Only initialize color ramp selectors that actually exist and are needed
+            const colorRampSelectors = [
+                'vectorColorRamp1',    // Subnational (Regional) Statistics
+                'vectorColorRamp2',    // Subnational (District) Statistics  
+                'pointColorRamp',      // DHS Statistics
+                'pointColorRamp2'      // Cities
+            ];
+            
+            colorRampSelectors.forEach(selectorId => {
+                const selector = document.getElementById(selectorId);
+                if (selector) {
+                    populateColorRampSelector(selectorId);
+                    console.log(`Populated color ramp selector: ${selectorId}`);
+                } else {
+                    console.warn(`Color ramp selector not found: ${selectorId}`);
+                }
+            });
+            
+            console.log('Color ramp selectors initialized (minimal set)');
+        }
+        
+        function setupSEPIControls() {
+    const sepiCheckbox = document.getElementById('sepiLayer');
+    const sepiSection = sepiCheckbox?.closest('.sepi-section');
+    const sepiControls = sepiSection?.querySelector('.layer-controls');
+    
+    if (sepiCheckbox && sepiControls && sepiSection) {
+        sepiControls.style.display = 'none';
+        
+        const sepiLabel = sepiCheckbox.nextElementSibling;
+        if (sepiLabel) {
+            sepiLabel.addEventListener('click', function(e) {
+                e.preventDefault();
+                sepiCheckbox.checked = !sepiCheckbox.checked;
+                
+                if (sepiCheckbox.checked) {
+                    sepiControls.style.display = 'block';
+                    sepiControls.classList.add('show');
+                    sepiSection.classList.add('active'); // Add active class for green theme
+                } else {
+                    sepiControls.style.display = 'none';
+                    sepiControls.classList.remove('show');
+                    sepiSection.classList.remove('active'); // Remove active class - back to gray
+                }
+                
+                const changeEvent = new Event('change', { bubbles: true });
+                sepiCheckbox.dispatchEvent(changeEvent);
+            });
+        }
+        
+        sepiCheckbox.addEventListener('change', function() {
+            if (this.checked) {
+                sepiControls.style.display = 'block';
+                sepiControls.classList.add('show');
+                sepiSection.classList.add('active');
+            } else {
+                sepiControls.style.display = 'none';
+                sepiControls.classList.remove('show');
+                sepiSection.classList.remove('active');
+            }
         });
     }
 }
-        });
+        
+        // SIMPLIFIED: Pillar controls now immediately trigger layer changes
+        function setupSimplifiedPillarsControls() {
+    const pillarsToggle = document.getElementById('pillarsToggle');
+    const pillarsSection = pillarsToggle?.closest('.pillars-section');
+    const pillarsControls = pillarsSection?.querySelector('.layer-controls');
+    const pillarSelect = document.getElementById('pillarSelect');
+    const pillarOpacityControl = document.getElementById('pillarOpacityControl');
+    const pillarOpacity = document.getElementById('pillarOpacity');
+    const pillarOpacityValue = document.getElementById('pillarOpacityValue');
+    
+    if (pillarsToggle && pillarsControls && pillarsSection) {
+        pillarsControls.style.display = 'none';
+        
+        // Handle pillars section toggle (like SEPI)
+        const pillarsLabel = pillarsToggle.nextElementSibling;
+        if (pillarsLabel) {
+            pillarsLabel.addEventListener('click', function(e) {
+                e.preventDefault();
+                pillarsToggle.checked = !pillarsToggle.checked;
+                
+                if (pillarsToggle.checked) {
+                    pillarsControls.style.display = 'block';
+                    pillarsControls.classList.add('show');
+                    pillarsSection.classList.add('active'); // Green theme
+                } else {
+                    pillarsControls.style.display = 'none';
+                    pillarsControls.classList.remove('show');
+                    pillarsSection.classList.remove('active'); // Back to gray
+                    
+                    // Reset pillar selection when closing
+                    if (pillarSelect) {
+                        pillarSelect.value = '';
+                        // Dispatch event to remove current pillar
+                        const event = new CustomEvent('pillarChanged', {
+                            detail: { pillarId: null },
+                            bubbles: true
+                        });
+                        pillarSelect.dispatchEvent(event);
+                        
+                        // Hide opacity control
+                        if (pillarOpacityControl) {
+                            pillarOpacityControl.style.display = 'none';
+                        }
+                    }
+                }
+            });
+        }
+        
+        // Handle pillar selection
+        if (pillarSelect) {
+            pillarSelect.addEventListener('change', function() {
+                const selectedPillar = this.value;
+                
+                if (selectedPillar) {
+                    // Show opacity controls when an indicator is selected
+                    if (pillarOpacityControl) {
+                        pillarOpacityControl.style.display = 'block';
+                    }
+                    
+                    // Trigger layer loading/switching
+                    console.log(`Indicator selected: ${selectedPillar}`);
+                    
+                    // Dispatch a custom event for layer manager to handle
+                    const event = new CustomEvent('pillarChanged', {
+                        detail: { pillarId: selectedPillar },
+                        bubbles: true
+                    });
+                    this.dispatchEvent(event);
+                    
+                } else {
+                    // Hide opacity controls when no indicator is selected
+                    if (pillarOpacityControl) {
+                        pillarOpacityControl.style.display = 'none';
+                    }
+                    
+                    // Dispatch event to remove current indicator
+                    const event = new CustomEvent('pillarChanged', {
+                        detail: { pillarId: null },
+                        bubbles: true
+                    });
+                    this.dispatchEvent(event);
+                }
+            });
+        }
+        
+        // Setup opacity control for indicators (SAME AS SEPI)
+        if (pillarOpacity && pillarOpacityValue) {
+            pillarOpacity.addEventListener('input', function() {
+                const opacity = parseFloat(this.value);
+                pillarOpacityValue.textContent = `${Math.round(opacity * 100)}%`;
+                
+                // Dispatch opacity change event
+                const event = new CustomEvent('pillarOpacityChanged', {
+                    detail: { opacity: opacity },
+                    bubbles: true
+                });
+                this.dispatchEvent(event);
+            });
+        }
+    }
+}
+        
+        function setupLayerControls(layerId) {
+            const checkbox = document.getElementById(layerId);
+            const controlsContainer = checkbox?.closest('.layer-checkbox')?.nextElementSibling;
+            
+            if (checkbox && controlsContainer) {
+                checkbox.addEventListener('change', function() {
+                    // Show/hide the entire controls container
+                    controlsContainer.style.display = this.checked ? 'block' : 'none';
+                    
+                    // Also show the attribute and color selectors within the container
+                    const attributeSelector = controlsContainer.querySelector('.attribute-selector');
+                    const colorSelector = controlsContainer.querySelector('.color-ramp-selector');
+                    
+                    if (this.checked) {
+                        if (attributeSelector) attributeSelector.style.display = 'block';
+                        if (colorSelector) colorSelector.style.display = 'block';
+                    }
+                });
+            }
+        }
+        
+        function setupPointControls() {
+            const pointCheckbox = document.getElementById('pointLayer');
+            const pointSelector = document.getElementById('pointValueSelector');
+            const colorSelector = document.getElementById('pointColorRamp')?.parentElement;
+            
+            if (pointCheckbox && pointSelector) {
+                pointSelector.parentElement.style.display = 'none';
+                if (colorSelector) colorSelector.style.display = 'none';
+                
+                pointCheckbox.addEventListener('change', function() {
+                    pointSelector.parentElement.style.display = this.checked ? 'block' : 'none';
+                    if (colorSelector) colorSelector.style.display = this.checked ? 'block' : 'none';
+                });
+            }
+        }
+        
+        function setupDropdownToggles() {
+            document.querySelectorAll('.dropdown-btn').forEach(button => {
+                button.addEventListener('click', function() {
+                    this.classList.toggle('active');
+                    
+                    const container = this.nextElementSibling;
+                    if (container && container.classList.contains('dropdown-container')) {
+                        const isVisible = container.style.display === 'block';
+                        container.style.display = isVisible ? 'none' : 'block';
+                    }
+                });
+            });
+        }
+        
+        function setupOpacityDisplays() {
+            document.querySelectorAll('input[type="range"]').forEach(slider => {
+                const displayId = slider.id.replace('Opacity', 'OpacityValue');
+                const display = document.getElementById(displayId);
+                
+                if (display) {
+                    const updateDisplay = () => {
+                        const value = Math.round(slider.value * 100);
+                        display.textContent = `${value}%`;
+                    };
+                    
+                    updateDisplay(); // Initial value
+                    slider.addEventListener('input', updateDisplay);
+                }
+            });
+        }
     </script>
 </body>
 </html>

@@ -143,7 +143,7 @@ export class InfoPanel {
      */
     getPositionStyles() {
         const positions = {
-            'topright': 'top: 20px; right: 20px;',
+            'topright': 'top: 15%; right: 10px;',
             'topleft': 'top: 20px; left: 20px;',
             'bottomright': 'bottom: 20px; right: 20px;',
             'bottomleft': 'bottom: 20px; left: 20px;',

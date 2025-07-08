@@ -1,4 +1,4 @@
-// admin_labels.js - Functions for managing admin boundary labels and combined map controls
+// admin_labels.js - Fixed to properly show district labels from ADM2_EN
 
 import { basemaps, basemapOptions } from './basemaps.js';
 
@@ -57,22 +57,15 @@ function createCombinedMapControl(map, labelLayers, countryOutlines, compareMap)
             // Add outline options
             addOutlineOptions(outlineSelect);
             
-            // Add ADM1 button
-            const adm1Button = createButton('ADM1 Labels', contentContainer);
+            // Add ADM1 button (Regions)
+            const adm1Button = createButton('Show Regions', contentContainer);
             
-            // Add ADM2 button
-            const adm2Button = createButton('ADM2 Labels', contentContainer);
-            
-            // Separator
-            // const separator = L.DomUtil.create('div', 'combined-control-separator', contentContainer);
+            // Add ADM2 button (Districts) 
+            const adm2Button = createButton('Show Districts', contentContainer);
             
             // Map Basemaps Section
-            // const basemapsTitle = L.DomUtil.create('div', 'combined-control-title', contentContainer);
-            // basemapsTitle.innerHTML = 'Map Basemaps';
-            
-            // Left map selection
             const leftMapLabel = L.DomUtil.create('label', 'basemap-label', contentContainer);
-            leftMapLabel.textContent = 'Left Map:';
+            leftMapLabel.textContent = 'Select Basemap:';
             
             const leftMapSelect = L.DomUtil.create('select', 'basemap-select', contentContainer);
             
@@ -94,21 +87,22 @@ function createCombinedMapControl(map, labelLayers, countryOutlines, compareMap)
                     updateBasemap(compareMap, this.value);
                 });
             }
+            
             // Add info panel toggle button
-
             const analysisSectionLabel = L.DomUtil.create('label', 'basemap-label', contentContainer);
-analysisSectionLabel.textContent = 'Analysis Section:';
-const infoPanelButton = createButton('📊 Layer Info', contentContainer);
+            analysisSectionLabel.textContent = 'Analysis Section:';
+            const infoPanelButton = createButton('📊 Layer Info', contentContainer);
 
-// Set click handler for info panel button
-L.DomEvent.on(infoPanelButton, 'click', function(e) {
-    L.DomEvent.preventDefault(e);
-    L.DomEvent.stopPropagation(e);
-    // Access the global infoPanelManager
-    if (window.infoPanelManager) {
-        window.infoPanelManager.getInfoPanel().toggle();
-    }
-});
+            // Set click handler for info panel button
+            L.DomEvent.on(infoPanelButton, 'click', function(e) {
+                L.DomEvent.preventDefault(e);
+                L.DomEvent.stopPropagation(e);
+                // Access the global infoPanelManager
+                if (window.infoPanelManager) {
+                    window.infoPanelManager.getInfoPanel().toggle();
+                }
+            });
+            
             // Set click handlers for features
             L.DomEvent.on(outlineSelect, 'change', function(e) {
                 L.DomEvent.preventDefault(e);
@@ -286,69 +280,176 @@ function toggleLabels(level, button, labelLayers, map) {
 }
 
 /**
- * Load and generate labels for admin boundaries when layer is not loaded
+ * FIXED: Load and generate labels for admin boundaries with correct file paths and field names
  * @param {string} level - Admin level (adm1 or adm2)
  * @param {Object} labelLayer - Label layer group to add markers to
  * @param {Object} map - Leaflet map instance
  */
 function loadAndGenerateLabels(level, labelLayer, map) {
+    // FIXED: Use correct file paths and field names
     const url = level === 'adm1' 
-        ? 'data/adm1_som_latest_cross_sec_2.geojson'  // Path to ADM1 data
-        : 'data/adm2_summary_stats_3.geojson'; // Path to ADM2 data
+        ? 'data/adm1_som_latest_cross_sec_2.geojson'  // ADM1 (Regions)
+        : 'data/adm2_summary_stats_3.geojson';        // ADM2 (Districts)
+    
+    console.log(`Loading ${level} labels from: ${url}`);
     
     // Fetch the GeoJSON file directly
     fetch(url)
-        .then(response => response.json())
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            return response.json();
+        })
         .then(data => {
-            const tempLayer = L.geoJSON(data);
-            generateLabelsFromData(tempLayer, level, labelLayer);
+            console.log(`${level} data loaded successfully:`, data);
+            generateLabelsFromData(data, level, labelLayer);
         })
         .catch(error => {
             console.error(`Error loading ${level} data:`, error);
+            // Show user-friendly error message
+            alert(`Could not load ${level} labels. Please check that the file ${url} exists.`);
         });
 }
 
 /**
- * Generate labels from a temporary layer
- * @param {Object} layer - GeoJSON layer with admin boundaries
+ * FIXED: Generate labels from GeoJSON data with correct field names
+ * @param {Object} geojsonData - GeoJSON data object
  * @param {string} level - Admin level (adm1 or adm2)
  * @param {Object} labelLayer - Label layer group to add markers to
  */
-function generateLabelsFromData(layer, level, labelLayer) {
+function generateLabelsFromData(geojsonData, level, labelLayer) {
     // Clear existing labels
     labelLayer.clearLayers();
     
-    const nameField = level === 'adm1' ? 'NAME_1' : 'NAME_1';
+    // FIXED: Use correct field names for each level
+    const nameField = level === 'adm1' ? 'NAME_1' : 'ADM2_EN'; // ADM1 uses NAME_1, ADM2 uses ADM2_EN
+    
+    console.log(`Generating ${level} labels using field: ${nameField}`);
+    
+    if (!geojsonData.features || geojsonData.features.length === 0) {
+        console.error(`No features found in ${level} data`);
+        return;
+    }
+    
+    // Debug: Check what fields are available in the first feature
+    if (geojsonData.features[0]?.properties) {
+        console.log(`Available fields in ${level} data:`, Object.keys(geojsonData.features[0].properties));
+    }
+    
+    let labelsGenerated = 0;
     
     try {
-        layer.eachLayer(function(featureLayer) {
-            if (!featureLayer.feature || !featureLayer.feature.properties) return;
+        geojsonData.features.forEach(feature => {
+            if (!feature.properties) {
+                console.warn('Feature missing properties:', feature);
+                return;
+            }
             
-            const name = featureLayer.feature.properties[nameField];
-            if (!name) return;
+            const name = feature.properties[nameField];
+            if (!name) {
+                console.warn(`Missing ${nameField} field in feature:`, feature.properties);
+                return;
+            }
             
-            // Get the center of the polygon for label placement
-            const bounds = featureLayer.getBounds();
-            const center = bounds.getCenter();
+            // Calculate center point for label placement
+            let center;
+            if (feature.geometry.type === 'Polygon') {
+                // For polygon, calculate centroid
+                center = calculatePolygonCentroid(feature.geometry.coordinates[0]);
+            } else if (feature.geometry.type === 'MultiPolygon') {
+                // For multipolygon, use centroid of largest polygon
+                let largestPolygon = feature.geometry.coordinates[0];
+                let largestArea = 0;
+                
+                feature.geometry.coordinates.forEach(polygon => {
+                    const area = calculatePolygonArea(polygon[0]);
+                    if (area > largestArea) {
+                        largestArea = area;
+                        largestPolygon = polygon;
+                    }
+                });
+                
+                center = calculatePolygonCentroid(largestPolygon[0]);
+            } else {
+                console.warn('Unsupported geometry type:', feature.geometry.type);
+                return;
+            }
             
-            // Create a marker with a tooltip for the label
-            const marker = L.marker(center, {
+            if (!center) {
+                console.warn('Could not calculate center for feature:', name);
+                return;
+            }
+            
+            // Create a marker with a label
+            const marker = L.marker([center.lat, center.lng], {
                 icon: L.divIcon({
                     className: 'admin-label-icon',
                     html: `<div class="admin-label ${level}-label">${name}</div>`,
-                    iconSize: [100, 20],
-                    iconAnchor: [50, 10]
+                    iconSize: level === 'adm1' ? [120, 25] : [100, 20], // Slightly larger for regions
+                    iconAnchor: level === 'adm1' ? [60, 12] : [50, 10]
                 }),
                 interactive: false // Prevent the label from being clickable
             });
             
             labelLayer.addLayer(marker);
+            labelsGenerated++;
         });
         
-        console.log(`Generated ${level} labels independently`);
+        console.log(`✓ Generated ${labelsGenerated} ${level} labels successfully`);
+        
+        if (labelsGenerated === 0) {
+            alert(`No labels could be generated for ${level}. Check the console for details.`);
+        }
+        
     } catch (err) {
         console.error(`Error generating ${level} labels:`, err);
+        alert(`Error generating ${level} labels: ${err.message}`);
     }
+}
+
+/**
+ * Calculate centroid of a polygon
+ * @param {Array} coordinates - Array of [lng, lat] coordinates
+ * @returns {Object} - {lat, lng} centroid
+ */
+function calculatePolygonCentroid(coordinates) {
+    if (!coordinates || coordinates.length === 0) return null;
+    
+    let x = 0, y = 0;
+    let validPoints = 0;
+    
+    coordinates.forEach(coord => {
+        if (coord && coord.length >= 2 && !isNaN(coord[0]) && !isNaN(coord[1])) {
+            x += coord[0]; // longitude
+            y += coord[1]; // latitude
+            validPoints++;
+        }
+    });
+    
+    if (validPoints === 0) return null;
+    
+    return {
+        lat: y / validPoints,
+        lng: x / validPoints
+    };
+}
+
+/**
+ * Calculate approximate area of a polygon (for finding largest in multipolygon)
+ * @param {Array} coordinates - Array of [lng, lat] coordinates
+ * @returns {number} - Approximate area
+ */
+function calculatePolygonArea(coordinates) {
+    if (!coordinates || coordinates.length < 3) return 0;
+    
+    let area = 0;
+    for (let i = 0; i < coordinates.length - 1; i++) {
+        const [x1, y1] = coordinates[i];
+        const [x2, y2] = coordinates[i + 1];
+        area += (x1 * y2) - (x2 * y1);
+    }
+    return Math.abs(area) / 2;
 }
 
 /**
@@ -406,8 +507,6 @@ export async function loadCountryOutline(countryId, filepath) {
     }
 }
 
-
-
 /**
  * Generate labels for admin boundaries - used when vector layers are loaded
  * This is called from layer_controls.js when a vector layer is activated
@@ -419,39 +518,48 @@ export function generateAdminLabels(layer, level, labelLayer) {
     // Clear existing labels
     labelLayer.clearLayers();
     
-    const nameField = level === 'adm1' ? 'NAME_1' : 'NAME_1';
+    // FIXED: Use correct field names
+    const nameField = level === 'adm1' ? 'NAME_1' : 'ADM2_EN';
     
     if (!layer || !layer.getLayers) {
         console.error("Invalid layer provided to generateAdminLabels");
         return;
     }
     
+    console.log(`Generating ${level} labels from loaded layer using field: ${nameField}`);
+    
+    let labelsGenerated = 0;
+    
     try {
         layer.eachLayer(function(featureLayer) {
             if (!featureLayer.feature || !featureLayer.feature.properties) return;
             
             const name = featureLayer.feature.properties[nameField];
-            if (!name) return;
+            if (!name) {
+                console.warn(`Missing ${nameField} in feature:`, featureLayer.feature.properties);
+                return;
+            }
             
             // Get the center of the polygon for label placement
             const bounds = featureLayer.getBounds();
             const center = bounds.getCenter();
             
-            // Create a marker with a tooltip for the label
+            // Create a marker with a label
             const marker = L.marker(center, {
                 icon: L.divIcon({
                     className: 'admin-label-icon',
                     html: `<div class="admin-label ${level}-label">${name}</div>`,
-                    iconSize: [100, 20],
-                    iconAnchor: [50, 10]
+                    iconSize: level === 'adm1' ? [120, 25] : [100, 20],
+                    iconAnchor: level === 'adm1' ? [60, 12] : [50, 10]
                 }),
                 interactive: false // Prevent the label from being clickable
             });
             
             labelLayer.addLayer(marker);
+            labelsGenerated++;
         });
         
-        console.log(`Generated ${level} labels from layer`);
+        console.log(`✓ Generated ${labelsGenerated} ${level} labels from loaded layer`);
     } catch (err) {
         console.error(`Error generating ${level} labels:`, err);
     }

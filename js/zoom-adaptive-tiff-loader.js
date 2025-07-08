@@ -1,9 +1,14 @@
-// zoom-adaptive-tiff-loader.js
+// zoom-adaptive-tiff-loader.js - Fixed version with proper layer removal and no stacking
 
 /**
  * Add hover tooltip functionality to display raster values
  */
 function addHoverTooltip(map, rasterArray, bounds, width, height, layerName, tiffLayers) {
+    // Store tooltip handlers for proper cleanup
+    if (!tiffLayers[layerName]._tooltipHandlers) {
+        tiffLayers[layerName]._tooltipHandlers = {};
+    }
+    
     // Create a tooltip instance
     const tooltip = L.tooltip({ permanent: false, direction: 'top', offset: [0, -10] });
     
@@ -38,6 +43,10 @@ function addHoverTooltip(map, rasterArray, bounds, width, height, layerName, tif
         map.closeTooltip(tooltip);
     }
 
+    // Store handlers for later cleanup
+    tiffLayers[layerName]._tooltipHandlers.onMouseMove = onMouseMove;
+    tiffLayers[layerName]._tooltipHandlers.onMouseOut = onMouseOut;
+
     // Attach events when the raster layer is added
     function attachEvents() {
         map.on('mousemove', onMouseMove);
@@ -46,10 +55,15 @@ function addHoverTooltip(map, rasterArray, bounds, width, height, layerName, tif
 
     // Detach events when the raster layer is removed
     function detachEvents() {
-        map.off('mousemove', onMouseMove);
-        map.off('mouseout', onMouseOut);
+        if (tiffLayers[layerName]._tooltipHandlers) {
+            map.off('mousemove', tiffLayers[layerName]._tooltipHandlers.onMouseMove);
+            map.off('mouseout', tiffLayers[layerName]._tooltipHandlers.onMouseOut);
+        }
         map.closeTooltip(tooltip);
     }
+
+    // Store detach function for cleanup
+    tiffLayers[layerName]._detachTooltipEvents = detachEvents;
 
     // Bind events to the layer lifecycle
     if (tiffLayers[layerName] && tiffLayers[layerName].on) {
@@ -65,9 +79,18 @@ function addHoverTooltip(map, rasterArray, bounds, width, height, layerName, tif
 
 /**
  * Load and render a GeoTIFF with zoom-dependent smoothing
+ * FIXED: Proper layer management and no stacking
  */
 export async function loadTiff(url, layerName, tiffLayers, map, colorScale) {
-    console.log("Entered LoadTiff")
+    console.log("Entered LoadTiff for:", layerName);
+    
+    // CRITICAL FIX: Remove existing layer first if it exists
+    if (tiffLayers[layerName]) {
+        console.log(`Layer ${layerName} already exists, removing it first...`);
+        const success = removeTiffLayer(layerName, tiffLayers, map);
+        console.log(`Removal result: ${success}`);
+    }
+    
     // Add validation for colorScale
     if (!colorScale || !colorScale.ranges || !colorScale.colors) {
         console.error(`Invalid colorScale for ${layerName}:`, colorScale);
@@ -80,6 +103,7 @@ export async function loadTiff(url, layerName, tiffLayers, map, colorScale) {
     const tiff = await GeoTIFF.fromArrayBuffer(arrayBuffer);
     const image = await tiff.getImage();
     console.log(`TIFF loaded: ${layerName}, Size: ${image.getWidth()}x${image.getHeight()}`);
+    
     // Get geographic information
     const tiePoint = image.getTiePoints()[0];
     const pixelScale = image.getFileDirectory().ModelPixelScale;
@@ -92,7 +116,6 @@ export async function loadTiff(url, layerName, tiffLayers, map, colorScale) {
     const maxY = tiePoint.y;
     const maxX = minX + pixelScale[0] * image.getWidth();
     const minY = maxY - pixelScale[1] * image.getHeight();
-
 
     console.log(`TIFF bounds for ${layerName}:`, {
         minX: minX, minY: minY,
@@ -107,12 +130,12 @@ export async function loadTiff(url, layerName, tiffLayers, map, colorScale) {
         northeast: bounds.getNorthEast().toString()
     });
 
-    const geographicWidth = maxX - minX;  // Width in geographic coordinates
-    const geographicHeight = maxY - minY; // Height in geographic coordinates
+    const geographicWidth = maxX - minX;
+    const geographicHeight = maxY - minY;
     const geoAspectRatio = geographicWidth / geographicHeight;
     
-    const pixelWidth = image.getWidth();  // Width in pixels
-    const pixelHeight = image.getHeight(); // Height in pixels
+    const pixelWidth = image.getWidth();
+    const pixelHeight = image.getHeight();
     const pixelAspectRatio = pixelWidth / pixelHeight;
     
     console.log(`GeoTIFF: ${layerName}`);
@@ -127,7 +150,6 @@ export async function loadTiff(url, layerName, tiffLayers, map, colorScale) {
         console.warn(`WARNING: Significant aspect ratio mismatch for ${layerName}!`);
         console.warn(`The image may appear stretched when rendered.`);
     }
-
 
     // Read the raster data
     const rasterData = await image.readRasters();
@@ -154,25 +176,63 @@ export async function loadTiff(url, layerName, tiffLayers, map, colorScale) {
         totalPixels: rasterArray.length,
         validPercentage: (validPixelCount / rasterArray.length * 100).toFixed(2) + '%'
     });
+    
+    // Store the data for zoom regeneration
+    const layerData = {
+        image: image,
+        rasterArray: rasterArray,
+        bounds: bounds,
+        colorScale: colorScale,
+        width: image.getWidth(),
+        height: image.getHeight()
+    };
+    
     // Create the initial image overlay
-    createImageOverlay(image, rasterArray, bounds, colorScale, layerName, tiffLayers, map);
+    createImageOverlay(layerData, layerName, tiffLayers, map);
     
     // Add hover tooltip functionality
     addHoverTooltip(map, rasterArray, bounds, image.getWidth(), image.getHeight(), layerName, tiffLayers);
     
-    // Listen for zoom end events to regenerate the overlay with appropriate smoothing
-    map.on('zoomend', function() {
-        if (map.hasLayer(tiffLayers[layerName])) {
-            // Remove the existing layer
+    // FIXED: Store zoom event handler with proper cleanup and reference to original data
+    const zoomHandler = function() {
+        if (tiffLayers[layerName] && map.hasLayer(tiffLayers[layerName])) {
+            console.log(`Zoom event triggered for ${layerName}, regenerating layer...`);
+            
+            // Remove the existing layer from map (but keep reference)
             map.removeLayer(tiffLayers[layerName]);
             
             // Create a new layer with appropriate smoothing for the current zoom
-            createImageOverlay(image, rasterArray, bounds, colorScale, layerName, tiffLayers, map);
-            addHoverTooltip(map, rasterArray, bounds, image.getWidth(), image.getHeight(), layerName, tiffLayers);
+            createImageOverlay(layerData, layerName, tiffLayers, map);
+            
+            // Re-add hover tooltip
+            addHoverTooltip(map, layerData.rasterArray, layerData.bounds, layerData.width, layerData.height, layerName, tiffLayers);
+        }
+    };
+    
+    // Store the handler and data for cleanup
+    tiffLayers[layerName]._zoomHandler = zoomHandler;
+    tiffLayers[layerName]._layerData = layerData;
+    
+    // Listen for zoom end events to regenerate the overlay with appropriate smoothing
+    map.on('zoomend', zoomHandler);
+    
+    // FIXED: Add proper cleanup when layer is removed
+    tiffLayers[layerName].on('remove', function() {
+        console.log(`Layer remove event triggered for: ${layerName}`);
+        // Clean up zoom event listener
+        if (this._zoomHandler) {
+            map.off('zoomend', this._zoomHandler);
+            console.log(`Removed zoom handler for ${layerName}`);
+        }
+        // Clean up tooltip events
+        if (this._detachTooltipEvents) {
+            this._detachTooltipEvents();
+            console.log(`Cleaned up tooltip events for ${layerName}`);
         }
     });
-     // Log GeoTIFF projection information
-     console.log(`${layerName} - GeoTIFF Projection:`, {
+    
+    // Log GeoTIFF projection information
+    console.log(`${layerName} - GeoTIFF Projection:`, {
         url: url,
         projection: image.getFileDirectory().GeoAsciiParamsTag || 'Not specified',
         fileDirectory: image.getFileDirectory(),
@@ -181,17 +241,125 @@ export async function loadTiff(url, layerName, tiffLayers, map, colorScale) {
         width: image.getWidth(),
         height: image.getHeight(),
         mapCRS: map.options.crs.code
-     });
+    });
+    
+    console.log(`Successfully created and stored TIFF layer: ${layerName}`);
     return tiffLayers[layerName];
 }
 
 /**
- * Create an image overlay with appropriate smoothing for the current zoom level
+ * COMPLETELY FIXED: Enhanced cleanup for TIFF layers with no stacking
+ * Remove a TIFF layer from the map and clean up ALL resources
  */
-function createImageOverlay(image, rasterArray, bounds, colorScale, layerName, tiffLayers, map) {
+export function removeTiffLayer(layerName, tiffLayers, map) {
+    console.log(`Starting complete removal of TIFF layer: ${layerName}`);
+    
+    const layer = tiffLayers[layerName];
+    if (!layer) {
+        console.warn(`TIFF layer ${layerName} not found in tiffLayers object`);
+        return false;
+    }
+    
+    console.log(`Found layer ${layerName}, beginning comprehensive cleanup...`);
+    
+    // 1. Remove from map if it's there
+    if (map.hasLayer(layer)) {
+        map.removeLayer(layer);
+        console.log(`✓ Removed ${layerName} from map`);
+    } else {
+        console.log(`Layer ${layerName} was not on map`);
+    }
+    
+    // 2. Clean up zoom event listeners
+    if (layer._zoomHandler) {
+        map.off('zoomend', layer._zoomHandler);
+        console.log(`✓ Removed zoom handler for ${layerName}`);
+    }
+    
+    // 3. Clean up tooltip events specifically for this layer
+    if (layer._detachTooltipEvents) {
+        layer._detachTooltipEvents();
+        console.log(`✓ Cleaned up tooltip events for ${layerName}`);
+    }
+    
+    // 4. Clean up any remaining tooltip events globally (just in case)
+    if (layer._tooltipHandlers) {
+        map.off('mousemove', layer._tooltipHandlers.onMouseMove);
+        map.off('mouseout', layer._tooltipHandlers.onMouseOut);
+        console.log(`✓ Cleaned up global tooltip handlers for ${layerName}`);
+    }
+    
+    // 5. Close any open tooltips
+    map.closeTooltip();
+    
+    // 6. Remove any layer-specific data
+    if (layer._layerData) {
+        delete layer._layerData;
+        console.log(`✓ Cleaned up layer data for ${layerName}`);
+    }
+    
+    // 7. Remove from tiffLayers object
+    delete tiffLayers[layerName];
+    console.log(`✓ Deleted ${layerName} from tiffLayers object`);
+    
+    // 8. NUCLEAR OPTION: Force remove any orphaned ImageOverlays that might be this layer
+    // This handles cases where multiple instances might exist
+    const layersToRemove = [];
+    map.eachLayer(function(mapLayer) {
+        if (mapLayer instanceof L.ImageOverlay) {
+            // Check if this overlay has the same URL pattern or bounds as our layer
+            if (mapLayer._url && mapLayer._url.includes('data:image/png;base64')) {
+                // This looks like one of our generated overlays
+                if (mapLayer._layerName === layerName || 
+                    (layer._url && mapLayer._url === layer._url) ||
+                    (layer.getBounds && mapLayer.getBounds && 
+                     layer.getBounds().equals(mapLayer.getBounds()))) {
+                    layersToRemove.push(mapLayer);
+                }
+            }
+        }
+    });
+    
+    // Remove any found orphaned layers
+    layersToRemove.forEach((orphanLayer, index) => {
+        if (map.hasLayer(orphanLayer)) {
+            map.removeLayer(orphanLayer);
+            console.log(`✓ Removed orphaned overlay ${index + 1} for ${layerName}`);
+        }
+    });
+    
+    console.log(`✅ COMPLETE: Layer ${layerName} fully removed and cleaned up`);
+    
+    // Final verification after a brief delay
+    setTimeout(() => {
+        let stillOnMap = false;
+        map.eachLayer(function(mapLayer) {
+            if (mapLayer instanceof L.ImageOverlay && mapLayer._layerName === layerName) {
+                stillOnMap = true;
+            }
+        });
+        
+        if (stillOnMap) {
+            console.error(`❌ WARNING: Layer ${layerName} may still be on map after cleanup!`);
+        } else {
+            console.log(`✅ VERIFIED: Layer ${layerName} completely removed from map`);
+        }
+    }, 100);
+    
+    return true;
+}
+
+/**
+ * Create an image overlay with appropriate smoothing for the current zoom level
+ * FIXED: Better management and cleanup preparation
+ */
+function createImageOverlay(layerData, layerName, tiffLayers, map) {
+    const { image, rasterArray, bounds, colorScale } = layerData;
     const width = image.getWidth();
     const height = image.getHeight();
+    
     console.log(`Creating image overlay for ${layerName} (${width}x${height})`);
+    
     // Check current zoom level to determine smoothing
     const currentZoom = map.getZoom();
     const shouldSmooth = currentZoom < 8; // Adjust this threshold as needed
@@ -211,6 +379,7 @@ function createImageOverlay(image, rasterArray, bounds, colorScale, layerName, t
     if (shouldSmooth) {
         ctx.imageSmoothingQuality = 'medium';
     }
+    
     const samplePoints = [
         0,
         Math.floor(width * height / 4),
@@ -221,6 +390,7 @@ function createImageOverlay(image, rasterArray, bounds, colorScale, layerName, t
     console.log(`Sample raster values for ${layerName}:`, samplePoints.map(idx => {
         return { index: idx, value: rasterArray[idx] };
     }));
+    
     // Create image data at the original size
     const imgData = ctx.createImageData(width, height);
     
@@ -257,25 +427,34 @@ function createImageOverlay(image, rasterArray, bounds, colorScale, layerName, t
         coloredCount++;
     }
     console.log(`Pixel stats for ${layerName}: ${coloredCount} colored, ${transparentCount} transparent`);
+    
     // Put the image data on the canvas
     ctx.putImageData(imgData, 0, 0);
     
     // Convert to image URL
     const imgUrl = canvas.toDataURL();
     
-    // Create and add the overlay
-    tiffLayers[layerName] = L.imageOverlay(imgUrl, bounds, { 
+    // FIXED: Create and properly store the overlay with cleanup preparation
+    const imageOverlay = L.imageOverlay(imgUrl, bounds, { 
         opacity: 1,
         crossOrigin: true,
         interactive: true,
         className: shouldSmooth ? 'smooth-image' : 'crisp-image'
     });
+    
+    // Store reference to layer name for cleanup
+    imageOverlay._layerName = layerName;
+    
+    // Store in tiffLayers
+    tiffLayers[layerName] = imageOverlay;
+    
     console.log(`Leaflet imageOverlay created for ${layerName}`);
+    
     // Add the layer to the map
-    tiffLayers[layerName].addTo(map);
+    imageOverlay.addTo(map);
     
     // Apply the CSS style directly to the image element
-    tiffLayers[layerName].on('load', function() {
+    imageOverlay.on('load', function() {
         const imgElement = this._image;
         if (imgElement) {
             if (shouldSmooth) {
@@ -288,6 +467,8 @@ function createImageOverlay(image, rasterArray, bounds, colorScale, layerName, t
             console.log(`Rendered image dimensions for ${layerName}: ${imgElement.width}x${imgElement.height}`);
         }
     });
+    
+    return imageOverlay;
 }
 
 /**
