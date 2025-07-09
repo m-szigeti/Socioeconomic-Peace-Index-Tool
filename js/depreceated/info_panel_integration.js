@@ -38,36 +38,6 @@ this.infoPanel.toggleMinimize();
         this.registerCustomAnalyses();
     }
     
-    // /**
-    //  * Create toggle button for the info panel
-    //  */
-    // createToggleButton() {
-    //     // Create toggle button in Leaflet control style
-    //     const InfoToggleControl = L.Control.extend({
-    //         options: { position: 'topleft' },
-            
-    //         onAdd: function() {
-    //             const container = L.DomUtil.create('div', 'leaflet-bar leaflet-control info-toggle-control');
-                
-    //             const button = L.DomUtil.create('a', 'info-toggle-button', container);
-    //             button.href = '#';
-    //             button.title = 'Toggle Layer Information Panel';
-    //             button.innerHTML = '📊'; // Info icon
-                
-    //             L.DomEvent.on(button, 'click', (e) => {
-    //                 L.DomEvent.preventDefault(e);
-    //                 L.DomEvent.stopPropagation(e);
-    //                 this.infoPanel.toggle();
-    //             }, this);
-                
-    //             L.DomEvent.disableClickPropagation(container);
-                
-    //             return container;
-    //         }.bind(this)
-    //     });
-        
-    //     this.map.addControl(new InfoToggleControl());
-    // }
     
     /**
      * Monitor changes to existing layers and update info panel

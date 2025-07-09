@@ -38,7 +38,7 @@ function createCombinedMapControl(map, labelLayers, countryOutlines, compareMap)
         options: { position: 'topleft' },
         
         onAdd: function() {
-            const container = L.DomUtil.create('div', 'leaflet-bar leaflet-control combined-map-control');
+            const container = L.DomUtil.create('div', 'leaflet-bar leaflet-control combined-map-control minimized');
             
             // Add toggle button for minimizing/maximizing the panel
             const toggleButton = L.DomUtil.create('div', 'combined-control-toggle', container);

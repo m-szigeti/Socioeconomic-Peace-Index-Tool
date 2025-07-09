@@ -39,14 +39,13 @@ body {
 }
 
 .navbar-menu {
-    display: flex;
-    list-style: none;
-    padding: 0;
-    margin: 0;
+    margin-left: auto !important;  /* Push nav links to the right */
+    margin-right: 20px !important; /* Add some space from right edge */
 }
 
 .navbar-menu li {
     margin: 0 15px;
+    list-style: none !important; 
 }
 
 .navbar-menu a {
@@ -54,6 +53,7 @@ body {
     text-decoration: none;
     font-weight: bold;
     transition: color 0.3s;
+    list-style: none !important;        
 }
 
 .navbar-menu a:hover {
@@ -63,8 +63,16 @@ body {
 .larger-nav-link {
     font-size: 18px;
     padding: 10px 15px;
-}
+    /* Remove margin-right: 300px */
+}   
 
+/* =========================================
+   * Navbar Title Adjustments
+   * ========================================= */
+.tool-title {
+    font-size: 18px !important;
+    margin-left: 10px !important;
+}
 /* =========================================
    * Main Layout
    * ========================================= */
@@ -184,7 +192,6 @@ body {
 
 .sepi-section .layer-checkbox label::before,
 .pillars-section .layer-checkbox label::before {
-    content: '';
     margin-right: 10px;
     color: white;
     font-size: 20px;
@@ -696,4 +703,25 @@ body {
             max-width: 280px;
         }
     }
+}
+
+/* =========================================
+   * Sidebar Title Styling
+   * ========================================= */
+/* =========================================
+   * Sidebar Title Styling - Humble Version
+   * ========================================= */
+.sidebar-title {
+    width: 100%;
+    text-align: center;
+    margin-bottom: 15px;
+    padding: 8px 0;
+}
+
+.sidebar-title h2 {
+    margin: 0;
+    color: #495057;
+    font-size: 16px;
+    font-weight: 600;
+    font-family: Calibri, sans-serif;
 }

@@ -1,6 +1,15 @@
 // layer-templates.js - Updated with button behavior for pillars section
 
 export class LayerTemplates {
+
+    static generateSidebarTitle() {
+    return `
+        <!-- Sidebar Title -->
+        <div class="sidebar-title">
+            <h2>Main Menu</h2>
+        </div>
+    `;
+}
     
     static generateSEPISection() {
         return `
@@ -247,11 +256,12 @@ export class LayerTemplates {
 
     static generateAllLayerControls() {
         return [
+            this.generateSidebarTitle(),  
             this.generateSEPISection(),
             this.generatePillarsSection(),  // BUTTON BEHAVIOR like SEPI
             this.generateVectorLayersSection(),
             this.generateRasterLayersSection(),
-            this.generatePointLayersSection()
+            //this.generatePointLayersSection()
         ].join('\n');
     }
 }
