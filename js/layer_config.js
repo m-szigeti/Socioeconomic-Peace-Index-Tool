@@ -158,41 +158,35 @@ export const LAYER_CONFIG = {
  * Updated Pillar configuration using single pillars.geojson file
  */
 export const PILLAR_CONFIG = {
-    pillar1: {
-        name: 'Population Density 3+',
-        file: 'data/pillars.geojson',
-        property: 'Score_pop_frac_3+',
-        description: 'Population fraction with 3 or more people - demographic density indicator'
+    education: {
+        name: 'Education Index',
+        file: 'data/pillars2.geojson',
+        property: 'Education_Index',
+        description: 'Composite measure of educational access, attendance, and attainment across all levels'
     },
-    pillar2: {
-        name: 'Secondary School Attendance',
-        file: 'data/pillars.geojson',
-        property: 'Score_secondary_school_gross_attendance_total',
-        description: 'Gross secondary school attendance rates - education access indicator'
+    food_security: {
+        name: 'Food Security Index',
+        file: 'data/pillars2.geojson',
+        property: 'Food_Security_Index',
+        description: 'Household food security based on food expenditure share and total expenditure capacity'
     },
-    pillar3: {
-        name: 'Health Facility Access',
-        file: 'data/pillars.geojson',
-        property: 'Score_health_fac_per_10k_pop',
-        description: 'Health facilities per 10,000 population - healthcare infrastructure indicator'
+    poverty: {
+        name: 'Poverty Reduction Index',
+        file: 'data/pillars2.geojson',
+        property: 'Poverty_Index',
+        description: 'Non-poverty levels combining general and extreme poverty measures'
     },
-    pillar4: {
-        name: 'Food Security',
-        file: 'data/pillars.geojson',
-        property: 'Score_food_percentage_share_pct',
-        description: 'Food percentage share - food security and access indicator'
+    health: {
+        name: 'Health Access Index',
+        file: 'data/pillars2.geojson',
+        property: 'Health_Index',
+        description: 'Healthcare infrastructure access based on facilities per population and density'
     },
-    pillar5: {
-        name: 'Non-Poverty Rate',
-        file: 'data/pillars.geojson',
-        property: 'Score_Non_Poverty',
-        description: 'Non-poverty rate - economic wellbeing and poverty reduction indicator'
-    },
-    ndvi: {
-        name: 'NDVI Average Change',
-        file: 'data/NDVI_button.geojson',
-        property: 'NDVI_average_change_mean',
-        description: 'Average change in vegetation index - environmental health indicator'
+    climate_vulnerability: {
+        name: 'Climate Vulnerability Index',
+        file: 'data/pillars2.geojson',
+        property: 'Climate_Vulnerability_Index',
+        description: 'Climate vulnerability based on temperature, vegetation change, and elevation factors'
     }
 };
 

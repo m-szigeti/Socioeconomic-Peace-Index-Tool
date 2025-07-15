@@ -424,22 +424,22 @@ export class SimplifiedPillarManager {
      */
     async loadPillarsData() {
         if (this.pillarsData) return this.pillarsData;
-        
-        try {
-            const response = await fetch('data/pillars.geojson');
-            if (!response.ok) {
-                throw new Error(`Failed to load pillars data: ${response.status}`);
-            }
-            
-            this.pillarsData = await response.json();
-            console.log('Pillars data loaded successfully');
-            return this.pillarsData;
-            
-        } catch (error) {
-            console.error('Error loading pillars data:', error);
-            throw error;
+    
+    try {
+        const response = await fetch('data/pillars2.geojson'); // Changed from 'data/pillars.geojson'
+        if (!response.ok) {
+            throw new Error(`Failed to load pillars data: ${response.status}`);
         }
+        
+        this.pillarsData = await response.json();
+        console.log('Pillars data loaded successfully');
+        return this.pillarsData;
+        
+    } catch (error) {
+        console.error('Error loading pillars data:', error);
+        throw error;
     }
+}
     
     /**
      * Switch to a different pillar/indicator immediately

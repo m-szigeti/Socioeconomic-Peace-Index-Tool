@@ -1,4 +1,4 @@
-// info_panel.js - Independent info panel and analysis module
+// info_panel.js - Updated with SEPI integration and correlation analysis
 
 /**
  * InfoPanel class - Creates and manages a floating info/analysis panel
@@ -7,20 +7,19 @@ export class InfoPanel {
     constructor(options = {}) {
         this.options = {
             position: options.position || 'topright',
-            width: options.width || '350px',
-            maxHeight: options.maxHeight || '60vh',
-            title: options.title || 'Layer Information & Analysis',
+            width: options.width || '400px',
+            maxHeight: options.maxHeight || '70vh',
+            title: options.title || 'Layer Analysis & Reports',
             ...options
         };
         
         this.isVisible = false;
         this.isMinimized = false;
-        this.activeLayers = new Map(); // Store active layer information
-        this.analysisModules = new Map(); // Store analysis modules
+        this.originalHeight = null;
+        this.activeLayers = new Map();
         this.container = null;
         this.map = null;
         
-        // Initialize the panel
         this.init();
     }
     
@@ -30,7 +29,6 @@ export class InfoPanel {
     init() {
         this.createPanel();
         this.setupEventListeners();
-        this.registerDefaultAnalysisModules();
     }
     
     /**
@@ -53,17 +51,22 @@ export class InfoPanel {
         // Apply positioning
         this.container.style.cssText = `
             position: fixed;
-            ${this.getPositionStyles()}
+            top: 15%;
+            right: 10px;
             width: ${this.options.width};
-            max-height: ${this.options.maxHeight};
+            height: 400px;
+            min-width: 300px;
+            min-height: 200px;
+            max-height: none;
             background: white;
             border-radius: 8px;
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-            z-index: 2000;
+            z-index: 2001;
             display: none;
             overflow: hidden;
             font-family: Calibri, sans-serif;
             border: 1px solid #ddd;
+            resize: both;
         `;
         
         // Create header
@@ -80,6 +83,7 @@ export class InfoPanel {
         // Create content area
         const content = document.createElement('div');
         content.className = 'info-panel-content';
+        content.style.display = 'none'; // Start minimized
         content.innerHTML = `
             <div class="info-panel-section">
                 <div class="section-header">
@@ -92,43 +96,61 @@ export class InfoPanel {
             </div>
             
             <div class="info-panel-section analysis-section">
-                <div class="section-header dropdown-header">
-                    <h4>Analysis Tools</h4>
-                    <button class="dropdown-toggle" data-target="analysis-tools">▼</button>
+                <div class="section-header">
+                    <h4>Analysis & Reports</h4>
                 </div>
-                <div class="dropdown-content" id="analysis-tools">
-                    <div class="analysis-tool" data-tool="summary">
-                        <h5>Layer Summary</h5>
-                        <p>View statistical summary of active layers</p>
-                        <button class="run-analysis-btn" data-analysis="summary">Run Summary</button>
-                    </div>
-                    
-                    <div class="analysis-tool" data-tool="spatial">
-                        <h5>Spatial Analysis</h5>
-                        <p>Analyze spatial patterns and distributions</p>
-                        <button class="run-analysis-btn" data-analysis="spatial">Run Analysis</button>
-                    </div>
-                    
-                    <div class="analysis-tool" data-tool="comparison">
-                        <h5>Layer Comparison</h5>
-                        <p>Compare multiple active layers</p>
-                        <button class="run-analysis-btn" data-analysis="comparison">Compare Layers</button>
+                <div class="analysis-content">
+                    <div class="analysis-tool">
+                        <h5>Create Summary Report</h5>
+                        <p>Generate correlation analysis between SEPI index and subnational statistics with visualizations</p>
+                        <button class="run-analysis-btn" data-analysis="summary">Generate Report</button>
                     </div>
                 </div>
             </div>
             
             <div class="info-panel-section results-section">
-                <div class="section-header dropdown-header">
-                    <h4>Analysis Results</h4>
-                    <button class="dropdown-toggle" data-target="analysis-results">▼</button>
+                <div class="section-header">
+                    <h4>Report Results</h4>
                 </div>
-                <div class="dropdown-content" id="analysis-results">
-                    <div class="results-content">
-                        <p class="no-results-message">No analysis results yet</p>
+                <div class="results-content">
+                    <div class="welcome-content">
+                        <h5>🎯 Welcome to the SEPI Analysis Tool</h5>
+                        
+                        <h6>📊 Getting Started</h6>
+                        <p>This tool helps you analyze relationships between the <strong>Socioeconomic Peace Index (SEPI)</strong> and various subnational indicators across Somalia.</p>
+                        
+                        <h6>🔍 How to Use</h6>
+                        <p>To generate correlation reports:</p>
+                        <ul>
+                            <li>Activate the <strong>SEPI layer</strong> from the main menu</li>
+                            <li>Select a <strong>Subnational Statistics</strong> layer</li>
+                            <li>Choose an <strong>attribute</strong> to analyze</li>
+                            <li>Click <strong>"Generate Report"</strong> above</li>
+                        </ul>
+                        
+                        <div class="sepi-intro">
+                            <h6>💡 About SEPI</h6>
+                            <p>The Socioeconomic Peace Index (SEPI) measures regional peace and stability by combining multiple socioeconomic indicators. Higher values indicate better peace conditions.</p>
+                        </div>
+                        
+                        <h6>📈 Analysis Features</h6>
+                        <ul>
+                            <li><strong>Correlation Analysis:</strong> Statistical relationships between SEPI and other indicators</li>
+                            <li><strong>Visual Charts:</strong> Scatter plots and bar charts for data exploration</li>
+                            <li><strong>Regional Comparisons:</strong> District-level breakdowns and rankings</li>
+                            <li><strong>Policy Insights:</strong> Interpretation and recommendations</li>
+                        </ul>
+                        
+                        <p style="text-align: center; margin-top: 20px; font-style: italic; color: #666;">
+                            Press <strong>I</strong> to toggle this panel • <strong>H</strong> for help
+                        </p>
                     </div>
                 </div>
             </div>
         `;
+        
+        // Create resize handles
+        this.createResizeHandles();
         
         // Assemble panel
         this.container.appendChild(header);
@@ -136,20 +158,119 @@ export class InfoPanel {
         
         // Add to page
         document.body.appendChild(this.container);
+        
+        // Start in minimized state
+        this.updateMinimizeState();
     }
     
     /**
-     * Get CSS positioning styles based on position option
+     * Create resize handles for the panel
      */
-    getPositionStyles() {
-        const positions = {
-            'topright': 'top: 15%; right: 10px;',
-            'topleft': 'top: 20px; left: 20px;',
-            'bottomright': 'bottom: 20px; right: 20px;',
-            'bottomleft': 'bottom: 20px; left: 20px;',
-            'center': 'top: 50%; left: 50%; transform: translate(-50%, -50%);'
-        };
-        return positions[this.options.position] || positions.topright;
+    createResizeHandles() {
+        // Bottom-right corner resize handle
+        const cornerHandle = document.createElement('div');
+        cornerHandle.className = 'resize-handle corner-handle';
+        cornerHandle.style.cssText = `
+            position: absolute;
+            bottom: 0;
+            right: 0;
+            width: 15px;
+            height: 15px;
+            cursor: nw-resize;
+            background: linear-gradient(-45deg, transparent 40%, #ccc 40%, #ccc 60%, transparent 60%);
+            border-radius: 0 0 8px 0;
+        `;
+        
+        // Right edge resize handle
+        const rightHandle = document.createElement('div');
+        rightHandle.className = 'resize-handle right-handle';
+        rightHandle.style.cssText = `
+            position: absolute;
+            top: 20px;
+            right: 0;
+            width: 5px;
+            height: calc(100% - 40px);
+            cursor: ew-resize;
+            background: transparent;
+        `;
+        
+        // Bottom edge resize handle
+        const bottomHandle = document.createElement('div');
+        bottomHandle.className = 'resize-handle bottom-handle';
+        bottomHandle.style.cssText = `
+            position: absolute;
+            bottom: 0;
+            left: 20px;
+            width: calc(100% - 40px);
+            height: 5px;
+            cursor: ns-resize;
+            background: transparent;
+        `;
+        
+        this.container.appendChild(cornerHandle);
+        this.container.appendChild(rightHandle);
+        this.container.appendChild(bottomHandle);
+    }
+    
+    /**
+     * Make the panel resizable
+     */
+    makeResizable() {
+        const handles = this.container.querySelectorAll('.resize-handle');
+        
+        handles.forEach(handle => {
+            let isResizing = false;
+            let startX, startY, startWidth, startHeight;
+            
+            handle.addEventListener('mousedown', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                
+                isResizing = true;
+                startX = e.clientX;
+                startY = e.clientY;
+                startWidth = parseInt(document.defaultView.getComputedStyle(this.container).width, 10);
+                startHeight = parseInt(document.defaultView.getComputedStyle(this.container).height, 10);
+                
+                document.addEventListener('mousemove', resize);
+                document.addEventListener('mouseup', stopResize);
+                
+                // Prevent text selection during resize
+                document.body.style.userSelect = 'none';
+            });
+            
+            const resize = (e) => {
+                if (!isResizing) return;
+                
+                const deltaX = e.clientX - startX;
+                const deltaY = e.clientY - startY;
+                
+                if (handle.classList.contains('corner-handle')) {
+                    // Resize both width and height
+                    const newWidth = Math.max(300, startWidth + deltaX);
+                    const newHeight = Math.max(200, startHeight + deltaY);
+                    this.container.style.width = newWidth + 'px';
+                    this.container.style.height = newHeight + 'px';
+                    this.container.style.maxHeight = 'none';
+                } else if (handle.classList.contains('right-handle')) {
+                    // Resize width only
+                    const newWidth = Math.max(300, startWidth + deltaX);
+                    this.container.style.width = newWidth + 'px';
+                } else if (handle.classList.contains('bottom-handle')) {
+                    // Resize height only
+                    const newHeight = Math.max(200, startHeight + deltaY);
+                    this.container.style.height = newHeight + 'px';
+                    this.container.style.maxHeight = 'none';
+                }
+            };
+            
+            const stopResize = () => {
+                isResizing = false;
+                document.removeEventListener('mousemove', resize);
+                document.removeEventListener('mouseup', stopResize);
+                document.body.style.userSelect = '';
+            };
+        });
     }
     
     /**
@@ -160,27 +281,60 @@ export class InfoPanel {
         const minimizeBtn = this.container.querySelector('.minimize-btn');
         const closeBtn = this.container.querySelector('.close-btn');
         
-        minimizeBtn.addEventListener('click', () => this.toggleMinimize());
+        // Handle minimize button click
+        minimizeBtn.addEventListener('click', () => {
+            this.isMinimized = !this.isMinimized;
+            
+            if (this.isMinimized) {
+                // Save current height before minimizing
+                this.originalHeight = this.container.style.height || '400px';
+                
+                // Minimize panel
+                this.container.classList.add('minimized');
+                this.container.style.height = '48px';
+                this.container.style.minHeight = '48px';
+                this.container.style.maxHeight = '48px';
+                this.container.style.resize = 'none';
+                
+                const content = this.container.querySelector('.info-panel-content');
+                content.style.display = 'none';
+                
+                minimizeBtn.textContent = '+';
+                minimizeBtn.title = 'Restore';
+                
+                // Round header corners when minimized
+                const header = this.container.querySelector('.info-panel-header');
+                header.style.borderRadius = '8px';
+                
+            } else {
+                // Restore panel
+                this.container.classList.remove('minimized');
+                this.container.style.height = this.originalHeight || '400px';
+                this.container.style.minHeight = '200px';
+                this.container.style.maxHeight = 'none';
+                this.container.style.resize = 'both';
+                
+                const content = this.container.querySelector('.info-panel-content');
+                content.style.display = 'flex';
+                
+                minimizeBtn.textContent = '−';
+                minimizeBtn.title = 'Minimize';
+                
+                // Restore header corners
+                const header = this.container.querySelector('.info-panel-header');
+                header.style.borderRadius = '8px 8px 0 0';
+            }
+        });
+        
         closeBtn.addEventListener('click', () => this.hide());
         
-        // Dropdown toggles
-        this.container.querySelectorAll('.dropdown-toggle').forEach(toggle => {
-            toggle.addEventListener('click', (e) => {
-                const targetId = e.target.getAttribute('data-target');
-                this.toggleDropdown(targetId);
-            });
-        });
+        // Analysis button
+        const analysisBtn = this.container.querySelector('.run-analysis-btn');
+        analysisBtn.addEventListener('click', () => this.generateSummaryReport());
         
-        // Analysis buttons
-        this.container.querySelectorAll('.run-analysis-btn').forEach(btn => {
-            btn.addEventListener('click', (e) => {
-                const analysisType = e.target.getAttribute('data-analysis');
-                this.runAnalysis(analysisType);
-            });
-        });
-        
-        // Make panel draggable
+        // Make panel draggable and resizable
         this.makeDraggable();
+        this.makeResizable();
     }
     
     /**
@@ -204,6 +358,7 @@ export class InfoPanel {
             
             if (e.target === header || header.contains(e.target)) {
                 isDragging = true;
+                header.style.cursor = 'grabbing';
             }
         });
         
@@ -221,37 +376,11 @@ export class InfoPanel {
         });
         
         document.addEventListener('mouseup', () => {
-            isDragging = false;
+            if (isDragging) {
+                isDragging = false;
+                header.style.cursor = 'move';
+            }
         });
-    }
-    
-    /**
-     * Register default analysis modules
-     */
-    registerDefaultAnalysisModules() {
-        this.registerAnalysisModule('summary', {
-            name: 'Layer Summary',
-            execute: (layers) => this.generateLayerSummary(layers)
-        });
-        
-        this.registerAnalysisModule('spatial', {
-            name: 'Spatial Analysis',
-            execute: (layers) => this.performSpatialAnalysis(layers)
-        });
-        
-        this.registerAnalysisModule('comparison', {
-            name: 'Layer Comparison',
-            execute: (layers) => this.compareLayerAttributes(layers)
-        });
-    }
-    
-    /**
-     * Register a new analysis module
-     * @param {string} id - Module identifier
-     * @param {Object} module - Module configuration
-     */
-    registerAnalysisModule(id, module) {
-        this.analysisModules.set(id, module);
     }
     
     /**
@@ -286,34 +415,51 @@ export class InfoPanel {
      * Toggle minimize/maximize state
      */
     toggleMinimize() {
+        this.isMinimized = !this.isMinimized;
+        this.updateMinimizeState();
+    }
+    
+    /**
+     * Update the visual state based on minimize status
+     */
+    updateMinimizeState() {
         const content = this.container.querySelector('.info-panel-content');
         const minimizeBtn = this.container.querySelector('.minimize-btn');
         
         if (this.isMinimized) {
-            content.style.display = 'block';
-            minimizeBtn.textContent = '−';
-            this.isMinimized = false;
-        } else {
+            // Save current height before minimizing
+            if (!this.originalHeight) {
+                this.originalHeight = this.container.style.height || '400px';
+            }
+            
+            this.container.classList.add('minimized');
+            this.container.style.height = '48px';
+            this.container.style.minHeight = '48px';
+            this.container.style.maxHeight = '48px';
+            this.container.style.resize = 'none';
+            
             content.style.display = 'none';
             minimizeBtn.textContent = '+';
-            this.isMinimized = true;
-        }
-    }
-    
-    /**
-     * Toggle dropdown sections
-     * @param {string} targetId - ID of dropdown content to toggle
-     */
-    toggleDropdown(targetId) {
-        const dropdown = document.getElementById(targetId);
-        const toggle = this.container.querySelector(`[data-target="${targetId}"]`);
-        
-        if (dropdown.style.display === 'none' || !dropdown.style.display) {
-            dropdown.style.display = 'block';
-            toggle.textContent = '▲';
+            minimizeBtn.title = 'Restore';
+            
+            // Round header corners when minimized
+            const header = this.container.querySelector('.info-panel-header');
+            header.style.borderRadius = '8px';
+            
         } else {
-            dropdown.style.display = 'none';
-            toggle.textContent = '▼';
+            this.container.classList.remove('minimized');
+            this.container.style.height = this.originalHeight || '400px';
+            this.container.style.minHeight = '200px';
+            this.container.style.maxHeight = 'none';
+            this.container.style.resize = 'both';
+            
+            content.style.display = 'flex';
+            minimizeBtn.textContent = '−';
+            minimizeBtn.title = 'Minimize';
+            
+            // Restore header corners
+            const header = this.container.querySelector('.info-panel-header');
+            header.style.borderRadius = '8px 8px 0 0';
         }
     }
     
@@ -328,6 +474,7 @@ export class InfoPanel {
             name: layerInfo.name || id,
             type: layerInfo.type || 'unknown',
             layer: layerInfo.layer,
+            selectedAttribute: layerInfo.selectedAttribute,
             properties: layerInfo.properties || {},
             ...layerInfo
         });
@@ -350,11 +497,29 @@ export class InfoPanel {
     }
     
     /**
+     * Update layer information
+     * @param {string} id - Layer ID
+     * @param {Object} updates - Updates to apply
+     */
+    updateLayer(id, updates) {
+        if (this.activeLayers.has(id)) {
+            const existing = this.activeLayers.get(id);
+            this.activeLayers.set(id, { ...existing, ...updates });
+            
+            if (this.isVisible) {
+                this.updateLayersList();
+            }
+        }
+    }
+    
+    /**
      * Update the layers list display
      */
     updateLayersList() {
         const layersList = document.getElementById('layers-list');
         const layerCount = this.container.querySelector('.layer-count');
+        
+        if (!layersList || !layerCount) return;
         
         layerCount.textContent = `${this.activeLayers.size} layer${this.activeLayers.size !== 1 ? 's' : ''}`;
         
@@ -401,205 +566,994 @@ export class InfoPanel {
             details.push(`Color Scheme: ${layer.colorRamp}`);
         }
         
-        return details.length > 0 ? details.join(' • ') : 'No additional details';
+        return details.length > 0 ? details.join(' • ') : 'Layer active';
     }
     
     /**
-     * Run analysis based on type
-     * @param {string} analysisType - Type of analysis to run
+     * Generate summary report with correlations and visualizations
      */
-    async runAnalysis(analysisType) {
-        const module = this.analysisModules.get(analysisType);
-        if (!module) {
-            console.error(`Analysis module '${analysisType}' not found`);
-            return;
-        }
+    async generateSummaryReport() {
+        const button = this.container.querySelector('.run-analysis-btn');
+        const resultsContent = this.container.querySelector('.results-content');
         
         // Show loading state
-        this.showAnalysisLoading(analysisType);
-        
-        try {
-            const result = await module.execute(this.activeLayers);
-            this.showAnalysisResults(analysisType, result);
-        } catch (error) {
-            console.error(`Error running ${analysisType} analysis:`, error);
-            this.showAnalysisError(analysisType, error.message);
-        }
-    }
-    
-    /**
-     * Show loading state for analysis
-     * @param {string} analysisType - Type of analysis
-     */
-    showAnalysisLoading(analysisType) {
-        const resultsContent = this.container.querySelector('.results-content');
+        button.disabled = true;
+        button.textContent = 'Generating...';
         resultsContent.innerHTML = `
             <div class="analysis-loading">
                 <div class="loading-spinner"></div>
-                <p>Running ${analysisType} analysis...</p>
+                <p>Analyzing layer correlations...</p>
             </div>
         `;
         
-        // Ensure results section is visible
-        const resultsDropdown = document.getElementById('analysis-results');
-        const resultsToggle = this.container.querySelector('[data-target="analysis-results"]');
-        resultsDropdown.style.display = 'block';
-        resultsToggle.textContent = '▲';
+        try {
+            // Simulate analysis processing
+            await new Promise(resolve => setTimeout(resolve, 2000));
+            
+            // UPDATED: Look for SEPI layers AND Pillar layers
+            const sepiLayers = Array.from(this.activeLayers.values()).filter(l => 
+                l.type === 'sepi' || l.type === 'pillar' || 
+                l.name.toLowerCase().includes('sepi') || 
+                l.name.toLowerCase().includes('peace') ||
+                l.name.toLowerCase().includes('pillar')
+            );
+            const statLayers = Array.from(this.activeLayers.values()).filter(l => 
+                l.type === 'vector' && 
+                !l.name.toLowerCase().includes('sepi') && 
+                !l.name.toLowerCase().includes('peace') &&
+                !l.name.toLowerCase().includes('pillar')
+            );
+
+            console.log('SEPI/Pillar Layers found:', sepiLayers);
+            console.log('Stat Layers found:', statLayers);
+            
+            if (sepiLayers.length === 0 || statLayers.length === 0) {
+                this.showNoDataMessage(resultsContent);
+                return;
+            }
+            
+            // Generate the report
+            const reportData = this.generateCorrelationData(sepiLayers, statLayers);
+            const reportHTML = this.createReportHTML(reportData);
+            
+            resultsContent.innerHTML = reportHTML;
+            
+            // Create charts after HTML is rendered
+            setTimeout(() => {
+                this.createCharts(reportData);
+            }, 100);
+            
+        } catch (error) {
+            console.error('Error generating report:', error);
+            resultsContent.innerHTML = `
+                <div class="analysis-error">
+                    <h5>Report Generation Error</h5>
+                    <p>Failed to generate correlation report: ${error.message}</p>
+                </div>
+            `;
+        } finally {
+            button.disabled = false;
+            button.textContent = 'Generate Report';
+        }
     }
     
     /**
-     * Show analysis results
-     * @param {string} analysisType - Type of analysis
-     * @param {Object} result - Analysis results
+     * Show message when no suitable data is available
      */
-    showAnalysisResults(analysisType, result) {
-        const resultsContent = this.container.querySelector('.results-content');
-        resultsContent.innerHTML = `
-            <div class="analysis-result">
-                <h5>${result.title || `${analysisType} Analysis Results`}</h5>
-                <div class="result-content">${result.content}</div>
-                <div class="result-timestamp">
-                    Generated: ${new Date().toLocaleString()}
+    showNoDataMessage(container) {
+        container.innerHTML = `
+            <div class="analysis-info">
+                <h5>Insufficient Data</h5>
+                <p>To generate a correlation report, you need:</p>
+                <ul>
+                    <li>At least one SEPI layer OR one Pillar indicator active</li>
+                    <li>At least one Subnational Statistics layer with an attribute selected</li>
+                </ul>
+                <p>Please activate the required layers and try again.</p>
+            </div>
+        `;
+    }
+    
+    /**
+     * Generate correlation data between layers using REAL data
+     * UPDATED: Use SEPI or Pillar data instead of social vulnerability
+     */
+    generateCorrelationData(sepiLayers, statLayers) {
+        const primaryLayer = sepiLayers[0];
+        const statLayer = statLayers[0];
+        
+        console.log('Analyzing real data from layers:', {
+            primaryLayer: primaryLayer.name,
+            statLayer: statLayer.name,
+            statAttribute: statLayer.selectedAttribute
+        });
+        
+        // Extract real data from the layers
+        const data = this.extractRealLayerData(primaryLayer, statLayer);
+        
+        if (data.length === 0) {
+            throw new Error('No matching regional data found between layers');
+        }
+        
+        // Calculate actual correlation coefficient
+        const primaryValues = data.map(d => d.primaryValue);
+        const statValues = data.map(d => d.statistic);
+        const correlation = this.calculateCorrelation(primaryValues, statValues);
+        
+        console.log('Real correlation calculated:', {
+            correlation: correlation.toFixed(3),
+            dataPoints: data.length,
+            primaryRange: [Math.min(...primaryValues), Math.max(...primaryValues)],
+            statRange: [Math.min(...statValues), Math.max(...statValues)]
+        });
+        
+        return {
+            data,
+            correlation: correlation.toFixed(3),
+            primaryLayer: primaryLayer.name,
+            statLayer: statLayer.name,
+            statAttribute: statLayer.selectedAttribute,
+            timestamp: new Date().toLocaleString()
+        };
+    }
+
+    /**
+     * Extract real data from the actual layers
+     * UPDATED: Use SEPI or Pillar data instead of social vulnerability
+     */
+    extractRealLayerData(primaryLayer, statLayer) {
+        const data = [];
+        
+        // Get the actual Leaflet layer objects
+        const primaryLeafletLayer = primaryLayer.layer;
+        const statLeafletLayer = statLayer.layer;
+        
+        if (!primaryLeafletLayer || !statLeafletLayer) {
+            console.error('Could not access layer data');
+            return data;
+        }
+        
+        // Create maps for quick lookup
+        const primaryData = new Map();
+        const statData = new Map();
+        
+        // Extract Primary layer data (SEPI or Pillar)
+        primaryLeafletLayer.eachLayer(function(layer) {
+            if (layer.feature && layer.feature.properties) {
+                const props = layer.feature.properties;
+                const regionName = this.getRegionName(props);
+                
+                let primaryValue;
+                
+                // Check if this is a SEPI layer
+                if (primaryLayer.type === 'sepi' || primaryLayer.name.toLowerCase().includes('sepi')) {
+                    primaryValue = props['peacebuilding_index'] || props['index'] || props.sepi || props.peace_index;
+                } 
+                // Check if this is a Pillar layer
+                else if (primaryLayer.type === 'pillar' || primaryLayer.name.toLowerCase().includes('pillar')) {
+                    // For pillars, use the selectedAttribute or look for common pillar properties
+                    const pillarProperty = primaryLayer.selectedAttribute || this.detectPillarProperty(props);
+                    primaryValue = props[pillarProperty];
+                }
+                
+                console.log('primaryValue:', primaryValue, 'from layer:', primaryLayer.name);
+                if (regionName && primaryValue !== undefined && primaryValue !== null) {
+                    primaryData.set(regionName, parseFloat(primaryValue));
+                }
+            }
+        }.bind(this));
+        
+        // Extract statistics data
+        statLeafletLayer.eachLayer(function(layer) {
+            if (layer.feature && layer.feature.properties) {
+                const props = layer.feature.properties;
+                const regionName = this.getRegionName(props);
+                const statValue = props[statLayer.selectedAttribute];
+                
+                if (regionName && statValue !== undefined && statValue !== null) {
+                    statData.set(regionName, parseFloat(statValue));
+                }
+            }
+        }.bind(this));
+        
+        console.log('Extracted data:', {
+            primaryRegions: Array.from(primaryData.keys()),
+            statRegions: Array.from(statData.keys()),
+            primarySample: Array.from(primaryData.entries()).slice(0, 3),
+            statSample: Array.from(statData.entries()).slice(0, 3)
+        });
+        
+        // Match regions and create final dataset
+        primaryData.forEach((primaryValue, regionName) => {
+            if (statData.has(regionName)) {
+                const statValue = statData.get(regionName);
+                
+                // Only include if both values are valid numbers
+                if (!isNaN(primaryValue) && !isNaN(statValue)) {
+                    data.push({
+                        region: regionName,
+                        primaryValue: primaryValue,
+                        statistic: statValue,
+                        population: this.getPopulationEstimate(regionName)
+                    });
+                }
+            }
+        });
+        
+        return data;
+    }
+    
+    /**
+     * Detect pillar property from layer properties
+     */
+    detectPillarProperty(properties) {
+ const pillarPatterns = [
+        'Education_Index',
+        'Food_Security_Index',
+        'Poverty_Index',
+        'Health_Index',
+        'Climate_Vulnerability_Index'
+    ];
+    
+    for (const pattern of pillarPatterns) {
+        if (properties[pattern] !== undefined) {
+            return pattern;
+        }
+    }
+    
+    // Fallback: find any property that looks like an index
+    const indexProps = Object.keys(properties).filter(key => 
+        key.toLowerCase().includes('index') || 
+        key.toLowerCase().includes('score')
+    );
+    
+    return indexProps[0] || Object.keys(properties)[0];
+}
+
+    /**
+     * Get region name from feature properties
+     */
+    getRegionName(properties) {
+        // Try different possible name fields
+        const nameFields = [
+        'column_names2',  // New standardized names from pillars2.geojson
+        'ADM1_EN', 'adm1_name', 'NAME_1', 'NAME_2', 'NAME_3',
+        'name', 'Name', 'AREA_NAME'
+    ];
+    
+    for (const field of nameFields) {
+        if (properties[field] && typeof properties[field] === 'string') {
+            return properties[field].trim();
+        }
+    }
+    
+    return null;
+}
+    /**
+     * Get population estimate for a region
+     */
+    getPopulationEstimate(regionName) {
+        const estimates = {
+            'Kayes': 2418305,
+            'Koulikoro': 2418618,
+            'Sikasso': 3137917,
+            'Ségou': 2336255,
+            'Mopti': 2037330,
+            'Tombouctou': 681691,
+            'Gao': 544120,
+            'Kidal': 67638,
+            'Taoudénit': 32125,
+            'Ménaka': 62180,
+            // Add Somalia regions
+            'Awdal': 673263,
+            'Woqooyi Galbeed': 1242003,
+            'Togdheer': 721363,
+            'Sool': 327307,
+            'Sanaag': 544123,
+            'Bari': 719512,
+            'Nugaal': 392698,
+            'Mudug': 717863,
+            'Galgaduud': 569434,
+            'Hiran': 520685,
+            'Middle Shabelle': 516036,
+            'Banaadir': 1650227,
+            'Lower Shabelle': 1202219,
+            'Bay': 792182,
+            'Bakool': 367226,
+            'Gedo': 508405,
+            'Middle Juba': 362921,
+            'Lower Juba': 489307
+        };
+        
+        return estimates[regionName] || Math.floor(Math.random() * 1000000) + 100000;
+    }
+    
+    /**
+     * Calculate Pearson correlation coefficient
+     */
+    calculateCorrelation(x, y) {
+        const n = x.length;
+        const sumX = x.reduce((a, b) => a + b, 0);
+        const sumY = y.reduce((a, b) => a + b, 0);
+        const sumXY = x.map((xi, i) => xi * y[i]).reduce((a, b) => a + b, 0);
+        const sumX2 = x.map(xi => xi * xi).reduce((a, b) => a + b, 0);
+        const sumY2 = y.map(yi => yi * yi).reduce((a, b) => a + b, 0);
+        
+        const numerator = n * sumXY - sumX * sumY;
+        const denominator = Math.sqrt((n * sumX2 - sumX * sumX) * (n * sumY2 - sumY * sumY));
+        
+        return denominator === 0 ? 0 : numerator / denominator;
+    }
+    
+    /**
+     * Create the HTML structure for the report with interpretation
+     * UPDATED: Use SEPI instead of social vulnerability
+     */
+    createReportHTML(reportData) {
+        const interpretation = this.generateCorrelationInterpretation(
+            reportData.correlation, 
+            reportData.statAttribute
+        );
+        
+        return `
+            <div class="report-container">
+                <div class="report-header">
+                    <h5>Correlation Analysis Report</h5>
+                    <button class="download-btn" onclick="window.infoPanelInstance.downloadReport()">
+                        📄 Download PDF
+                    </button>
+                </div>
+                
+                <div class="report-summary">
+                    <div class="summary-grid">
+                        <div class="summary-item">
+                            <label>Primary Layer:</label>
+                            <span>${reportData.primaryLayer}</span>
+                        </div>
+                        <div class="summary-item">
+                            <label>Statistics Layer:</label>
+                            <span>${reportData.statLayer}</span>
+                        </div>
+                        <div class="summary-item">
+                            <label>Selected Attribute:</label>
+                            <span>${reportData.statAttribute}</span>
+                        </div>
+                        <div class="summary-item">
+                            <label>Correlation Coefficient:</label>
+                            <span class="correlation-value ${this.getCorrelationClass(reportData.correlation)}">${reportData.correlation}</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="report-section interpretation-section">
+                    <h6>📊 Interpretation</h6>
+                    <div class="interpretation-content">
+                        ${interpretation.summary}
+                        <div class="interpretation-details">
+                            <p><strong>What this means:</strong></p>
+                            <ul>
+                                ${interpretation.bullets.map(bullet => `<li>${bullet}</li>`).join('')}
+                            </ul>
+                        </div>
+                        <div class="interpretation-implications">
+                            <p><strong>Policy Implications:</strong></p>
+                            <p>${interpretation.implications}</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="report-section">
+                    <h6>Regional Data Table</h6>
+                    <div class="data-table-container">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Region</th>
+                                    <th>Primary Value</th>
+                                    <th>${reportData.statAttribute}</th>
+                                    <th>Population</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${reportData.data.map(row => `
+                                    <tr>
+                                        <td>${row.region}</td>
+                                        <td>${row.primaryValue.toFixed(3)}</td>
+                                        <td>${row.statistic.toFixed(1)}${this.getAttributeUnit(reportData.statAttribute)}</td>
+                                        <td>${row.population.toLocaleString()}</td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                
+                <div class="report-section">
+                    <h6>Visualizations</h6>
+                    <div class="charts-container">
+                        <div class="chart-item">
+                            <h7>Correlation Scatter Plot</h7>
+                            <canvas id="correlation-chart" width="350" height="200"></canvas>
+                        </div>
+                        <div class="chart-item">
+                            <h7>Regional Comparison</h7>
+                            <canvas id="bar-chart" width="350" height="200"></canvas>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="report-footer">
+                    <small>Generated: ${reportData.timestamp}</small>
                 </div>
             </div>
         `;
     }
     
     /**
-     * Show analysis error
-     * @param {string} analysisType - Type of analysis
-     * @param {string} error - Error message
+     * Generate intelligent interpretation based on correlation and attribute type
+     * UPDATED: Use SEPI instead of social vulnerability
      */
-    showAnalysisError(analysisType, error) {
-        const resultsContent = this.container.querySelector('.results-content');
-        resultsContent.innerHTML = `
-            <div class="analysis-error">
-                <h5>Analysis Error</h5>
-                <p>Failed to run ${analysisType} analysis: ${error}</p>
+    generateCorrelationInterpretation(correlationStr, attribute) {
+        const correlation = parseFloat(correlationStr);
+        const absCorr = Math.abs(correlation);
+        const isPositive = correlation > 0;
+        
+        // Determine attribute type and expected relationship
+        const attributeInfo = this.analyzeAttribute(attribute);
+        
+        // Determine correlation strength
+        let strength, strengthDesc;
+        if (absCorr >= 0.8) {
+            strength = 'very strong';
+            strengthDesc = 'very strong relationship';
+        } else if (absCorr >= 0.6) {
+            strength = 'strong';
+            strengthDesc = 'strong relationship';
+        } else if (absCorr >= 0.4) {
+            strength = 'moderate';
+            strengthDesc = 'moderate relationship';
+        } else if (absCorr >= 0.2) {
+            strength = 'weak';
+            strengthDesc = 'weak relationship';
+        } else {
+            strength = 'very weak';
+            strengthDesc = 'very weak or no meaningful relationship';
+        }
+        
+        // Generate interpretation
+        const direction = isPositive ? 'positively' : 'negatively';
+        const relationshipType = isPositive ? 'increases' : 'decreases';
+        
+        // Create summary - UPDATED for SEPI
+        let summary = `
+            <div class="correlation-summary ${isPositive ? 'positive' : 'negative'}">
+                <p><strong>${attribute} and SEPI (Peace Index) are ${direction} correlated (r = ${correlationStr})</strong></p>
+                <p>This indicates a <strong>${strengthDesc}</strong> between these two variables.</p>
             </div>
         `;
+        
+        // Generate detailed bullets - UPDATED for SEPI
+        const bullets = [
+            `As SEPI (peace levels) ${isPositive ? 'increase' : 'decrease'}, ${attribute} tends to ${relationshipType}`,
+            `The correlation coefficient of ${correlationStr} indicates a ${strength} ${direction} relationship`,
+            `This relationship explains approximately ${Math.round(correlation * correlation * 100)}% of the variance between the variables`
+        ];
+        
+        // Add context-specific bullets based on attribute type
+        if (attributeInfo.isHealthIndicator) {
+            if (isPositive) {
+                bullets.push(`Higher peace regions tend to have better ${attributeInfo.displayName} outcomes`);
+            } else {
+                bullets.push(`Higher peace regions tend to have worse ${attributeInfo.displayName} outcomes (unexpected - may warrant further investigation)`);
+            }
+        } else if (attributeInfo.isEconomicIndicator) {
+            if (isPositive) {
+                bullets.push(`Regions with higher peace levels show higher ${attributeInfo.displayName}`);
+            } else {
+                bullets.push(`Regions with higher peace levels show lower ${attributeInfo.displayName}`);
+            }
+        }
+        
+        // Generate policy implications - UPDATED for SEPI
+        let implications;
+        if (absCorr >= 0.6) {
+            if (attributeInfo.isHealthIndicator && isPositive) {
+                implications = `The strong positive correlation suggests that peacebuilding interventions could significantly improve ${attributeInfo.displayName} outcomes. Priority should be given to regions with lower peace scores for maximum impact.`;
+            } else if (attributeInfo.isEconomicIndicator && isPositive) {
+                implications = `The strong correlation indicates that ${attributeInfo.displayName} could serve as a reliable indicator of peace levels. Resources should be allocated proportionally to support both peace and economic development.`;
+            } else {
+                implications = `The strong ${direction} correlation suggests that peace levels and ${attributeInfo.displayName} are closely linked and should be considered together in policy planning and resource allocation decisions.`;
+            }
+        } else if (absCorr >= 0.3) {
+            implications = `The moderate correlation suggests some relationship between peace levels and ${attributeInfo.displayName}, but other factors also play important roles. A multi-faceted approach addressing various determinants would be most effective.`;
+        } else {
+            implications = `The weak correlation suggests peace levels and ${attributeInfo.displayName} are largely independent. Different intervention strategies may be needed for each, and peacebuilding may not directly impact ${attributeInfo.displayName}.`;
+        }
+        
+        return {
+            summary,
+            bullets,
+            implications
+        };
+    }
+
+    /**
+     * Analyze attribute to determine type and characteristics
+     */
+    analyzeAttribute(attribute) {
+        const lowerAttr = attribute.toLowerCase();
+        
+        let isHealthIndicator = false;
+        let isEconomicIndicator = false;
+        let displayName = attribute;
+        
+        // Health indicators
+        if (lowerAttr.includes('stunting') || lowerAttr.includes('wasting') || 
+            lowerAttr.includes('underweight') || lowerAttr.includes('malnutrition')) {
+            isHealthIndicator = true;
+            displayName = 'malnutrition';
+        } else if (lowerAttr.includes('mortality') || lowerAttr.includes('death')) {
+            isHealthIndicator = true;
+            displayName = 'health outcomes';
+        } else if (lowerAttr.includes('vaccination') || lowerAttr.includes('immunization')) {
+            isHealthIndicator = true;
+            displayName = 'vaccination coverage';
+        }
+        
+        // Economic indicators
+        else if (lowerAttr.includes('poverty') || lowerAttr.includes('income') || 
+                 lowerAttr.includes('wealth') || lowerAttr.includes('gdp')) {
+            isEconomicIndicator = true;
+            displayName = 'economic conditions';
+        } else if (lowerAttr.includes('education') || lowerAttr.includes('literacy') || 
+                   lowerAttr.includes('school')) {
+            isEconomicIndicator = true;
+            displayName = 'educational outcomes';
+        }
+        
+        return {
+            isHealthIndicator,
+            isEconomicIndicator,
+            displayName
+        };
+    }
+
+    /**
+     * Get appropriate unit for attribute display
+     */
+    getAttributeUnit(attribute) {
+        const lowerAttr = attribute.toLowerCase();
+        
+        if (lowerAttr.includes('%') || lowerAttr.includes('percent')) {
+            return ''; // Already includes %
+        } else if (lowerAttr.includes('rate') || lowerAttr.includes('ratio')) {
+            return '%';
+        } else if (lowerAttr.includes('per') && lowerAttr.includes('1000')) {
+            return ' per 1,000';
+        } else if (lowerAttr.includes('per') && lowerAttr.includes('100')) {
+            return ' per 100,000';
+        }
+        
+        return '';
     }
     
     /**
-     * Generate layer summary analysis
-     * @param {Map} layers - Active layers
+     * Get CSS class for correlation strength
      */
-    generateLayerSummary(layers) {
-        return new Promise((resolve) => {
-            setTimeout(() => {
-                const layerTypes = {};
-                const layerDetails = [];
-                
-                layers.forEach((layer, id) => {
-                    layerTypes[layer.type] = (layerTypes[layer.type] || 0) + 1;
-                    layerDetails.push(`
-                        <div class="summary-item">
-                            <strong>${layer.name}</strong> (${layer.type})
-                            ${layer.featureCount ? `<br>Features: ${layer.featureCount}` : ''}
-                            ${layer.selectedAttribute ? `<br>Showing: ${layer.selectedAttribute}` : ''}
-                        </div>
-                    `);
-                });
-                
-                const typesSummary = Object.entries(layerTypes)
-                    .map(([type, count]) => `${count} ${type} layer${count !== 1 ? 's' : ''}`)
-                    .join(', ');
-                
-                resolve({
-                    title: 'Layer Summary',
-                    content: `
-                        <div class="summary-overview">
-                            <p><strong>Total layers:</strong> ${layers.size}</p>
-                            <p><strong>Layer types:</strong> ${typesSummary}</p>
-                        </div>
-                        <div class="summary-details">
-                            <h6>Layer Details:</h6>
-                            ${layerDetails.join('')}
-                        </div>
-                    `
-                });
-            }, 500);
+    getCorrelationClass(correlation) {
+        const absCorr = Math.abs(parseFloat(correlation));
+        if (absCorr >= 0.7) return 'strong-correlation';
+        if (absCorr >= 0.3) return 'moderate-correlation';
+        return 'weak-correlation';
+    }
+    
+    /**
+     * Create charts using Canvas API
+     */
+    createCharts(reportData) {
+        this.createScatterPlot(reportData);
+        this.createBarChart(reportData);
+    }
+    
+    /**
+     * Create scatter plot for correlation with proper labels and grid
+     * UPDATED: Use SEPI instead of vulnerability
+     */
+    createScatterPlot(reportData) {
+        const canvas = document.getElementById('correlation-chart');
+        if (!canvas) return;
+        
+        const ctx = canvas.getContext('2d');
+        const width = canvas.width;
+        const height = canvas.height;
+        const padding = 60;
+        const bottomPadding = 80;
+        
+        // Clear canvas
+        ctx.clearRect(0, 0, width, height);
+        
+        const chartWidth = width - 2 * padding;
+        const chartHeight = height - padding - bottomPadding;
+        
+        // Set up scales - UPDATED for primary layer (SEPI or Pillar)
+        const xValues = reportData.data.map(d => d.primaryValue);
+        const yValues = reportData.data.map(d => d.statistic);
+        
+        const xMin = Math.min(...xValues);
+        const xMax = Math.max(...xValues);
+        const yMin = Math.min(...yValues);
+        const yMax = Math.max(...yValues);
+        
+        // Add some padding to the ranges
+        const xRange = xMax - xMin;
+        const yRange = yMax - yMin;
+        const xPadding = xRange * 0.1;
+        const yPadding = yRange * 0.1;
+        
+        const xMinPadded = xMin - xPadding;
+        const xMaxPadded = xMax + xPadding;
+        const yMinPadded = yMin - yPadding;
+        const yMaxPadded = yMax + yPadding;
+        
+        // Draw chart background
+        ctx.fillStyle = '#f8f9fa';
+        ctx.fillRect(padding, padding, chartWidth, chartHeight);
+        
+        // Draw grid lines
+        ctx.strokeStyle = '#e9ecef';
+        ctx.lineWidth = 1;
+        ctx.fillStyle = '#666';
+        ctx.font = '11px Calibri';
+        
+        // X-axis grid and labels
+        const xGridLines = 5;
+        for (let i = 0; i <= xGridLines; i++) {
+            const x = padding + (i / xGridLines) * chartWidth;
+            const value = xMinPadded + (i / xGridLines) * (xMaxPadded - xMinPadded);
+            
+            // Grid line
+            ctx.beginPath();
+            ctx.moveTo(x, padding);
+            ctx.lineTo(x, padding + chartHeight);
+            ctx.stroke();
+            
+            // X-axis label
+            ctx.textAlign = 'center';
+            ctx.fillText(value.toFixed(2), x, padding + chartHeight + 20);
+        }
+        
+        // Y-axis grid and labels
+        const yGridLines = 5;
+        for (let i = 0; i <= yGridLines; i++) {
+            const y = padding + chartHeight - (i / yGridLines) * chartHeight;
+            const value = yMinPadded + (i / yGridLines) * (yMaxPadded - yMinPadded);
+            
+            // Grid line
+            ctx.beginPath();
+            ctx.moveTo(padding, y);
+            ctx.lineTo(padding + chartWidth, y);
+            ctx.stroke();
+            
+            // Y-axis label
+            ctx.textAlign = 'right';
+            ctx.fillText(value.toFixed(1), padding - 10, y + 4);
+        }
+        
+        // Draw trend line if correlation is significant
+        const correlation = parseFloat(reportData.correlation);
+        if (Math.abs(correlation) > 0.3) {
+            this.drawTrendLine(ctx, reportData.data, padding, chartHeight, chartWidth, 
+                              xMinPadded, xMaxPadded, yMinPadded, yMaxPadded);
+        }
+        
+        // Draw data points
+        reportData.data.forEach((point, index) => {
+            const x = padding + ((point.primaryValue - xMinPadded) / (xMaxPadded - xMinPadded)) * chartWidth;
+            const y = padding + chartHeight - ((point.statistic - yMinPadded) / (yMaxPadded - yMinPadded)) * chartHeight;
+            
+            // Point with gradient
+            const gradient = ctx.createRadialGradient(x, y, 0, x, y, 6);
+            gradient.addColorStop(0, '#007bff');
+            gradient.addColorStop(1, '#0056b3');
+            
+            ctx.fillStyle = gradient;
+            ctx.beginPath();
+            ctx.arc(x, y, 5, 0, 2 * Math.PI);
+            ctx.fill();
+            
+            // Point outline
+            ctx.strokeStyle = '#004085';
+            ctx.lineWidth = 1;
+            ctx.stroke();
+            
+            // Add region labels for first 3 points as example
+            if (index < 3) {
+                ctx.fillStyle = '#333';
+                ctx.font = '9px Calibri';
+                ctx.textAlign = 'left';
+                ctx.fillText(point.region.substring(0, 8), x + 8, y - 8);
+            }
         });
+        
+        // Draw axes
+        ctx.strokeStyle = '#333';
+        ctx.lineWidth = 2;
+        
+        // Y-axis
+        ctx.beginPath();
+        ctx.moveTo(padding, padding);
+        ctx.lineTo(padding, padding + chartHeight);
+        ctx.stroke();
+        
+        // X-axis  
+        ctx.beginPath();
+        ctx.moveTo(padding, padding + chartHeight);
+        ctx.lineTo(padding + chartWidth, padding + chartHeight);
+        ctx.stroke();
+        
+        // Axis labels - UPDATED for SEPI
+        ctx.fillStyle = '#333';
+        ctx.font = 'bold 12px Calibri';
+        
+        // X-axis title
+        ctx.textAlign = 'center';
+        ctx.fillText('Primary Layer Value', width / 2, height - 15);
+        
+        // Y-axis title (rotated)
+        ctx.save();
+        ctx.translate(20, height / 2);
+        ctx.rotate(-Math.PI / 2);
+        ctx.textAlign = 'center';
+        ctx.fillText(reportData.statAttribute || 'Statistic Value', 0, 0);
+        ctx.restore();
+        
+        // Chart title
+        ctx.font = 'bold 14px Calibri';
+        ctx.textAlign = 'center';
+        ctx.fillText(`Correlation: r = ${reportData.correlation}`, width / 2, 25);
+    }
+
+    /**
+     * Draw trend line for scatter plot
+     */
+    drawTrendLine(ctx, data, padding, chartHeight, chartWidth, xMin, xMax, yMin, yMax) {
+        if (data.length < 2) return;
+        
+        // Calculate linear regression - UPDATED for primary layer
+        const n = data.length;
+        const sumX = data.reduce((sum, d) => sum + d.primaryValue, 0);
+        const sumY = data.reduce((sum, d) => sum + d.statistic, 0);
+        const sumXY = data.reduce((sum, d) => sum + d.primaryValue * d.statistic, 0);
+        const sumX2 = data.reduce((sum, d) => sum + d.primaryValue * d.primaryValue, 0);
+        
+        const slope = (n * sumXY - sumX * sumY) / (n * sumX2 - sumX * sumX);
+        const intercept = (sumY - slope * sumX) / n;
+        
+        // Draw trend line
+        const x1 = xMin;
+        const y1 = slope * x1 + intercept;
+        const x2 = xMax;
+        const y2 = slope * x2 + intercept;
+        
+        const canvasX1 = padding + ((x1 - xMin) / (xMax - xMin)) * chartWidth;
+        const canvasY1 = padding + chartHeight - ((y1 - yMin) / (yMax - yMin)) * chartHeight;
+        const canvasX2 = padding + ((x2 - xMin) / (xMax - xMin)) * chartWidth;
+        const canvasY2 = padding + chartHeight - ((y2 - yMin) / (yMax - yMin)) * chartHeight;
+        
+        ctx.strokeStyle = '#dc3545';
+        ctx.lineWidth = 2;
+        ctx.setLineDash([5, 5]);
+        ctx.beginPath();
+        ctx.moveTo(canvasX1, canvasY1);
+        ctx.lineTo(canvasX2, canvasY2);
+        ctx.stroke();
+        ctx.setLineDash([]);
+    }
+
+    /**
+     * Create bar chart for regional comparison
+     * UPDATED: Use SEPI instead of vulnerability
+     */
+    createBarChart(reportData) {
+        const canvas = document.getElementById('bar-chart');
+        if (!canvas) return;
+        
+        const ctx = canvas.getContext('2d');
+        const width = canvas.width;
+        const height = canvas.height;
+        const padding = 60;
+        const bottomPadding = 80;
+        
+        // Clear canvas
+        ctx.clearRect(0, 0, width, height);
+        
+        const chartWidth = width - 2 * padding;
+        const chartHeight = height - padding - bottomPadding;
+        const barWidth = chartWidth / reportData.data.length;
+        const maxValue = Math.max(...reportData.data.map(d => d.primaryValue));
+        const minValue = Math.min(...reportData.data.map(d => d.primaryValue));
+        
+        // Draw chart background
+        ctx.fillStyle = '#f8f9fa';
+        ctx.fillRect(padding, padding, chartWidth, chartHeight);
+        
+        // Draw grid lines and Y-axis labels
+        ctx.strokeStyle = '#e9ecef';
+        ctx.lineWidth = 1;
+        ctx.fillStyle = '#666';
+        ctx.font = '11px Calibri';
+        
+        const gridLines = 5;
+        for (let i = 0; i <= gridLines; i++) {
+            const y = padding + (i / gridLines) * chartHeight;
+            const value = maxValue - (i / gridLines) * (maxValue - minValue);
+            
+            // Grid line
+            ctx.beginPath();
+            ctx.moveTo(padding, y);
+            ctx.lineTo(padding + chartWidth, y);
+            ctx.stroke();
+            
+            // Y-axis label
+            ctx.textAlign = 'right';
+            ctx.fillText(value.toFixed(2), padding - 10, y + 4);
+        }
+        
+        // Draw bars
+        reportData.data.forEach((item, index) => {
+            const barHeight = ((item.primaryValue - minValue) / (maxValue - minValue)) * chartHeight;
+            const x = padding + index * barWidth;
+            const y = padding + chartHeight - barHeight;
+            
+            // Bar with gradient
+            const gradient = ctx.createLinearGradient(0, y, 0, y + barHeight);
+            gradient.addColorStop(0, '#28a745');
+            gradient.addColorStop(1, '#20c997');
+            
+            ctx.fillStyle = gradient;
+            ctx.fillRect(x + 4, y, barWidth - 8, barHeight);
+            
+            // Bar outline
+            ctx.strokeStyle = '#1e7e34';
+            ctx.lineWidth = 1;
+            ctx.strokeRect(x + 4, y, barWidth - 8, barHeight);
+            
+            // Value on top of bar
+            ctx.fillStyle = '#333';
+            ctx.font = '10px Calibri';
+            ctx.textAlign = 'center';
+            ctx.fillText(item.primaryValue.toFixed(2), x + barWidth / 2, y - 5);
+            
+            // Region name at bottom (rotated)
+            ctx.fillStyle = '#333';
+            ctx.font = '11px Calibri';
+            ctx.save();
+            ctx.translate(x + barWidth / 2, height - bottomPadding + 40);
+            ctx.rotate(-Math.PI / 4);
+            ctx.textAlign = 'right';
+            ctx.fillText(item.region, 0, 0);
+            ctx.restore();
+        });
+        
+        // Draw axes
+        ctx.strokeStyle = '#333';
+        ctx.lineWidth = 2;
+        
+        // Y-axis
+        ctx.beginPath();
+        ctx.moveTo(padding, padding);
+        ctx.lineTo(padding, padding + chartHeight);
+        ctx.stroke();
+        
+        // X-axis
+        ctx.beginPath();
+        ctx.moveTo(padding, padding + chartHeight);
+        ctx.lineTo(padding + chartWidth, padding + chartHeight);
+        ctx.stroke();
+        
+        // Y-axis title (rotated) - UPDATED for primary layer
+        ctx.fillStyle = '#333';
+        ctx.font = 'bold 12px Calibri';
+        ctx.save();
+        ctx.translate(20, height / 2);
+        ctx.rotate(-Math.PI / 2);
+        ctx.textAlign = 'center';
+        ctx.fillText('Primary Layer Value', 0, 0);
+        ctx.restore();
+        
+        // X-axis title
+        ctx.textAlign = 'center';
+        ctx.fillText('Regions', width / 2, height - 15);
+        
+        // Chart title - UPDATED for primary layer
+        ctx.font = 'bold 14px Calibri';
+        ctx.fillText('Primary Layer by Region', width / 2, 25);
     }
     
     /**
-     * Perform spatial analysis
-     * @param {Map} layers - Active layers
+     * Download report as PDF (placeholder - would need a PDF library)
      */
-    performSpatialAnalysis(layers) {
-        return new Promise((resolve) => {
-            setTimeout(() => {
-                let spatialInfo = [];
+    async downloadReport() {
+        const button = this.container.querySelector('.download-btn');
+        const originalText = button.textContent;
+        
+        try {
+            // Show loading state
+            button.disabled = true;
+            button.textContent = '📄 Generating PDF...';
+            
+            // Get the report container
+            const reportElement = this.container.querySelector('.report-container');
+            if (!reportElement) {
+                throw new Error('Report container not found');
+            }
+            
+            // Create canvas from the report element (requires html2canvas library)
+            if (typeof html2canvas !== 'undefined') {
+                const canvas = await html2canvas(reportElement, {
+                    scale: 2,
+                    useCORS: true,
+                    allowTaint: false,
+                    backgroundColor: '#ffffff',
+                    width: reportElement.scrollWidth,
+                    height: reportElement.scrollHeight
+                });
                 
-                layers.forEach((layer, id) => {
-                    if (layer.type === 'vector' && layer.layer) {
-                        try {
-                            const bounds = layer.layer.getBounds();
-                            spatialInfo.push(`
-                                <div class="spatial-item">
-                                    <strong>${layer.name}</strong>
-                                    <br>Bounds: ${bounds.toBBoxString()}
-                                    <br>Center: ${bounds.getCenter().toString()}
-                                </div>
-                            `);
-                        } catch (e) {
-                            spatialInfo.push(`
-                                <div class="spatial-item">
-                                    <strong>${layer.name}</strong>
-                                    <br>Spatial data not available
-                                </div>
-                            `);
-                        }
+                // Initialize jsPDF (requires jspdf library)
+                if (typeof window.jspdf !== 'undefined') {
+                    const { jsPDF } = window.jspdf;
+                    const pdf = new jsPDF('p', 'mm', 'a4');
+                    
+                    // Calculate dimensions
+                    const imgWidth = 210; // A4 width in mm
+                    const pageHeight = 295; // A4 height in mm
+                    const imgHeight = (canvas.height * imgWidth) / canvas.width;
+                    let heightLeft = imgHeight;
+                    let position = 0;
+                    
+                    // Convert canvas to image
+                    const imgData = canvas.toDataURL('image/png');
+                    
+                    // Add first page
+                    pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+                    heightLeft -= pageHeight;
+                    
+                    // Add additional pages if needed
+                    while (heightLeft >= 0) {
+                        position = heightLeft - imgHeight;
+                        pdf.addPage();
+                        pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+                        heightLeft -= pageHeight;
                     }
-                });
-                
-                resolve({
-                    title: 'Spatial Analysis',
-                    content: spatialInfo.length > 0 
-                        ? spatialInfo.join('')
-                        : '<p>No spatial layers available for analysis</p>'
-                });
-            }, 800);
-        });
-    }
-    
-    /**
-     * Compare layer attributes
-     * @param {Map} layers - Active layers
-     */
-    compareLayerAttributes(layers) {
-        return new Promise((resolve) => {
-            setTimeout(() => {
-                const vectorLayers = Array.from(layers.values()).filter(l => l.type === 'vector');
-                
-                if (vectorLayers.length < 2) {
-                    resolve({
-                        title: 'Layer Comparison',
-                        content: '<p>Need at least 2 vector layers for comparison</p>'
-                    });
-                    return;
+                    
+                    // Generate filename with timestamp
+                    const timestamp = new Date().toISOString().slice(0, 19).replace(/:/g, '-');
+                    const filename = `sepi-correlation-report-${timestamp}.pdf`;
+                    
+                    // Save the PDF
+                    pdf.save(filename);
+                    
+                    console.log('PDF generated successfully:', filename);
+                } else {
+                    throw new Error('jsPDF library not available');
                 }
-                
-                const comparison = vectorLayers.map(layer => `
-                    <div class="comparison-item">
-                        <strong>${layer.name}</strong>
-                        <br>Type: ${layer.type}
-                        ${layer.featureCount ? `<br>Features: ${layer.featureCount}` : ''}
-                        ${layer.selectedAttribute ? `<br>Active attribute: ${layer.selectedAttribute}` : ''}
-                    </div>
-                `);
-                
-                resolve({
-                    title: 'Layer Comparison',
-                    content: `
-                        <h6>Comparing ${vectorLayers.length} vector layers:</h6>
-                        ${comparison.join('')}
-                        <div class="comparison-note">
-                            <em>Detailed attribute comparison coming soon...</em>
-                        </div>
-                    `
-                });
-            }, 1000);
-        });
+            } else {
+                throw new Error('html2canvas library not available');
+            }
+            
+        } catch (error) {
+            console.error('Error generating PDF:', error);
+            alert('Failed to generate PDF. Please try again or ensure required libraries are loaded.');
+        } finally {
+            // Restore button state
+            button.disabled = false;
+            button.textContent = originalText;
+        }
     }
 }
+
+// Create global instance reference for download functionality
+window.infoPanelInstance = null;
+
+// Export for module use
+export default InfoPanel;

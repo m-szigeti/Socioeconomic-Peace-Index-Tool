@@ -33,37 +33,38 @@ export class LayerTemplates {
         `;
     }
 
+    /**
+     * Generate pillars section with updated 5 composite indexes
+     */
     static generatePillarsSection() {
-        const pillars = [
-            { value: 'pillar1', name: 'Population Density 3+' },
-            { value: 'pillar2', name: 'Secondary School Attendance' },
-            { value: 'pillar3', name: 'Health Facility Access' },
-            { value: 'pillar4', name: 'Food Security' },
-            { value: 'pillar5', name: 'Non-Poverty Rate' },
-            { value: 'ndvi', name: 'NDVI Average Change' }
-        ];
-
-        const pillarOptions = pillars.map(pillar => 
-            `<option value="${pillar.value}">${pillar.name}</option>`
-        ).join('');
+        // Get pillar options from the configuration
+        //const pillars = getAllPillars();
+        
+ const pillarOptions = `
+            <option value="education">Education Index</option>
+            <option value="food_security">Food Security Index</option>
+            <option value="poverty">Poverty Reduction Index</option>
+            <option value="health">Health Access Index</option>
+            <option value="climate_vulnerability">Climate Vulnerability Index</option>
+        `;
 
         return `
-            <!-- Peacebuilding Pillars Button - BEHAVES LIKE SEPI -->
+            <!-- Peacebuilding Pillars Button - Updated for pillars2.geojson -->
             <div class="pillars-section" style="margin-bottom: 20px;">
                 <div class="layer-checkbox">
                     <input type="checkbox" id="pillarsToggle" style="display: none;">
                     <label for="pillarsToggle" style="font-weight: bold; font-size: 16px; color:rgb(255, 255, 255); cursor: pointer; display: flex; align-items: center; justify-content: center; width: 100%; padding: 10px; margin: 0; background: transparent; border: none; user-select: none;">
-                     Peacebuilding Pillars
+                     📊 Peacebuilding Pillars
                     </label>
                 </div>
                 
                 <div class="layer-controls pillars-controls">
                     <div class="pillar-selector">
                         <label for="pillarSelect" style="display: block; margin-bottom: 8px; font-weight: 600; color: #2c5f2d; font-size: 12px;">
-                            Select Indicator:
+                            Select Composite Index:
                         </label>
                         <select id="pillarSelect" style="width: 100%; padding: 6px; border: 1px solid #2c5f2d; border-radius: 4px; background: white; color: #2c5f2d; font-weight: 500; font-size: 12px;">
-                            <option value="">-- Select an Indicator --</option>
+                            <option value="">-- Select a Pillar Index --</option>
                             ${pillarOptions}
                         </select>
                     </div>

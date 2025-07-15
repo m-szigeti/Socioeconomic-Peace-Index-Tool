@@ -383,33 +383,36 @@ async function loadSomaliaOutline(map) {
  */
 function setupInfoPanel() {
     try {
+        // Import the updated InfoPanel class
         infoPanel = new InfoPanel({
             position: 'topright',
-            width: '380px',
-            title: 'Layer Analysis & Information'
+            width: '420px',
+            title: 'SEPI Analysis & Layer Information'
         });
         
         infoPanel.setMap(map);
         
-        // Update info panel periodically
-        setInterval(updateInfoPanelLayers, 2000);
+        // Update info panel with current layer state
+        setInterval(updateInfoPanelWithSEPI, 2000);
         
+        // Set global reference for PDF download functionality
         window.infoPanelManager = { getInfoPanel: () => infoPanel };
+        window.infoPanelInstance = infoPanel;
         
+        // Show panel initially and start minimized
         infoPanel.show();
         infoPanel.toggleMinimize();
         
-        console.log('Info panel initialized');
+        console.log('SEPI Info panel initialized');
         
     } catch (error) {
         console.error('Failed to initialize info panel:', error);
     }
 }
-
 /**
  * Update info panel with current layer state
  */
-function updateInfoPanelLayers() {
+function updateInfoPanelWithSEPI() {
     if (!infoPanel || !layerManager) return;
     
     const activeLayers = layerManager.getActiveLayers();
@@ -428,13 +431,17 @@ function updateInfoPanelLayers() {
         }
     });
     
-    // Update vector layers
+    // Update vector layers with selected attributes
     Object.entries(activeLayers.vector).forEach(([id, layer]) => {
         if (map.hasLayer(layer)) {
+            // Get selected attribute for this layer
+            const selectedAttribute = getSelectedAttribute(id);
+            
             infoPanel.addLayer(id, {
                 name: getLayerDisplayName(id),
                 type: 'vector',
                 layer: layer,
+                selectedAttribute: selectedAttribute,
                 featureCount: layer.getLayers ? layer.getLayers().length : 0
             });
         } else {
@@ -442,24 +449,59 @@ function updateInfoPanelLayers() {
         }
     });
     
-    // Update SEPI layer
+    // Update SEPI layer specifically
     if (layerManager.sepiManager?.isActive()) {
         infoPanel.addLayer('sepi', {
             name: 'Socioeconomic Peace Index (SEPI)',
             type: 'sepi',
             layer: layerManager.sepiManager.sepiLayer,
+            selectedAttribute: 'peacebuilding_index',
             featureCount: layerManager.sepiManager.sepiLayer?.getLayers?.()?.length || 0
         });
     } else {
         infoPanel.removeLayer('sepi');
     }
+    
+    // Update pillar layers
+    if (layerManager.pillarManager?.isActive()) {
+        const currentPillar = layerManager.pillarManager.getCurrentPillarId();
+        if (currentPillar) {
+            infoPanel.addLayer('pillar', {
+                name: `Pillar: ${getPillarDisplayName(currentPillar)}`,
+                type: 'pillar',
+                layer: layerManager.pillarManager.getCurrentLayer(),
+                selectedAttribute: currentPillar,
+                featureCount: layerManager.pillarManager.getCurrentLayer()?.getLayers?.()?.length || 0
+            });
+        }
+    } else {
+        infoPanel.removeLayer('pillar');
+    }
+}
+
+
+function getPillarDisplayName(pillarId) {
+    const pillarNames = {
+        'education': 'Education Index',
+        'food_security': 'Food Security Index',
+        'poverty': 'Poverty Reduction Index',
+        'health': 'Health Access Index',
+        'climate_vulnerability': 'Climate Vulnerability Index'
+    };
+    
+    return pillarNames[pillarId] || pillarId;
 }
 
 /**
- * Get display name for layer ID
+ * Updated layer display names to include SEPI - matches your actual main.js
  */
 function getLayerDisplayName(layerId) {
     const layerNames = {
+        'sepi': 'Socioeconomic Peace Index (SEPI)',
+        'geojsonLayer': 'Subnational (Regional) Statistics',
+        'geojsonLayer2': 'Subnational (District) Statistics',
+        'admin1': 'Subnational (Regional) Statistics',
+        'admin2': 'Subnational (District) Statistics',
         'streetNetworkLayer': 'Street Network',
         'tiffLayer1': 'NDVI Change (2015-2023)',
         'tiffLayer10': 'Service Coverage Areas',
@@ -472,12 +514,63 @@ function getLayerDisplayName(layerId) {
         'tiffLayer17': 'Road Network',
         'tiffLayer18': 'Education Access',
         'tiffLayer19': 'Health Facility Access',
-        'tiffLayer20': 'Cell Tower Coverage'
+        'tiffLayer20': 'Cell Tower Coverage',
+        'pointLayer': 'DHS Statistics',
+        'pointLayer2': 'Cities'
     };
     
     return layerNames[layerId] || layerId.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase());
 }
 
+/**
+ * Initialize SEPI-specific features on startup
+ * Add this to your existing initialization
+ */
+function initializeSEPIFeatures() {
+    // Auto-enable SEPI layer if not already enabled
+    setTimeout(() => {
+        const sepiCheckbox = document.getElementById('sepiLayer');
+        if (sepiCheckbox && !sepiCheckbox.checked) {
+            sepiCheckbox.checked = true;
+            sepiCheckbox.dispatchEvent(new Event('change', { bubbles: true }));
+            
+            // Show controls
+            const sepiSection = sepiCheckbox.closest('.sepi-section');
+            if (sepiSection) {
+                const controls = sepiSection.querySelector('.layer-controls');
+                if (controls) {
+                    controls.style.display = 'block';
+                    controls.classList.add('show');
+                    sepiSection.classList.add('active');
+                }
+            }
+        }
+    }, 1500);
+    
+    // Show welcome message after initialization
+    setTimeout(() => {
+        showSEPIWelcome();
+    }, 2000);
+}
+/**
+ * Get selected attribute for a vector layer
+ */
+function getSelectedAttribute(layerId) {
+    const attributeSelectors = {
+        'geojsonLayer': 'vectorAttribute1',
+        'geojsonLayer2': 'vectorAttribute2',
+        'admin1': 'vectorAttribute1',
+        'admin2': 'vectorAttribute2'
+    };
+    
+    const selectorId = attributeSelectors[layerId];
+    if (selectorId) {
+        const selector = document.getElementById(selectorId);
+        return selector?.value || null;
+    }
+    
+    return null;
+}
 /**
  * Initialize color ramp selectors
  */
