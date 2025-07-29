@@ -1,81 +1,71 @@
-// layer-templates.js - Updated with button behavior for pillars section
+// layer-templates.js - Updated with combined SEPI section
 
 export class LayerTemplates {
 
     static generateSidebarTitle() {
-    return `
-        <!-- Sidebar Title -->
-        <div class="sidebar-title">
-            <h2>Main Menu</h2>
-        </div>
-    `;
-}
+        return `
+            <!-- Sidebar Title -->
+            <div class="sidebar-title">
+                <h2>Main Menu</h2>
+            </div>
+        `;
+    }
     
+    /**
+     * Generate combined SEPI section with main index and individual pillars
+     */
     static generateSEPISection() {
         return `
-            <!-- SEPI Button -->
-            <div class="sepi-section" style="margin-bottom: 20px;">
-                <div class="layer-checkbox">
-                    <input type="checkbox" id="sepiLayer">
-                    <label for="sepiLayer" style="font-weight: bold; font-size: 16px; color:rgb(255, 255, 255);"> Socioeconomic Peace Index</label>
+            <!-- Combined SEPI Section -->
+            <div class="sepi-section active" style="margin-bottom: 20px;">
+                <div class="sepi-header">
+                    <h3>🕊️ Socioeconomic Peace Index</h3>
                 </div>
                 
-                <div class="layer-controls">
+                <div class="sepi-selector">
+                    <!-- Main SEPI Index -->
+                    <div class="sepi-option active" data-sepi-type="main">
+                        <span class="sepi-option-text">Overall Peace Index</span>
+                        <span class="sepi-checkmark">✓</span>
+                    </div>
+                    
+                    <!-- Individual Pillars -->
+                    <div class="sepi-pillars-label">Individual Components:</div>
+                    
+                    <div class="sepi-option" data-sepi-type="pillar" data-pillar-id="education">
+                        <span class="sepi-option-text">Education Index</span>
+                        <span class="sepi-checkmark">✓</span>
+                    </div>
+                    
+                    <div class="sepi-option" data-sepi-type="pillar" data-pillar-id="food_security">
+                        <span class="sepi-option-text">Food Security Index</span>
+                        <span class="sepi-checkmark">✓</span>
+                    </div>
+                    
+                    <div class="sepi-option" data-sepi-type="pillar" data-pillar-id="poverty">
+                        <span class="sepi-option-text">Poverty Reduction Index</span>
+                        <span class="sepi-checkmark">✓</span>
+                    </div>
+                    
+                    <div class="sepi-option" data-sepi-type="pillar" data-pillar-id="health">
+                        <span class="sepi-option-text">Health Access Index</span>
+                        <span class="sepi-checkmark">✓</span>
+                    </div>
+                    
+                    <div class="sepi-option" data-sepi-type="pillar" data-pillar-id="climate_vulnerability">
+                        <span class="sepi-option-text">Climate Vulnerability Index</span>
+                        <span class="sepi-checkmark">✓</span>
+                    </div>
+                </div>
+                
+                <!-- Single Opacity Control for entire section -->
+                <div class="sepi-opacity-container">
                     <div class="opacity-control">
                         <div class="opacity-header">
                             <label for="sepiOpacity">Opacity:</label>
                             <span id="sepiOpacityValue">70%</span>
                         </div>
                         <input type="range" id="sepiOpacity" min="0" max="1" step="0.1" value="0.7">
-                    </div>
-                </div>
-            </div>
-        `;
-    }
-
-    /**
-     * Generate pillars section with updated 5 composite indexes
-     */
-    static generatePillarsSection() {
-        // Get pillar options from the configuration
-        //const pillars = getAllPillars();
-        
- const pillarOptions = `
-            <option value="education">Education Index</option>
-            <option value="food_security">Food Security Index</option>
-            <option value="poverty">Poverty Reduction Index</option>
-            <option value="health">Health Access Index</option>
-            <option value="climate_vulnerability">Climate Vulnerability Index</option>
-        `;
-
-        return `
-            <!-- Peacebuilding Pillars Button - Updated for pillars2.geojson -->
-            <div class="pillars-section" style="margin-bottom: 20px;">
-                <div class="layer-checkbox">
-                    <input type="checkbox" id="pillarsToggle" style="display: none;">
-                    <label for="pillarsToggle" style="font-weight: bold; font-size: 16px; color:rgb(255, 255, 255); cursor: pointer; display: flex; align-items: center; justify-content: center; width: 100%; padding: 10px; margin: 0; background: transparent; border: none; user-select: none;">
-                     📊 Peacebuilding Pillars
-                    </label>
-                </div>
-                
-                <div class="layer-controls pillars-controls">
-                    <div class="pillar-selector">
-                        <label for="pillarSelect" style="display: block; margin-bottom: 8px; font-weight: 600; color: #2c5f2d; font-size: 12px;">
-                            Select Composite Index:
-                        </label>
-                        <select id="pillarSelect" style="width: 100%; padding: 6px; border: 1px solid #2c5f2d; border-radius: 4px; background: white; color: #2c5f2d; font-weight: 500; font-size: 12px;">
-                            <option value="">-- Select a Pillar Index --</option>
-                            ${pillarOptions}
-                        </select>
-                    </div>
-                    
-                    <!-- SAME OPACITY STYLE AS SEPI -->
-                    <div class="opacity-control" id="pillarOpacityControl" style="display: none; margin-top: 10px;">
-                        <div class="opacity-header">
-                            <label for="pillarOpacity">Opacity:</label>
-                            <span id="pillarOpacityValue">70%</span>
-                        </div>
-                        <input type="range" id="pillarOpacity" min="0" max="1" step="0.1" value="0.7">
                     </div>
                 </div>
             </div>
@@ -258,8 +248,7 @@ export class LayerTemplates {
     static generateAllLayerControls() {
         return [
             this.generateSidebarTitle(),  
-            this.generateSEPISection(),
-            this.generatePillarsSection(),  // BUTTON BEHAVIOR like SEPI
+            this.generateSEPISection(),    // Combined SEPI section
             this.generateVectorLayersSection(),
             this.generateRasterLayersSection(),
             //this.generatePointLayersSection()

@@ -590,19 +590,13 @@ function initializeColorRampSelectors() {
 /**
  * Enable default layers on startup
  */
+/**
+ * Updated enableDefaultLayers function for main.js
+ */
 function enableDefaultLayers() {
-    const sepiCheckbox = document.getElementById('sepiLayer');
-    if (sepiCheckbox && !sepiCheckbox.checked) {
-        sepiCheckbox.checked = true;
-        sepiCheckbox.dispatchEvent(new Event('change', { bubbles: true }));
-        
-        const sepiControls = sepiCheckbox.closest('.sepi-section')?.querySelector('.layer-controls');
-        if (sepiControls) {
-            sepiControls.style.display = 'block';
-        }
-        
-        console.log('SEPI layer enabled by default');
-    }
+    // The SEPI section is now active by default with the "Overall Peace Index" selected
+    // No need to check any checkboxes - the combined section handles this internally
+    console.log('Combined SEPI section initialized with Overall Peace Index active by default');
 }
 
 /**

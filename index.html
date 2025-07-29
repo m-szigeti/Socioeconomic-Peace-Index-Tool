@@ -41,132 +41,6 @@
         #sidebar .layer-group {
             flex-shrink: 1;
         }
-
-        /* =========================================
-         * Green Theme for Pillars Section
-         * ========================================= */
-
-        /* Override pillars section to use green theme like SEPI */
-        .pillars-section.pillars-green-theme {
-            background: linear-gradient(135deg, #2c5f2d, #4a8b3a) !important;
-            border: none !important;
-        }
-
-        .pillars-section.pillars-green-theme .pillars-header {
-            background: transparent !important;
-            padding: 15px 20px;
-            margin: 0;
-        }
-
-        .pillars-section.pillars-green-theme .pillars-header h3 {
-            color: white !important;
-            margin: 0;
-            font-size: 16px;
-            font-weight: bold;
-            text-align: center;
-        }
-
-        .pillars-section.pillars-green-theme .pillar-selector {
-            padding: 15px 20px;
-        }
-
-        .pillars-section.pillars-green-theme .pillar-selector label {
-            display: block;
-            margin-bottom: 8px;
-            font-weight: 600;
-            color: white !important;
-            font-size: 14px;
-        }
-
-        .pillars-section.pillars-green-theme .pillar-selector select {
-            width: 100%;
-            padding: 10px;
-            border: 2px solid #2c5f2d;
-            border-radius: 6px;
-            background: white;
-            color: #2c5f2d;
-            font-weight: 500;
-            font-size: 14px;
-            transition: all 0.3s ease;
-        }
-
-        .pillars-section.pillars-green-theme .pillar-selector select:focus {
-            outline: none;
-            border-color: #4a8b3a;
-            box-shadow: 0 0 8px rgba(44, 95, 45, 0.3);
-        }
-
-        /* Opacity controls styling for green theme */
-        .pillars-section.pillars-green-theme #pillarOpacityContainer {
-            background: rgba(255, 255, 255, 0.2) !important;
-            border-radius: 8px;
-            padding: 15px;
-            margin-top: 15px;
-        }
-
-        .pillars-section.pillars-green-theme .opacity-control label {
-            color: white !important;
-            font-weight: 600 !important;
-            font-size: 12px !important;
-            margin-bottom: 1px !important;
-            margin-right: auto;
-            display: block;
-        }
-
-        .pillars-section.pillars-green-theme .opacity-control span {
-            color: white !important;
-            font-weight: bold;
-            font-size: 11px;
-        }
-
-        .pillars-section.pillars-green-theme .opacity-control input[type="range"] {
-            width: 100%;
-            margin: 3px 0;
-            -webkit-appearance: none;
-            appearance: none;
-            background: rgba(255, 255, 255, 0.3);
-            height: 4px;
-            border-radius: 3px;
-            outline: none;
-        }
-
-        .pillars-section.pillars-green-theme .opacity-control input[type="range"]::-webkit-slider-thumb {
-            -webkit-appearance: none;
-            width: 18px;
-            height: 18px;
-            border-radius: 50%;
-            background: white;
-            cursor: pointer;
-            border: 2px solid #2c5f2d;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-        }
-
-        /* Hover effect for green pillars section */
-        .pillars-section.pillars-green-theme:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(44, 95, 45, 0.4);
-        }
-
-        /* Pillar tooltip styling - green theme */
-        .pillar-tooltip {
-            background: rgba(255, 255, 255, 0.95) !important;
-            border: 2px solid #2c5f2d !important;
-            border-radius: 8px !important;
-            box-shadow: 0 4px 12px rgba(44, 95, 45, 0.2) !important;
-            font-family: 'Calibri', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif !important;
-            font-size: 13px !important;
-            padding: 8px 12px !important;
-            color: #333 !important;
-            z-index: 1000 !important;
-        }
-
-        /* Pillar hover effects */
-        .leaflet-interactive[data-pillar]:hover {
-            stroke-width: 4px !important;
-            stroke: #2c5f2d !important;
-            fill-opacity: 0.9 !important;
-            cursor: pointer !important;
-        }
     </style>
 </head>
 <body>
@@ -180,9 +54,7 @@
         </div>
         
         <ul class="navbar-menu">
-            <!-- <li><a href="index.html" class="larger-nav-link">Map</a></li> -->
             <li><a href="html/about.html" class="larger-nav-link">About Us</a></li>
-            <!-- <li><a href="html/more.html" class="larger-nav-link">More Information</a></li> -->
         </ul>
         <div class="navbar-logo navbar-logo-right">
             <img src="assets/undp_logo.png" alt="UNDP Logo" class="logo-image_right">
@@ -246,179 +118,82 @@
             setupLayerControls('geojsonLayer');
             setupLayerControls('geojsonLayer2');
             setupPointControls();
-            setupSEPIControls();
-            setupSimplifiedPillarsControls(); // UPDATED - simplified function
+            setupCombinedSEPIControls(); // NEW: Combined SEPI controls
             setupDropdownToggles();
             setupOpacityDisplays();
         }
-        
-        function initializeColorRampSelectors() {
-            // Only initialize color ramp selectors that actually exist and are needed
-            const colorRampSelectors = [
-                'vectorColorRamp1',    // Subnational (Regional) Statistics
-                'vectorColorRamp2',    // Subnational (District) Statistics  
-                'pointColorRamp',      // DHS Statistics
-                'pointColorRamp2'      // Cities
-            ];
+
+        /**
+         * Setup combined SEPI controls with mutually exclusive selection
+         */
+        function setupCombinedSEPIControls() {
+            const sepiOptions = document.querySelectorAll('.sepi-option');
+            const sepiOpacity = document.getElementById('sepiOpacity');
+            const sepiOpacityValue = document.getElementById('sepiOpacityValue');
             
-            colorRampSelectors.forEach(selectorId => {
-                const selector = document.getElementById(selectorId);
-                if (selector) {
-                    populateColorRampSelector(selectorId);
-                    console.log(`Populated color ramp selector: ${selectorId}`);
-                } else {
-                    console.warn(`Color ramp selector not found: ${selectorId}`);
-                }
-            });
+            if (sepiOptions.length === 0) return;
             
-            console.log('Color ramp selectors initialized (minimal set)');
-        }
-        
-        function setupSEPIControls() {
-    const sepiCheckbox = document.getElementById('sepiLayer');
-    const sepiSection = sepiCheckbox?.closest('.sepi-section');
-    const sepiControls = sepiSection?.querySelector('.layer-controls');
-    
-    if (sepiCheckbox && sepiControls && sepiSection) {
-        sepiControls.style.display = 'none';
-        
-        const sepiLabel = sepiCheckbox.nextElementSibling;
-        if (sepiLabel) {
-            sepiLabel.addEventListener('click', function(e) {
-                e.preventDefault();
-                sepiCheckbox.checked = !sepiCheckbox.checked;
+            // Set initial state - Overall Peace Index active by default
+            const defaultOption = document.querySelector('.sepi-option[data-sepi-type="main"]');
+            if (defaultOption) {
+                defaultOption.classList.add('active');
                 
-                if (sepiCheckbox.checked) {
-                    sepiControls.style.display = 'block';
-                    sepiControls.classList.add('show');
-                    sepiSection.classList.add('active'); // Add active class for green theme
-                } else {
-                    sepiControls.style.display = 'none';
-                    sepiControls.classList.remove('show');
-                    sepiSection.classList.remove('active'); // Remove active class - back to gray
-                }
-                
-                const changeEvent = new Event('change', { bubbles: true });
-                sepiCheckbox.dispatchEvent(changeEvent);
-            });
-        }
-        
-        sepiCheckbox.addEventListener('change', function() {
-            if (this.checked) {
-                sepiControls.style.display = 'block';
-                sepiControls.classList.add('show');
-                sepiSection.classList.add('active');
-            } else {
-                sepiControls.style.display = 'none';
-                sepiControls.classList.remove('show');
-                sepiSection.classList.remove('active');
+                // Trigger SEPI layer loading
+                setTimeout(() => {
+                    const event = new CustomEvent('sepiOptionChanged', {
+                        detail: { 
+                            type: 'main',
+                            pillarId: null 
+                        },
+                        bubbles: true
+                    });
+                    defaultOption.dispatchEvent(event);
+                }, 500);
             }
-        });
-    }
-}
-        
-        // SIMPLIFIED: Pillar controls now immediately trigger layer changes
-        function setupSimplifiedPillarsControls() {
-    const pillarsToggle = document.getElementById('pillarsToggle');
-    const pillarsSection = pillarsToggle?.closest('.pillars-section');
-    const pillarsControls = pillarsSection?.querySelector('.layer-controls');
-    const pillarSelect = document.getElementById('pillarSelect');
-    const pillarOpacityControl = document.getElementById('pillarOpacityControl');
-    const pillarOpacity = document.getElementById('pillarOpacity');
-    const pillarOpacityValue = document.getElementById('pillarOpacityValue');
-    
-    if (pillarsToggle && pillarsControls && pillarsSection) {
-        pillarsControls.style.display = 'none';
-        
-        // Handle pillars section toggle (like SEPI)
-        const pillarsLabel = pillarsToggle.nextElementSibling;
-        if (pillarsLabel) {
-            pillarsLabel.addEventListener('click', function(e) {
-                e.preventDefault();
-                pillarsToggle.checked = !pillarsToggle.checked;
-                
-                if (pillarsToggle.checked) {
-                    pillarsControls.style.display = 'block';
-                    pillarsControls.classList.add('show');
-                    pillarsSection.classList.add('active'); // Green theme
-                } else {
-                    pillarsControls.style.display = 'none';
-                    pillarsControls.classList.remove('show');
-                    pillarsSection.classList.remove('active'); // Back to gray
+            
+            // Add click listeners to all SEPI options
+            sepiOptions.forEach(option => {
+                option.addEventListener('click', function() {
+                    // Remove active class from all options
+                    sepiOptions.forEach(opt => opt.classList.remove('active'));
                     
-                    // Reset pillar selection when closing
-                    if (pillarSelect) {
-                        pillarSelect.value = '';
-                        // Dispatch event to remove current pillar
-                        const event = new CustomEvent('pillarChanged', {
-                            detail: { pillarId: null },
-                            bubbles: true
-                        });
-                        pillarSelect.dispatchEvent(event);
-                        
-                        // Hide opacity control
-                        if (pillarOpacityControl) {
-                            pillarOpacityControl.style.display = 'none';
-                        }
-                    }
-                }
-            });
-        }
-        
-        // Handle pillar selection
-        if (pillarSelect) {
-            pillarSelect.addEventListener('change', function() {
-                const selectedPillar = this.value;
-                
-                if (selectedPillar) {
-                    // Show opacity controls when an indicator is selected
-                    if (pillarOpacityControl) {
-                        pillarOpacityControl.style.display = 'block';
-                    }
+                    // Add active class to clicked option
+                    this.classList.add('active');
                     
-                    // Trigger layer loading/switching
-                    console.log(`Indicator selected: ${selectedPillar}`);
+                    // Get option details
+                    const type = this.getAttribute('data-sepi-type');
+                    const pillarId = this.getAttribute('data-pillar-id');
                     
-                    // Dispatch a custom event for layer manager to handle
-                    const event = new CustomEvent('pillarChanged', {
-                        detail: { pillarId: selectedPillar },
+                    console.log(`SEPI option selected: ${type}${pillarId ? ` - ${pillarId}` : ''}`);
+                    
+                    // Dispatch custom event for layer manager to handle
+                    const event = new CustomEvent('sepiOptionChanged', {
+                        detail: { 
+                            type: type,
+                            pillarId: pillarId 
+                        },
                         bubbles: true
                     });
                     this.dispatchEvent(event);
-                    
-                } else {
-                    // Hide opacity controls when no indicator is selected
-                    if (pillarOpacityControl) {
-                        pillarOpacityControl.style.display = 'none';
-                    }
-                    
-                    // Dispatch event to remove current indicator
-                    const event = new CustomEvent('pillarChanged', {
-                        detail: { pillarId: null },
-                        bubbles: true
-                    });
-                    this.dispatchEvent(event);
-                }
-            });
-        }
-        
-        // Setup opacity control for indicators (SAME AS SEPI)
-        if (pillarOpacity && pillarOpacityValue) {
-            pillarOpacity.addEventListener('input', function() {
-                const opacity = parseFloat(this.value);
-                pillarOpacityValue.textContent = `${Math.round(opacity * 100)}%`;
-                
-                // Dispatch opacity change event
-                const event = new CustomEvent('pillarOpacityChanged', {
-                    detail: { opacity: opacity },
-                    bubbles: true
                 });
-                this.dispatchEvent(event);
             });
+            
+            // Setup opacity control for the entire SEPI section
+            if (sepiOpacity && sepiOpacityValue) {
+                sepiOpacity.addEventListener('input', function() {
+                    const opacity = parseFloat(this.value);
+                    sepiOpacityValue.textContent = `${Math.round(opacity * 100)}%`;
+                    
+                    // Dispatch opacity change event
+                    const event = new CustomEvent('sepiOpacityChanged', {
+                        detail: { opacity: opacity },
+                        bubbles: true
+                    });
+                    this.dispatchEvent(event);
+                });
+            }
         }
-    }
-}
-        
+
         function setupLayerControls(layerId) {
             const checkbox = document.getElementById(layerId);
             const controlsContainer = checkbox?.closest('.layer-checkbox')?.nextElementSibling;
@@ -439,7 +214,7 @@
                 });
             }
         }
-        
+
         function setupPointControls() {
             const pointCheckbox = document.getElementById('pointLayer');
             const pointSelector = document.getElementById('pointValueSelector');
@@ -455,7 +230,7 @@
                 });
             }
         }
-        
+
         function setupDropdownToggles() {
             document.querySelectorAll('.dropdown-btn').forEach(button => {
                 button.addEventListener('click', function() {
@@ -469,7 +244,7 @@
                 });
             });
         }
-        
+
         function setupOpacityDisplays() {
             document.querySelectorAll('input[type="range"]').forEach(slider => {
                 const displayId = slider.id.replace('Opacity', 'OpacityValue');
@@ -485,6 +260,28 @@
                     slider.addEventListener('input', updateDisplay);
                 }
             });
+        }
+
+        function initializeColorRampSelectors() {
+            // Only initialize color ramp selectors that actually exist and are needed
+            const colorRampSelectors = [
+                'vectorColorRamp1',    // Subnational (Regional) Statistics
+                'vectorColorRamp2',    // Subnational (District) Statistics  
+                'pointColorRamp',      // DHS Statistics
+                'pointColorRamp2'      // Cities
+            ];
+            
+            colorRampSelectors.forEach(selectorId => {
+                const selector = document.getElementById(selectorId);
+                if (selector) {
+                    populateColorRampSelector(selectorId);
+                    console.log(`Populated color ramp selector: ${selectorId}`);
+                } else {
+                    console.warn(`Color ramp selector not found: ${selectorId}`);
+                }
+            });
+            
+            console.log('Color ramp selectors initialized (minimal set)');
         }
     </script>
 </body>

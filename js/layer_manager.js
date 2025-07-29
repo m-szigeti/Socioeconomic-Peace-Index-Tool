@@ -1,4 +1,4 @@
-// layer_manager.js - Updated with simplified pillar handling
+// layer_manager.js - Updated with combined SEPI handling
 
 import { LAYER_CONFIG, PILLAR_CONFIG, COLOR_SCALES, COLOR_RAMPS, getPillarColor, getPillarDescription } from './layer_config.js';
 import { loadTiff } from './zoom-adaptive-tiff-loader.js';
@@ -42,11 +42,101 @@ export class LayerManager {
         this.setupLayerControls();
         this.setupOpacityControls();
         this.setupAttributeControls();
-        this.setupPillarEventListeners(); // NEW: Setup pillar event listeners
+        this.setupCombinedSEPIEventListeners(); // NEW: Combined SEPI events
+    }
+
+    /**
+     * Setup event listeners for combined SEPI controls
+     */
+    setupCombinedSEPIEventListeners() {
+        // Listen for SEPI option changes (main index or individual pillars)
+        document.addEventListener('sepiOptionChanged', (e) => {
+            const { type, pillarId } = e.detail;
+            this.handleSEPIOptionChange(type, pillarId);
+        });
+        
+        // Listen for SEPI opacity changes
+        document.addEventListener('sepiOpacityChanged', (e) => {
+            const opacity = e.detail.opacity;
+            this.updateSEPIOpacity(opacity);
+        });
+    }
+
+    /**
+     * Handle SEPI option changes (main index or pillar selection)
+     */
+    async handleSEPIOptionChange(type, pillarId) {
+        console.log(`Handling SEPI option change: ${type}${pillarId ? ` - ${pillarId}` : ''}`);
+        
+        try {
+            // Remove any currently active SEPI/pillar layers
+            this.removeCurrentSEPILayers();
+            
+            if (type === 'main') {
+                // Load main SEPI index
+                await this.loadMainSEPILayer();
+            } else if (type === 'pillar' && pillarId) {
+                // Load specific pillar
+                await this.loadPillarLayer(pillarId);
+            }
+            
+        } catch (error) {
+            console.error(`Error handling SEPI option change:`, error);
+        }
+    }
+
+    /**
+     * Remove all current SEPI and pillar layers
+     */
+    removeCurrentSEPILayers() {
+        // Remove main SEPI layer
+        if (this.sepiManager?.isActive()) {
+            this.sepiManager.removeFromMap();
+        }
+        
+        // Remove pillar layer
+        if (this.pillarManager?.isActive()) {
+            this.pillarManager.switchPillar(null);
+        }
+        
+        // Hide legend
+        this.hideLegend();
+    }
+
+    /**
+     * Load main SEPI layer
+     */
+    async loadMainSEPILayer() {
+        if (!this.sepiManager.sepiLayer) {
+            await this.sepiManager.loadLayer();
+        }
+        this.sepiManager.addToMap();
+        console.log('Main SEPI layer loaded');
+    }
+
+    /**
+     * Load specific pillar layer
+     */
+    async loadPillarLayer(pillarId) {
+        await this.pillarManager.switchPillar(pillarId);
+        console.log(`Pillar layer loaded: ${pillarId}`);
+    }
+
+    /**
+     * Update opacity for currently active SEPI layer
+     */
+    updateSEPIOpacity(opacity) {
+        if (this.sepiManager?.isActive()) {
+            this.sepiManager.updateOpacity(opacity);
+        }
+        
+        if (this.pillarManager?.isActive()) {
+            this.pillarManager.updateOpacity(opacity);
+        }
     }
     
     /**
-     * Setup event listeners for simplified pillar controls
+     * Setup event listeners for simplified pillar controls (LEGACY - kept for compatibility)
      */
     setupPillarEventListeners() {
         // Listen for pillar selection changes
@@ -403,8 +493,6 @@ export class LayerManager {
     }
 }
 
-
-
 /**
  * Simplified Pillar Manager - Handles single GeoJSON file with multiple properties
  */
@@ -425,21 +513,21 @@ export class SimplifiedPillarManager {
     async loadPillarsData() {
         if (this.pillarsData) return this.pillarsData;
     
-    try {
-        const response = await fetch('data/pillars2.geojson'); // Changed from 'data/pillars.geojson'
-        if (!response.ok) {
-            throw new Error(`Failed to load pillars data: ${response.status}`);
+        try {
+            const response = await fetch('data/pillars2.geojson');
+            if (!response.ok) {
+                throw new Error(`Failed to load pillars data: ${response.status}`);
+            }
+            
+            this.pillarsData = await response.json();
+            console.log('Pillars data loaded successfully');
+            return this.pillarsData;
+            
+        } catch (error) {
+            console.error('Error loading pillars data:', error);
+            throw error;
         }
-        
-        this.pillarsData = await response.json();
-        console.log('Pillars data loaded successfully');
-        return this.pillarsData;
-        
-    } catch (error) {
-        console.error('Error loading pillars data:', error);
-        throw error;
     }
-}
     
     /**
      * Switch to a different pillar/indicator immediately
@@ -595,7 +683,7 @@ export class SimplifiedPillarManager {
             }
         });
     }
-    
+
     /**
      * Create comprehensive popup content for indicators
      */
