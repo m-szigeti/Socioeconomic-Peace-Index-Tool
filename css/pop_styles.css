@@ -1,0 +1,278 @@
+/* =========================================
+   Consolidated Popup & UI Styles
+   ========================================= */
+
+/* --- 1. General Map Popup & Tooltip Base Styles --- */
+
+.leaflet-popup-content-wrapper {
+    padding: 0 !important; /* Remove default Leaflet padding */
+}
+
+.sepi-popup .leaflet-popup-content-wrapper,
+.pillar-popup .leaflet-popup-content-wrapper {
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    border: 1px solid #e0e0e0;
+    max-width: 450px;
+}
+
+.sepi-popup .leaflet-popup-content,
+.pillar-popup .leaflet-popup-content {
+    margin: 0;
+    line-height: 1.4;
+    font-family: 'Calibri', 'Segoe UI', sans-serif;
+    max-height: 600px;
+    overflow-y: auto;
+}
+
+.sepi-tooltip,
+.pillar-tooltip {
+    background: rgba(255, 255, 255, 0.95) !important;
+    border-radius: 8px !important;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2) !important;
+    font-family: 'Calibri', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif !important;
+    font-size: 13px !important;
+    padding: 8px 12px !important;
+    color: #333 !important;
+    z-index: 1000 !important;
+}
+
+.sepi-tooltip { border: 2px solid #2c5f2d !important; }
+.pillar-tooltip { border: 2px solid #495057 !important; }
+
+
+/* --- 2. SEPI Popup Header & Components --- */
+
+.sepi-popup-header {
+    background: linear-gradient(135deg, #2c5f2d, #4a8b3a);
+    color: #ffffff; /* Ensures all header text is white */
+    padding: 8px 15px; /* FIX: Reduced padding for a narrower header */
+    cursor: move;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-radius: 8px 8px 0 0;
+}
+
+.sepi-popup-header h3,
+.sepi-popup-title {
+    color: #ffffff !important; /* FIX: Ensures district name is white */
+    font-weight: bold;
+    font-size: 16px;
+    margin: 0;
+    border-bottom: none !important; /* Removes conflicting border */
+    padding-bottom: 0 !important;
+}
+
+.sepi-breakdown-chart {
+    margin: 15px;
+    padding: 15px;
+    background: #f8f9fa;
+    border-radius: 6px;
+    border-left: 4px solid #2c5f2d;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.sepi-breakdown-chart h4 {
+    margin: 0 0 12px 0 !important;
+    color: #2c5f2d !important;
+    font-size: 14px !important;
+    font-weight: 600;
+    text-transform: none; /* Removed uppercase for better readability */
+    border-bottom: none;
+    padding-bottom: 0;
+}
+
+.pillar-bar {
+    display: flex;
+    align-items: center;
+    margin-bottom: 8px;
+    font-size: 12px;
+}
+
+.pillar-label {
+    width: 90px;
+    flex-shrink: 0;
+    font-weight: 500;
+    color: #495057;
+}
+
+.pillar-bar-container {
+    flex: 1;
+    height: 18px;
+    background: #e9ecef;
+    border-radius: 9px;
+    margin: 0 8px;
+    position: relative;
+    overflow: hidden;
+    box-shadow: inset 0 1px 2px rgba(0,0,0,0.1);
+}
+
+.pillar-bar-fill {
+    height: 100%;
+    border-radius: 9px;
+    transition: width 0.4s ease;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+}
+
+.pillar-value {
+    min-width: 35px;
+    text-align: right;
+    font-weight: 600;
+    color: #2c5f2d;
+    font-size: 11px;
+}
+
+/* --- 3. Fundamental Popup Arrow Fix --- */
+
+/* Position the tip container for vertical centering when on the side */
+.leaflet-popup-anchor-left .leaflet-popup-tip-container,
+.leaflet-popup-anchor-right .leaflet-popup-tip-container {
+    position: absolute;
+    top: 50%;
+    margin-top: -10px; /* Vertically centers the 20px tall arrow */
+    width: 20px;
+    height: 20px;
+}
+
+/* Redraw the tip to point LEFT (for popups anchored on the left) */
+.leaflet-popup-anchor-left .leaflet-popup-tip {
+    border-right: 10px solid #ffffff; /* White triangle pointing left */
+    border-top: 10px solid transparent;
+    border-bottom: 10px solid transparent;
+    margin-left: 0;
+}
+
+/* Position the left-pointing arrow correctly */
+.leaflet-popup-anchor-left .leaflet-popup-tip-container {
+    left: 0;
+    margin-left: -10px; /* Pull the arrow outside the popup body */
+}
+
+/* Redraw the tip to point RIGHT (for popups anchored on the right) */
+.leaflet-popup-anchor-right .leaflet-popup-tip {
+    border-left: 10px solid #ffffff; /* White triangle pointing right */
+    border-top: 10px solid transparent;
+    border-bottom: 10px solid transparent;
+}
+
+/* Position the right-pointing arrow correctly */
+.leaflet-popup-anchor-right .leaflet-popup-tip-container {
+    right: 0;
+    margin-right: -10px; /* Push the arrow outside the popup body */
+}
+
+
+/* --- 4. General Interactive Layer Hover Effects --- */
+
+.leaflet-interactive[data-sepi]:hover,
+.leaflet-interactive[data-pillar]:hover {
+    stroke-width: 4px !important;
+    stroke: #333 !important;
+    fill-opacity: 0.9 !important;
+    cursor: pointer !important;
+}
+
+.leaflet-interactive:hover {
+    stroke-width: 3 !important;
+    stroke: #666 !important;
+}
+
+.leaflet-interactive[data-attribute]:hover {
+    stroke-width: 3 !important;
+    stroke: #666 !important;
+    fill-opacity: 0.8 !important;
+}
+
+
+/* --- 5. Welcome Screen Styles (Separate Component) --- */
+
+.welcome-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 3000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.welcome-popup {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    width: 90%;
+    max-width: 700px;
+    max-height: 80vh;
+    overflow-y: auto;
+    font-family: Calibri, sans-serif;
+    animation: welcomeSlideIn 0.4s ease-out;
+}
+
+.welcome-close-btn {
+    position: absolute;
+    top: 15px;
+    right: 20px;
+    background: rgba(255, 255, 255, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    color: white;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 18px;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+}
+
+.welcome-close-btn:hover {
+    background: rgba(255, 255, 255, 0.3);
+    transform: scale(1.1);
+}
+
+.welcome-start-btn {
+    background: linear-gradient(135deg, #2c5f2d, #4a8b3a);
+    color: white;
+    border: none;
+    padding: 12px 32px;
+    border-radius: 25px;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s;
+    box-shadow: 0 4px 12px rgba(44, 95, 45, 0.3);
+}
+
+.welcome-start-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(44, 95, 45, 0.4);
+}
+
+@keyframes welcomeSlideIn {
+    from {
+        opacity: 0;
+        transform: scale(0.8) translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
+}
+
+@keyframes welcomeSlideOut {
+    from {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
+    to {
+        opacity: 0;
+        transform: scale(0.8) translateY(-20px);
+    }
+}

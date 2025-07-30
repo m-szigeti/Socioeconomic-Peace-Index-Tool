@@ -16,21 +16,24 @@ export class LayerTemplates {
      */
     static generateSEPISection() {
         return `
-            <!-- Combined SEPI Section -->
-            <div class="sepi-section active" style="margin-bottom: 20px;">
+            <!-- Combined SEPI Section with Collapse Functionality -->
+            <div class="sepi-section" style="margin-bottom: 20px;">
                 <div class="sepi-header">
                     <h3>🕊️ Socioeconomic Peace Index</h3>
                 </div>
                 
                 <div class="sepi-selector">
                     <!-- Main SEPI Index -->
-                    <div class="sepi-option active" data-sepi-type="main">
-                        <span class="sepi-option-text">Overall Peace Index</span>
-                        <span class="sepi-checkmark">✓</span>
-                    </div>
-                    
+                   <div class="sepi-option active" data-sepi-type="main">
+    <span class="sepi-option-text">Overall Peace Index</span>
+    <div style="display: flex; align-items: center;">
+        <span class="sepi-info-icon" onclick="showSEPIInfo()" title="Learn about SEPI">ⓘ</span>
+        <span class="sepi-checkmark">✓</span>
+    </div>
+</div>
+
                     <!-- Individual Pillars -->
-                    <div class="sepi-pillars-label">Individual Components:</div>
+                    <div class="sepi-pillars-label">Peacebuilding Pillars:</div>
                     
                     <div class="sepi-option" data-sepi-type="pillar" data-pillar-id="education">
                         <span class="sepi-option-text">Education Index</span>

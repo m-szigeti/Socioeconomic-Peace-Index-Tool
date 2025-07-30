@@ -10,8 +10,8 @@ export const LAYER_CONFIG = {
         id: 'geojsonLayer',
         name: 'Admin Level 1 Statistics',
         type: 'vector',
-        url: 'data/adm1_som_latest_cross_sec_2.geojson',
-        style: { color: "#3388ff", weight: 2, opacity: 1, fillOpacity: 0.5 },
+        url: 'data/adm1_subnational_statistics.geojson',
+        style: { color: "#3388ff", weight: 1, opacity: 1, fillOpacity: 0 },
         controls: {
             opacity: 'geojsonOpacity',
             opacityDisplay: 'geojsonOpacityValue',
@@ -27,7 +27,7 @@ export const LAYER_CONFIG = {
         name: 'Admin Level 2 Statistics',
         type: 'vector',
         url: 'data/adm2_summary_stats_3.geojson',
-        style: { color: "#FF5733", weight: 1.5, opacity: 1, fillOpacity: 0.4 },
+        style: { color: "#FF5733", weight: 1, opacity: 1, fillOpacity: 0 },
         controls: {
             opacity: 'geojsonOpacity2',
             opacityDisplay: 'geojsonOpacityValue2',
@@ -160,31 +160,31 @@ export const LAYER_CONFIG = {
 export const PILLAR_CONFIG = {
     education: {
         name: 'Education Index',
-        file: 'data/pillars2.geojson',
+        file: 'data/sepi_with_pillars.geojson',
         property: 'Education_Index',
         description: 'Composite measure of educational access, attendance, and attainment across all levels'
     },
     food_security: {
         name: 'Food Security Index',
-        file: 'data/pillars2.geojson',
+        file: 'data/sepi_with_pillars.geojson',
         property: 'Food_Security_Index',
         description: 'Household food security based on food expenditure share and total expenditure capacity'
     },
     poverty: {
         name: 'Poverty Reduction Index',
-        file: 'data/pillars2.geojson',
+        file: 'data/sepi_with_pillars.geojson',
         property: 'Poverty_Index',
         description: 'Non-poverty levels combining general and extreme poverty measures'
     },
     health: {
         name: 'Health Access Index',
-        file: 'data/pillars2.geojson',
+        file: 'data/sepi_with_pillars.geojson',
         property: 'Health_Index',
         description: 'Healthcare infrastructure access based on facilities per population and density'
     },
     climate_vulnerability: {
         name: 'Climate Vulnerability Index',
-        file: 'data/pillars2.geojson',
+        file: 'data/sepi_with_pillars.geojson',
         property: 'Climate_Vulnerability_Index',
         description: 'Climate vulnerability based on temperature, vegetation change, and elevation factors'
     }

@@ -12,7 +12,7 @@ export class SEPIManager {
         this.layers = layers;
         this.sepiLayer = null;
         this.config = {
-            dataUrl: 'data/sepi2.geojson',
+            dataUrl: 'data/sepi_with_pillars.geojson',
             property: 'peacebuilding_index', // or 'index' - check your data
             colors: ['#dc3545', '#fd7e14', '#ffc107', '#28a745', '#155724'],
             breaks: [0.2, 0.4, 0.6, 0.8]
@@ -39,6 +39,7 @@ export class SEPIManager {
             'Middle Juba': 'Southern region with Juba River. Agricultural potential.',
             'Lower Juba': 'Southernmost region with Kismayo port. Trade and fishing.'
         };
+ 
     }
     
     /**
@@ -62,7 +63,88 @@ export class SEPIManager {
             throw error;
         }
     }
+    makeDraggable(element, handle) {
+        // Prevent re-initializing if already draggable
+        if (element.dataset.draggable) return;
+        element.dataset.draggable = 'true';
+
+        handle.addEventListener('mousedown', (e) => {
+            // **This is the fix**: Stop the click from closing the popup
+            L.DomEvent.stopPropagation(e);
+
+            const initialX = e.clientX - element.offsetLeft;
+            const initialY = e.clientY - element.offsetTop;
+            handle.style.cursor = 'grabbing';
+
+            // Function to handle mouse movement
+            const onMouseMove = (moveEvent) => {
+                const currentX = moveEvent.clientX - initialX;
+                const currentY = moveEvent.clientY - initialY;
+                element.style.transform = `translate(${currentX}px, ${currentY}px)`;
+            };
+
+            // Function to handle mouse release
+            const onMouseUp = () => {
+                handle.style.cursor = 'move';
+                // Clean up by removing the event listeners from the document
+                document.removeEventListener('mousemove', onMouseMove);
+                document.removeEventListener('mouseup', onMouseUp);
+            };
+
+            // Add temporary listeners to the document for the drag duration
+            document.addEventListener('mousemove', onMouseMove);
+            document.addEventListener('mouseup', onMouseUp);
+        });
+    }
+    createSEPIBreakdownChart(properties) {
+    // Extract pillar values - adjust property names to match your data
+    const pillars = [
+        { name: 'Education', value: properties['Education_Index'] || 0, color: '#28a745' },
+        { name: 'Food Security', value: properties['Food_Security_Index'] || 0, color: '#ffc107' },
+        { name: 'Poverty', value: properties['Poverty_Index'] || 0, color: '#17a2b8' },
+        { name: 'Health', value: properties['Health_Index'] || 0, color: '#dc3545' },
+        { name: 'Climate', value: properties['Climate_Vulnerability_Index'] || 0, color: '#6f42c1' }
+    ];
     
+    // Sort pillars by value (descending)
+    pillars.sort((a, b) => b.value - a.value);
+    
+    // Create chart HTML
+    let chartHTML = `
+        <div class="sepi-breakdown-chart">
+            <h4>📊 SEPI Pillar Breakdown</h4>
+    `;
+    
+    pillars.forEach(pillar => {
+        const percentage = Math.round(pillar.value * 100);
+        chartHTML += `
+            <div class="pillar-bar">
+                <div class="pillar-label">${pillar.name}:</div>
+                <div class="pillar-bar-container">
+                    <div class="pillar-bar-fill" style="width: ${percentage}%; background: ${pillar.color};"></div>
+                </div>
+                <div class="pillar-value">${pillar.value.toFixed(2)}</div>
+            </div>
+        `;
+    });
+    
+    // Add overall SEPI score
+    const overallSEPI = properties['peacebuilding_index'] || properties['index'] || 0;
+    const overallPercentage = Math.round(overallSEPI * 100);
+    
+    chartHTML += `
+        <div class="pillar-bar" style="margin-top: 12px; padding-top: 8px; border-top: 1px solid #dee2e6;">
+            <div class="pillar-label" style="font-weight: bold;">Overall SEPI:</div>
+            <div class="pillar-bar-container">
+                <div class="pillar-bar-fill" style="width: ${overallPercentage}%; background: #2c5f2d;"></div>
+            </div>
+            <div class="pillar-value" style="font-size: 14px;">${overallSEPI.toFixed(2)}</div>
+        </div>
+    `;
+    
+    chartHTML += `</div>`;
+    return chartHTML;
+}
     /**
      * Get styling for a feature based on SEPI value
      */
@@ -114,11 +196,6 @@ export class SEPIManager {
         const districtName = properties.ADM1_EN;
         const sepiValue = properties[this.config.property];
         
-        // Bind popup
-        layer.bindPopup(this.createPopupContent(properties), {
-            maxWidth: 400,
-            className: 'sepi-popup'
-        });
         
         // Bind tooltip
         const scoreText = sepiValue != null ? Number(sepiValue).toFixed(2) : 'No data';
@@ -148,47 +225,70 @@ export class SEPIManager {
                 this.sepiLayer.resetStyle(e.target);
             }
         });
-    }
+// Bind popup with draggable option
+layer.bindPopup(this.createPopupContent(properties), {
+            maxWidth: 450,
+            className: 'sepi-popup',
+            autoPan: true,
+            autoPanPadding: L.point(50, 50),
+            // This offset pushes the popup 20px to the right of the click point
+            offset: L.point(20, 0)
+        });
+
+
+
+// Make popup draggable when it opens
+layer.on('popupopen', (e) => {
+    const popup = e.popup;
+    const popupEl = popup._container;
+    const header = popupEl.querySelector('.sepi-popup-header');
     
+    if (header) {
+        this.makeDraggable(popupEl, header);
+    }
+});
+        
+    }
+ 
     /**
      * Create popup content for SEPI features
      */
     createPopupContent(properties) {
-        const sepiValue = properties[this.config.property];
-        const districtName = properties.ADM1_EN;
-        const districtDetails = this.districtInfo[districtName];
-        
-        return `
-            <div style="font-family: Calibri, sans-serif; max-width: 350px; line-height: 1.4;">
-                <h3 style="margin: 0 0 10px 0; color: #2c5f2d; border-bottom: 2px solid #2c5f2d; padding-bottom: 5px;">
-                    ${districtName || 'District Information'}
-                </h3>
-                
-                <div style="background: #f8f9fa; padding: 10px; border-radius: 5px; margin-bottom: 15px; border-left: 4px solid #2c5f2d;">
-                    <div style="display: flex; justify-content: space-between; align-items: center;">
-                        <strong style="color: #2c5f2d;">SEPI Score:</strong>
-                        <span style="font-size: 20px; font-weight: bold; color: ${this.getColor(sepiValue)};">
-                            ${sepiValue != null ? Number(sepiValue).toFixed(2) : 'No data'}
-                        </span>
-                    </div>
-                    <div style="margin-top: 5px; font-size: 12px; color: #666;">
-                        ${this.getDescription(sepiValue)}
+      const chartHTML = this.createSEPIBreakdownChart(properties);
+    const sepiValue = properties[this.config.property];
+    const districtName = properties.ADM1_EN;
+    const districtDetails = this.districtInfo[districtName];
+    
+    return `
+        <div class="sepi-popup-header">
+            <h3 class="sepi-popup-title">🕊️ ${districtName || 'District Information'}</h3>
+        </div>
+        <div style="padding: 15px;">
+            ${chartHTML}
+            
+            <div style="background: #e8f5e8; padding: 12px; border-radius: 6px; margin: 15px 0; border-left: 4px solid #2c5f2d;">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <strong style="color: #2c5f2d;">Overall SEPI Score:</strong>
+                    <span style="font-size: 18px; font-weight: bold; color: ${this.getColor(sepiValue)};">
+                        ${sepiValue != null ? Number(sepiValue).toFixed(2) : 'No data'}
+                    </span>
+                </div>
+                <div style="margin-top: 5px; font-size: 12px; color: #2c5f2d; font-weight: 500;">
+                    ${this.getDescription(sepiValue)}
+                </div>
+            </div>
+            
+            ${districtDetails ? `
+                <div style="background: #fff3cd; padding: 12px; border-radius: 6px; border-left: 4px solid #ffc107;">
+                    <h4 style="margin: 0 0 8px 0; color: #856404; font-size: 13px; font-weight: 600;">District Overview</h4>
+                    <div style="font-size: 12px; color: #856404; line-height: 1.4;">
+                        ${districtDetails}
                     </div>
                 </div>
-                
-                ${districtDetails ? `
-                    <div style="margin-bottom: 15px; padding: 10px; background: #fff3cd; border-radius: 5px; border-left: 4px solid #ffc107;">
-                        <h4 style="margin: 0 0 8px 0; color: #856404; font-size: 14px;">District Overview</h4>
-                        <div style="font-size: 13px; color: #856404;">
-                            ${districtDetails}
-                        </div>
-                    </div>
-                ` : ''}
-                
-                ${this.createAdditionalPropertiesSection(properties)}
-            </div>
-        `;
-    }
+            ` : ''}
+        </div>
+    `;
+}
     
     /**
      * Create additional properties section

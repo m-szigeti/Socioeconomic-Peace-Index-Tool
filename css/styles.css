@@ -1,6 +1,8 @@
 /* =========================================
-   * Base Styles
+   * Simplified Main Styles - Reduced from 600+ lines to ~200 lines
    * ========================================= */
+
+/* Base Layout */
 body {
     margin: 0;
     display: flex;
@@ -10,9 +12,7 @@ body {
     font-family: Calibri, sans-serif;
 }
 
-/* =========================================
-   * Navigation Bar
-   * ========================================= */
+/* Navigation Bar */
 #navbar {
     height: 10%;
     display: flex;
@@ -28,19 +28,12 @@ body {
     align-items: center;
 }
 
-.logo-image_left {
-    height: 70px;
-    margin: 0 30px;
-}
-
-.logo-image_right {
-    height: 100px;
-    margin: 0 10px;
-}
+.logo-image_left { height: 70px; margin: 0 30px; }
+.logo-image_right { height: 100px; margin: 0 10px; }
 
 .navbar-menu {
-    margin-left: auto !important;  /* Push nav links to the right */
-    margin-right: 20px !important; /* Add some space from right edge */
+    margin-left: auto !important;
+    margin-right: 20px !important;
 }
 
 .navbar-menu li {
@@ -53,38 +46,25 @@ body {
     text-decoration: none;
     font-weight: bold;
     transition: color 0.3s;
-    list-style: none !important;        
-}
-
-.navbar-menu a:hover {
-    color: #ddd;
-}
-
-.larger-nav-link {
     font-size: 18px;
     padding: 10px 15px;
-    /* Remove margin-right: 300px */
-}   
+}
 
-/* =========================================
-   * Navbar Title Adjustments
-   * ========================================= */
+.navbar-menu a:hover { color: #ddd; }
+
 .tool-title {
     font-size: 18px !important;
     margin-left: 10px !important;
 }
-/* =========================================
-   * Main Layout
-   * ========================================= */
+
+/* Main Layout */
 .main-container {
     display: flex;
     flex: 1;
     overflow: hidden;
 }
 
-/* =========================================
-   * Sidebar Styles
-   * ========================================= */
+/* Sidebar */
 #sidebar {
     width: 20%;
     background: #e0e0e0;
@@ -98,23 +78,230 @@ body {
     z-index: 10;
 }
 
-#sidebar::-webkit-scrollbar {
-    width: 8px;
+#sidebar::-webkit-scrollbar { width: 8px; }
+#sidebar::-webkit-scrollbar-thumb { 
+    background-color: #888; 
+    border-radius: 10px; 
+}
+#sidebar::-webkit-scrollbar-thumb:hover { background-color: #555; }
+
+.sidebar-title {
+    width: 100%;
+    text-align: center;
+    margin-bottom: 15px;
+    padding: 8px 0;
 }
 
-#sidebar::-webkit-scrollbar-thumb {
-    background-color: #888;
-    border-radius: 10px;
+.sidebar-title h2 {
+    margin: 0;
+    color: #495057;
+    font-size: 16px;
+    font-weight: 600;
 }
 
-#sidebar::-webkit-scrollbar-thumb:hover {
-    background-color: #555;
+/* SEPI Section - Unified Styling with Collapse Functionality */
+.sepi-section {
+    width: 100%;
+    margin-bottom: 20px;
+    border-radius: 12px;
+    overflow: hidden;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    flex-shrink: 0 !important;
+    background: linear-gradient(135deg, #2c5f2d, #4a8b3a) !important;
 }
 
-/* =========================================
-   * Enhanced Button Sections (SEPI & Pillars) - FIXED
-   * ========================================= */
-.sepi-section, .pillars-section {
+.sepi-section:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(44, 95, 45, 0.4);
+}
+
+.sepi-section.collapsed {
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.sepi-section.collapsed:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(44, 95, 45, 0.3);
+}
+
+.sepi-header {
+    background: transparent;
+    padding: 15px 20px;
+    margin: 0;
+    text-align: center;
+    cursor: pointer !important;
+    transition: all 0.3s ease;
+    position: relative;
+}
+
+.sepi-header:hover { background: rgba(255, 255, 255, 0.1); }
+
+.sepi-header h3 {
+    color: white !important;
+    margin: 0;
+    font-size: 16px;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    position: relative;
+}
+
+.sepi-header h3::after {
+    content: '▼';
+    font-size: 12px;
+    transition: transform 0.3s ease;
+    opacity: 0.8;
+}
+
+.sepi-section.collapsed .sepi-header h3::after {
+    transform: rotate(-90deg);
+}
+
+.sepi-selector {
+    background: rgba(255, 255, 255, 0.95);
+    padding: 15px 20px;
+    margin: 0;
+    transition: all 0.3s ease;
+    max-height: 1000px;
+    overflow: hidden;
+}
+
+.sepi-section.collapsed .sepi-selector {
+    max-height: 0;
+    padding: 0 20px;
+    opacity: 0;
+}
+
+/* SEPI Options */
+.sepi-option {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 12px;
+    margin: 6px 0;
+    background: white;
+    border: 2px solid #e0e0e0;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 14px;
+    font-weight: 500;
+    color: #495057;
+}
+
+.sepi-option:hover {
+    border-color: #2c5f2d;
+    background: #f8f9fa;
+    transform: translateX(3px);
+}
+
+.sepi-option.active {
+    border-color: #2c5f2d !important;
+    background: #e8f5e8 !important;
+    color: #2c5f2d !important;
+    font-weight: 600;
+    box-shadow: 0 2px 8px rgba(44, 95, 45, 0.2);
+}
+
+.sepi-option.inactive {
+    border-color: #6c757d !important;
+    background: #f8f9fa !important;
+    color: #6c757d !important;
+    opacity: 0.7;
+}
+
+.sepi-section.no-active-layers {
+    background: linear-gradient(135deg, #6c757d, #5a6268) !important;
+}
+
+.sepi-section.no-active-layers .sepi-header h3 {
+    opacity: 0.8;
+}
+
+.sepi-option-text { flex: 1; text-align: left; }
+
+.sepi-checkmark {
+    opacity: 0;
+    color: #2c5f2d;
+    font-weight: bold;
+    font-size: 16px;
+    transition: opacity 0.3s ease;
+    margin-left: 10px;
+}
+
+.sepi-option.active .sepi-checkmark { opacity: 1; }
+
+.sepi-pillars-label {
+    margin: 15px 0 8px 0;
+    font-size: 12px;
+    font-weight: 600;
+    color: #6c757d;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border-bottom: 1px solid #e0e0e0;
+    padding-bottom: 5px;
+}
+
+/* SEPI Opacity Container */
+.sepi-opacity-container {
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 8px;
+    padding: 15px 20px;
+    margin: 0;
+    border-top: 1px solid rgba(255, 255, 255, 0.3);
+    transition: all 0.3s ease;
+    max-height: 200px;
+    overflow: hidden;
+}
+
+.sepi-section.collapsed .sepi-opacity-container {
+    max-height: 0;
+    padding: 0 20px;
+    opacity: 0;
+}
+
+.sepi-opacity-container .opacity-control { margin: 0; }
+
+.sepi-opacity-container .opacity-control label {
+    color: white !important;
+    font-weight: 600 !important;
+    font-size: 12px !important;
+    margin-bottom: 3px !important;
+}
+
+.sepi-opacity-container .opacity-control span {
+    color: white !important;
+    font-weight: bold;
+    font-size: 11px;
+}
+
+.sepi-opacity-container .opacity-control input[type="range"] {
+    width: 100%;
+    margin: 5px 0;
+    -webkit-appearance: none;
+    appearance: none;
+    background: rgba(255, 255, 255, 0.3);
+    height: 4px;
+    border-radius: 3px;
+    outline: none;
+}
+
+.sepi-opacity-container .opacity-control input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: white;
+    cursor: pointer;
+    border: 2px solid #2c5f2d;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+/* Legacy Pillars Section (for compatibility) */
+.pillars-section {
     width: 100%;
     margin-bottom: 10px;
     border-radius: 12px;
@@ -122,105 +309,13 @@ body {
     transition: all 0.3s ease;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
     flex-shrink: 0 !important;
-    min-height: auto !important;
+    background: #6c757d !important;
 }
 
-/* FIXED: Default gray state for both sections - NOT green */
-.sepi-section, .pillars-section {
-    background: #6c757d !important; /* Gray by default */
-}
+.pillars-section.active { background: linear-gradient(135deg, #2c5f2d, #4a8b3a) !important; }
+.pillars-section:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4); }
 
-/* FIXED: Active green state ONLY when .active class is added */
-.sepi-section.active, .pillars-section.active {
-    background: linear-gradient(135deg, #2c5f2d, #4a8b3a) !important;
-}
-
-/* Hover effects */
-.sepi-section:hover, .pillars-section:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
-}
-
-.sepi-section.active:hover, .pillars-section.active:hover {
-    box-shadow: 0 6px 20px rgba(44, 95, 45, 0.4);
-}
-
-/* =========================================
-   * Button styling for SEPI and Pillars - UNIFIED
-   * ========================================= */
-.sepi-section .layer-checkbox, .pillars-section .layer-checkbox {
-    margin: 0;
-    padding: 0;
-    background: none;
-    width: 100%;
-}
-
-.sepi-section .layer-checkbox input[type="checkbox"],
-.pillars-section .layer-checkbox input[type="checkbox"] {
-    display: none;
-}
-
-.sepi-section .layer-checkbox label,
-.pillars-section .layer-checkbox label {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 100%;
-    padding: 10px 10px;
-    margin: 0;
-    color: white !important;
-    font-weight: bold;
-    font-size: 14px;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    text-align: center;
-    border: none;
-    background: transparent;
-    user-select: none;
-}
-
-.sepi-section .layer-checkbox label:hover,
-.pillars-section .layer-checkbox label:hover {
-    background: rgba(255, 255, 255, 0.1);
-}
-
-.sepi-section .layer-checkbox input[type="checkbox"]:checked + label,
-.pillars-section .layer-checkbox input[type="checkbox"]:checked + label {
-    background: rgba(255, 255, 255, 0.2);
-    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.2);
-}
-
-.sepi-section .layer-checkbox label::before,
-.pillars-section .layer-checkbox label::before {
-    margin-right: 10px;
-    color: white;
-    font-size: 20px;
-}
-
-.sepi-section .layer-checkbox input[type="checkbox"]:checked + label::after,
-.pillars-section .layer-checkbox input[type="checkbox"]:checked + label::after {
-    content: '✓';
-    margin-left: 10px;
-    background: rgba(255, 255, 255, 0.3);
-    color: white !important;
-    border-radius: 50%;
-    width: 20px;
-    height: 20px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 12px;
-    font-weight: bold;
-}
-
-/* Force white text for SEPI and Pillars buttons */
-.sepi-section .layer-checkbox label,
-.pillars-section .layer-checkbox label {
-    color: white !important;
-}
-/* =========================================
-   * Layer Controls (Shared) - FIXED COLORS
-   * ========================================= */
+/* Layer Controls - Unified */
 .layer-controls, .pillar-controls, .pillars-controls {
     background: rgba(255, 255, 255, 0.95);
     padding: 15px 20px;
@@ -229,56 +324,9 @@ body {
     display: none;
 }
 
-.layer-controls.show, .pillar-controls.show, .pillars-controls.show {
-    display: block;
-}
+.layer-controls.show, .pillar-controls.show, .pillars-controls.show { display: block; }
 
-/* =========================================
-   * Pillar Selector Styling (Inside Controls) - FIXED
-   * ========================================= */
-.pillars-section .pillar-selector {
-    margin-bottom: 10px;
-    padding: 0;
-}
-
-/* FIXED: Proper label styling - should be green text on white background */
-.pillars-section .pillar-selector label {
-    color: #2c5f2d !important;
-    font-weight: 600 !important;
-    font-size: 12px !important;
-    margin-bottom: 4px !important;
-    display: block !important;
-    text-align: left !important;
-    padding: 0 !important;
-    background: none !important;
-    width: auto !important;
-}
-
-.pillars-section .pillar-selector label:hover {
-    background: none !important;
-}
-
-.pillars-section .pillar-selector select {
-    width: 100% !important;
-    padding: 6px !important;
-    border: 1px solid #2c5f2d !important;
-    border-radius: 4px !important;
-    background: white !important;
-    color: #2c5f2d !important;
-    font-weight: 500 !important;
-    font-size: 12px !important;
-    transition: all 0.3s ease !important;
-}
-
-.pillars-section .pillar-selector select:focus {
-    outline: none !important;
-    border-color: #4a8b3a !important;
-    box-shadow: 0 0 4px rgba(44, 95, 45, 0.3) !important;
-}
-
-/* =========================================
-   * Opacity Controls (UNIFIED for SEPI & Pillars) - FIXED
-   * ========================================= */
+/* Opacity Controls - Unified */
 .opacity-control {
     margin: 0 0 10px 0;
     padding: 0;
@@ -291,7 +339,6 @@ body {
     margin-bottom: 3px;
 }
 
-/* FIXED: Opacity labels should be green text */
 .opacity-control label {
     color: #2c5f2d !important;
     font-weight: 600 !important;
@@ -323,18 +370,14 @@ body {
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
-/* FIXED: Opacity value text should be green */
 .opacity-control span {
     color: #2c5f2d !important;
     font-weight: bold;
     font-size: 11px;
 }
 
-/* =========================================
-   * Attribute & Color Ramp Selectors
-   * ========================================= */
-.attribute-selector label,
-.color-ramp-selector label {
+/* Form Controls */
+.attribute-selector label, .color-ramp-selector label {
     color: #495057 !important;
     font-weight: 600 !important;
     font-size: 12px !important;
@@ -342,8 +385,7 @@ body {
     display: block !important;
 }
 
-.attribute-selector select,
-.color-ramp-selector select {
+.attribute-selector select, .color-ramp-selector select {
     width: 100% !important;
     padding: 6px !important;
     border: 1px solid #495057 !important;
@@ -355,27 +397,15 @@ body {
     transition: all 0.3s ease !important;
 }
 
-.attribute-selector select:focus,
-.color-ramp-selector select:focus {
+.attribute-selector select:focus, .color-ramp-selector select:focus {
     outline: none !important;
     border-color: #6c757d !important;
     box-shadow: 0 0 4px rgba(73, 80, 87, 0.3) !important;
 }
 
-.color-ramp-selector {
-    margin: 0;
-}
+.color-ramp-selector { margin: 0; }
 
-.color-preview {
-    margin-top: 8px;
-    height: 25px;
-    border-radius: 6px;
-    border: 2px solid #2c5f2d;
-}
-
-/* =========================================
-   * Dropdown Controls
-   * ========================================= */
+/* Dropdown Controls */
 .layer-group {
     width: 100%;
     margin-bottom: 10px;
@@ -401,9 +431,7 @@ body {
     margin-left: 10px;
 }
 
-.dropdown-btn.active:after {
-    content: '\25B2';
-}
+.dropdown-btn.active:after { content: '\25B2'; }
 
 .dropdown-container {
     display: none;
@@ -420,9 +448,7 @@ body {
     padding: 5px 10px;
 }
 
-/* =========================================
-   * Map Layout
-   * ========================================= */
+/* Map Layout */
 #map {
     width: 80%;
     height: 100%;
@@ -462,9 +488,7 @@ body {
     font-size: 16px;
 }
 
-/* =========================================
-   * Map Controls (Consolidated)
-   * ========================================= */
+/* Map Controls (Consolidated) */
 .combined-map-control {
     background-color: white;
     border-radius: 4px;
@@ -552,9 +576,7 @@ body {
     background-color: white;
 }
 
-/* =========================================
-   * Legend
-   * ========================================= */
+/* Legend */
 .legend {
     position: absolute;
     bottom: 30px;
@@ -580,335 +602,12 @@ body {
     color: #555;
 }
 
-/* =========================================
-   * Popup Styling (Consolidated)
-   * ========================================= */
-.sepi-popup, .pillar-popup {
-    .leaflet-popup-content-wrapper {
-        background: #fff;
-        border-radius: 8px;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-        border: 1px solid #e0e0e0;
-        max-width: 400px;
-    }
-    
-    .leaflet-popup-content {
-        margin: 0;
-        line-height: 1.4;
-        font-family: 'Calibri', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        max-height: 500px;
-        overflow-y: auto;
-    }
-    
-    .leaflet-popup-tip {
-        background: #fff;
-        border: 1px solid #e0e0e0;
-    }
-    
-    img {
-        max-width: 100% !important;
-        height: auto !important;
-        border-radius: 5px !important;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.1) !important;
-        margin-bottom: 15px !important;
-    }
-    
-    h3 {
-        border-bottom: 2px solid currentColor !important;
-        padding-bottom: 5px !important;
-        margin: 0 0 10px 0 !important;
-        font-size: 16px !important;
-    }
-    
-    h4 {
-        color: #856404 !important;
-        font-size: 14px !important;
-        margin: 0 0 8px 0 !important;
-        text-transform: uppercase;
-        border-bottom: 1px solid currentColor;
-        padding-bottom: 3px;
-    }
-}
-
-.sepi-popup h3 {
-    color: #2c5f2d !important;
-}
-
-.pillar-popup h3 {
-    color: #495057 !important;
-}
-
-/* =========================================
-   * Tooltip Styling (Consolidated)
-   * ========================================= */
-.sepi-tooltip, .pillar-tooltip {
-    background: rgba(255, 255, 255, 0.95) !important;
-    border-radius: 8px !important;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2) !important;
-    font-family: 'Calibri', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif !important;
-    font-size: 13px !important;
-    padding: 8px 12px !important;
-    color: #333 !important;
-    z-index: 1000 !important;
-}
-
-.sepi-tooltip {
-    border: 2px solid #2c5f2d !important;
-}
-
-.pillar-tooltip {
-    border: 2px solid #495057 !important;
-}
-
-/* =========================================
-   * Hover Effects - UPDATED
-   * ========================================= */
-
-/* General hover effect for most interactive layers (with fill) */
-.leaflet-interactive[data-sepi]:hover,
-.leaflet-interactive[data-pillar]:hover {
-    stroke-width: 4px !important;
-    stroke: #333 !important;
-    fill-opacity: 0.9 !important;
-    cursor: pointer !important;
-}
-
-/* Hover effect for country outline (NO FILL - outline only) */
-.leaflet-interactive:hover {
-    stroke-width: 3 !important;
-    stroke: #666 !important;
-}
-
-/* Specific hover for layers that SHOULD have fill (vector layers with data) */
-.leaflet-interactive[data-attribute]:hover {
-    stroke-width: 3 !important;
-    stroke: #666 !important;
-    fill-opacity: 0.8 !important;
-}
-
-/* =========================================
-   * Responsive Design
-   * ========================================= */
+/* Responsive Design */
 @media (max-width: 768px) {
-    .sepi-section, .pillars-section {
-        margin-bottom: 15px;
-    }
-    
-    .layer-controls, .pillar-controls, .pillars-controls {
-        padding: 12px 15px;
-    }
-    
-    .sepi-popup, .pillar-popup {
-        .leaflet-popup-content-wrapper {
-            max-width: 280px;
-        }
-    }
-}
-
-/* =========================================
-   * Sidebar Title Styling
-   * ========================================= */
-/* =========================================
-   * Sidebar Title Styling - Humble Version
-   * ========================================= */
-.sidebar-title {
-    width: 100%;
-    text-align: center;
-    margin-bottom: 15px;
-    padding: 8px 0;
-}
-
-.sidebar-title h2 {
-    margin: 0;
-    color: #495057;
-    font-size: 16px;
-    font-weight: 600;
-    font-family: Calibri, sans-serif;
-}
-
-/* ADDED NOW will reallocate */
-
-/* =========================================
- * Combined SEPI Section Styles
- * ========================================= */
-
-.sepi-section {
-    width: 100%;
-    margin-bottom: 20px;
-    border-radius: 12px;
-    overflow: hidden;
-    transition: all 0.3s ease;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-    flex-shrink: 0 !important;
-    min-height: auto !important;
-    background: linear-gradient(135deg, #2c5f2d, #4a8b3a) !important;
-}
-
-.sepi-section:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(44, 95, 45, 0.4);
-}
-
-/* =========================================
- * SEPI Header
- * ========================================= */
-.sepi-header {
-    background: transparent;
-    padding: 15px 20px;
-    margin: 0;
-    text-align: center;
-}
-
-.sepi-header h3 {
-    color: white !important;
-    margin: 0;
-    font-size: 16px;
-    font-weight: bold;
-    text-align: center;
-}
-
-/* =========================================
- * SEPI Options Container
- * ========================================= */
-.sepi-selector {
-    background: rgba(255, 255, 255, 0.95);
-    padding: 15px 20px;
-    margin: 0;
-}
-
-/* =========================================
- * Individual SEPI Options (Clickable Items)
- * ========================================= */
-.sepi-option {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 10px 12px;
-    margin: 6px 0;
-    background: white;
-    border: 2px solid #e0e0e0;
-    border-radius: 8px;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    font-size: 14px;
-    font-weight: 500;
-    color: #495057;
-}
-
-.sepi-option:hover {
-    border-color: #2c5f2d;
-    background: #f8f9fa;
-    transform: translateX(3px);
-}
-
-.sepi-option.active {
-    border-color: #2c5f2d !important;
-    background: #e8f5e8 !important;
-    color: #2c5f2d !important;
-    font-weight: 600;
-    box-shadow: 0 2px 8px rgba(44, 95, 45, 0.2);
-}
-
-.sepi-option-text {
-    flex: 1;
-    text-align: left;
-}
-
-.sepi-checkmark {
-    opacity: 0;
-    color: #2c5f2d;
-    font-weight: bold;
-    font-size: 16px;
-    transition: opacity 0.3s ease;
-    margin-left: 10px;
-}
-
-.sepi-option.active .sepi-checkmark {
-    opacity: 1;
-}
-
-/* =========================================
- * Pillars Label
- * ========================================= */
-.sepi-pillars-label {
-    margin: 15px 0 8px 0;
-    font-size: 12px;
-    font-weight: 600;
-    color: #6c757d;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    border-bottom: 1px solid #e0e0e0;
-    padding-bottom: 5px;
-}
-
-/* =========================================
- * SEPI Opacity Container
- * ========================================= */
-.sepi-opacity-container {
-    background: rgba(255, 255, 255, 0.2);
-    border-radius: 8px;
-    padding: 15px 20px;
-    margin: 0;
-    border-top: 1px solid rgba(255, 255, 255, 0.3);
-}
-
-.sepi-opacity-container .opacity-control {
-    margin: 0;
-}
-
-.sepi-opacity-container .opacity-control label {
-    color: white !important;
-    font-weight: 600 !important;
-    font-size: 12px !important;
-    margin-bottom: 3px !important;
-}
-
-.sepi-opacity-container .opacity-control span {
-    color: white !important;
-    font-weight: bold;
-    font-size: 11px;
-}
-
-.sepi-opacity-container .opacity-control input[type="range"] {
-    width: 100%;
-    margin: 5px 0;
-    -webkit-appearance: none;
-    appearance: none;
-    background: rgba(255, 255, 255, 0.3);
-    height: 4px;
-    border-radius: 3px;
-    outline: none;
-}
-
-.sepi-opacity-container .opacity-control input[type="range"]::-webkit-slider-thumb {
-    -webkit-appearance: none;
-    width: 18px;
-    height: 18px;
-    border-radius: 50%;
-    background: white;
-    cursor: pointer;
-    border: 2px solid #2c5f2d;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-}
-
-/* =========================================
- * Responsive Adjustments
- * ========================================= */
-@media (max-width: 768px) {
-    .sepi-option {
-        padding: 8px 10px;
-        font-size: 13px;
-    }
-    
-    .sepi-header h3 {
-        font-size: 15px;
-    }
-    
-    .sepi-selector {
-        padding: 12px 15px;
-    }
-    
-    .sepi-opacity-container {
-        padding: 12px 15px;
-    }
+    .sepi-section, .pillars-section { margin-bottom: 15px; }
+    .layer-controls, .pillar-controls, .pillars-controls { padding: 12px 15px; }
+    .sepi-option { padding: 8px 10px; font-size: 13px; }
+    .sepi-header h3 { font-size: 15px; }
+    .sepi-selector { padding: 12px 15px; }
+    .sepi-opacity-container { padding: 12px 15px; }
 }

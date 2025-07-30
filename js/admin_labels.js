@@ -488,8 +488,8 @@ export async function loadCountryOutline(countryId, filepath) {
         const outlineLayer = L.geoJSON(data, {
             style: {
                 color: "#3388ff",
-                weight: 2,
-                opacity: 1,
+                weight: 0,
+                opacity: 0,
                 fillOpacity: 0
             }
         });
