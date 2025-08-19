@@ -1,4 +1,4 @@
-// sepi_manager.js - Consolidated SEPI layer management
+// sepi_manager.js - Fixed for sepi_with_pillars_3.geojson
 // Replaces: sepi_integration.js + sepi_popups.js
 
 import { updateSEPILegend } from './legend.js';
@@ -12,8 +12,8 @@ export class SEPIManager {
         this.layers = layers;
         this.sepiLayer = null;
         this.config = {
-            dataUrl: 'data/sepi_with_pillars.geojson',
-            property: 'peacebuilding_index', // or 'index' - check your data
+            dataUrl: 'data/sepi_with_pillars_3.geojson', // UPDATED: New file
+            property: 'peacebuilding_index', // Check if this exists in new file, might need to be 'index'
             colors: ['#dc3545', '#fd7e14', '#ffc107', '#28a745', '#155724'],
             breaks: [0.2, 0.4, 0.6, 0.8]
         };
@@ -39,30 +39,61 @@ export class SEPIManager {
             'Middle Juba': 'Southern region with Juba River. Agricultural potential.',
             'Lower Juba': 'Southernmost region with Kismayo port. Trade and fishing.'
         };
- 
     }
     
     /**
-     * Load and setup SEPI layer
+     * Load and setup SEPI layer - UPDATED to handle new file format
      */
     async loadLayer() {
         try {
+            console.log('Loading SEPI data from:', this.config.dataUrl);
             const response = await fetch(this.config.dataUrl);
             if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
             
             const geojsonData = await response.json();
+            console.log('SEPI data loaded, checking structure...');
+            
+            // DEBUG: Check the structure of the loaded data
+            if (geojsonData.features && geojsonData.features.length > 0) {
+                const firstFeature = geojsonData.features[0];
+                console.log('First feature properties:', Object.keys(firstFeature.properties));
+                console.log('Sample properties:', firstFeature.properties);
+                
+                // Check which SEPI property exists
+                const possibleSEPIProps = ['peacebuilding_index', 'index', 'sepi', 'peace_index'];
+                const existingSEPIProp = possibleSEPIProps.find(prop => 
+                    firstFeature.properties[prop] !== undefined
+                );
+                
+                if (existingSEPIProp) {
+                    this.config.property = existingSEPIProp;
+                    console.log('Using SEPI property:', existingSEPIProp);
+                } else {
+                    console.error('No SEPI property found! Available properties:', Object.keys(firstFeature.properties));
+                    // Try the first numeric property as fallback
+                    const numericProp = Object.entries(firstFeature.properties)
+                        .find(([key, value]) => typeof value === 'number' && value >= 0 && value <= 1);
+                    if (numericProp) {
+                        this.config.property = numericProp[0];
+                        console.log('Using fallback property:', numericProp[0]);
+                    }
+                }
+            }
+            
             this.sepiLayer = L.geoJSON(geojsonData, {
                 style: (feature) => this.getFeatureStyle(feature),
                 onEachFeature: (feature, layer) => this.setupFeatureInteractions(feature, layer)
             });
             
             this.layers.sepi.main = this.sepiLayer;
+            console.log('SEPI layer created successfully');
             return this.sepiLayer;
         } catch (error) {
             console.error('Error loading SEPI layer:', error);
             throw error;
         }
     }
+    
     makeDraggable(element, handle) {
         // Prevent re-initializing if already draggable
         if (element.dataset.draggable) return;
@@ -96,62 +127,67 @@ export class SEPIManager {
             document.addEventListener('mouseup', onMouseUp);
         });
     }
+    
     createSEPIBreakdownChart(properties) {
-    // Extract pillar values - adjust property names to match your data
-    const pillars = [
-        { name: 'Education', value: properties['Education_Index'] || 0, color: '#28a745' },
-        { name: 'Food Security', value: properties['Food_Security_Index'] || 0, color: '#ffc107' },
-        { name: 'Poverty', value: properties['Poverty_Index'] || 0, color: '#17a2b8' },
-        { name: 'Health', value: properties['Health_Index'] || 0, color: '#dc3545' },
-        { name: 'Climate', value: properties['Climate_Vulnerability_Index'] || 0, color: '#6f42c1' }
-    ];
-    
-    // Sort pillars by value (descending)
-    pillars.sort((a, b) => b.value - a.value);
-    
-    // Create chart HTML
-    let chartHTML = `
-        <div class="sepi-breakdown-chart">
-            <h4>📊 SEPI Pillar Breakdown</h4>
-    `;
-    
-    pillars.forEach(pillar => {
-        const percentage = Math.round(pillar.value * 100);
-        chartHTML += `
-            <div class="pillar-bar">
-                <div class="pillar-label">${pillar.name}:</div>
-                <div class="pillar-bar-container">
-                    <div class="pillar-bar-fill" style="width: ${percentage}%; background: ${pillar.color};"></div>
+        // UPDATED: Use new column names
+        const pillars = [
+            { name: 'Education', value: properties['education_index_new_minmax'] || 0, color: '#28a745' },
+            { name: 'Food Security', value: properties['Food_security_index_new_minmax'] || 0, color: '#ffc107' },
+            { name: 'Poverty', value: properties['poverty_index_new_minmax'] || 0, color: '#17a2b8' },
+            { name: 'Health', value: properties['health_index_new_minmax'] || 0, color: '#dc3545' },
+            { name: 'Climate', value: properties['climate_vulnerability_index_new_minmax'] || 0, color: '#6f42c1' }
+        ];
+        
+        // Sort pillars by value (descending)
+        pillars.sort((a, b) => b.value - a.value);
+        
+        // Create chart HTML
+        let chartHTML = `
+            <div class="sepi-breakdown-chart">
+                <h4>📊 SEPI Pillar Breakdown</h4>
+        `;
+        
+        pillars.forEach(pillar => {
+            const percentage = Math.round(pillar.value * 100);
+            chartHTML += `
+                <div class="pillar-bar">
+                    <div class="pillar-label">${pillar.name}:</div>
+                    <div class="pillar-bar-container">
+                        <div class="pillar-bar-fill" style="width: ${percentage}%; background: ${pillar.color};"></div>
+                    </div>
+                    <div class="pillar-value">${pillar.value.toFixed(2)}</div>
                 </div>
-                <div class="pillar-value">${pillar.value.toFixed(2)}</div>
+            `;
+        });
+        
+        // Add overall SEPI score - UPDATED: Use dynamic property
+        const overallSEPI = properties[this.config.property] || 0;
+        const overallPercentage = Math.round(overallSEPI * 100);
+        
+        chartHTML += `
+            <div class="pillar-bar" style="margin-top: 12px; padding-top: 8px; border-top: 1px solid #dee2e6;">
+                <div class="pillar-label" style="font-weight: bold;">Overall SEPI:</div>
+                <div class="pillar-bar-container">
+                    <div class="pillar-bar-fill" style="width: ${overallPercentage}%; background: #2c5f2d;"></div>
+                </div>
+                <div class="pillar-value" style="font-size: 14px;">${overallSEPI.toFixed(2)}</div>
             </div>
         `;
-    });
+        
+        chartHTML += `</div>`;
+        return chartHTML;
+    }
     
-    // Add overall SEPI score
-    const overallSEPI = properties['peacebuilding_index'] || properties['index'] || 0;
-    const overallPercentage = Math.round(overallSEPI * 100);
-    
-    chartHTML += `
-        <div class="pillar-bar" style="margin-top: 12px; padding-top: 8px; border-top: 1px solid #dee2e6;">
-            <div class="pillar-label" style="font-weight: bold;">Overall SEPI:</div>
-            <div class="pillar-bar-container">
-                <div class="pillar-bar-fill" style="width: ${overallPercentage}%; background: #2c5f2d;"></div>
-            </div>
-            <div class="pillar-value" style="font-size: 14px;">${overallSEPI.toFixed(2)}</div>
-        </div>
-    `;
-    
-    chartHTML += `</div>`;
-    return chartHTML;
-}
     /**
      * Get styling for a feature based on SEPI value
      */
     getFeatureStyle(feature) {
         const value = feature.properties[this.config.property];
+        const color = this.getColor(value);
+        console.log(`Feature style - Property: ${this.config.property}, Value: ${value}, Color: ${color}`);
+        
         return {
-            fillColor: this.getColor(value),
+            fillColor: color,
             weight: 2,
             opacity: 1,
             color: '#ffffff',
@@ -163,14 +199,24 @@ export class SEPIManager {
      * Get color for SEPI value
      */
     getColor(value) {
-        if (value == null || isNaN(value)) return '#cccccc';
+        if (value == null || isNaN(value)) {
+            console.log('Invalid value for coloring:', value);
+            return '#cccccc';
+        }
         
         const numValue = Number(value);
         const { colors, breaks } = this.config;
         
+        console.log(`Getting color for value: ${numValue}`);
+        
         for (let i = 0; i < breaks.length; i++) {
-            if (numValue < breaks[i]) return colors[i];
+            if (numValue < breaks[i]) {
+                console.log(`Value ${numValue} < ${breaks[i]}, returning color: ${colors[i]}`);
+                return colors[i];
+            }
         }
+        
+        console.log(`Value ${numValue} >= all breaks, returning color: ${colors[colors.length - 1]}`);
         return colors[colors.length - 1];
     }
     
@@ -189,19 +235,25 @@ export class SEPIManager {
     }
     
     /**
-     * Setup feature interactions (popups, tooltips, hover)
+     * Setup feature interactions (popups, tooltips, hover) - UPDATED
      */
     setupFeatureInteractions(feature, layer) {
         const properties = feature.properties;
-        const districtName = properties.ADM1_EN;
+        
+        // Try multiple possible field names for district
+        const districtName = properties.ADM1_EN || properties.NAME_1 || 
+                           properties.admin1_name || properties.region || 
+                           properties.district || 'Unknown District';
+        
         const sepiValue = properties[this.config.property];
         
+        console.log(`Setting up interactions for: ${districtName}, SEPI: ${sepiValue}`);
         
         // Bind tooltip
         const scoreText = sepiValue != null ? Number(sepiValue).toFixed(2) : 'No data';
         layer.bindTooltip(`
             <div style="text-align: center; font-family: Calibri, sans-serif;">
-                <strong>${districtName || 'Unknown District'}</strong><br>
+                <strong>${districtName}</strong><br>
                 <span style="color: ${this.getColor(sepiValue)}; font-weight: bold;">
                     SEPI: ${scoreText}
                 </span>
@@ -225,76 +277,78 @@ export class SEPIManager {
                 this.sepiLayer.resetStyle(e.target);
             }
         });
-// Bind popup with draggable option
-layer.bindPopup(this.createPopupContent(properties), {
+
+        // Bind popup with draggable option
+        layer.bindPopup(this.createPopupContent(properties), {
             maxWidth: 450,
             className: 'sepi-popup',
             autoPan: true,
             autoPanPadding: L.point(50, 50),
-            // This offset pushes the popup 20px to the right of the click point
             offset: L.point(20, 0)
         });
 
-
-
-// Make popup draggable when it opens
-layer.on('popupopen', (e) => {
-    const popup = e.popup;
-    const popupEl = popup._container;
-    const header = popupEl.querySelector('.sepi-popup-header');
-    
-    if (header) {
-        this.makeDraggable(popupEl, header);
-    }
-});
-        
+        // Make popup draggable when it opens
+        layer.on('popupopen', (e) => {
+            const popup = e.popup;
+            const popupEl = popup._container;
+            const header = popupEl.querySelector('.sepi-popup-header');
+            
+            if (header) {
+                this.makeDraggable(popupEl, header);
+            }
+        });
     }
  
     /**
-     * Create popup content for SEPI features
+     * Create popup content for SEPI features - UPDATED
      */
     createPopupContent(properties) {
-      const chartHTML = this.createSEPIBreakdownChart(properties);
-    const sepiValue = properties[this.config.property];
-    const districtName = properties.ADM1_EN;
-    const districtDetails = this.districtInfo[districtName];
-    
-    return `
-        <div class="sepi-popup-header">
-            <h3 class="sepi-popup-title">🕊️ ${districtName || 'District Information'}</h3>
-        </div>
-        <div style="padding: 15px;">
-            ${chartHTML}
-            
-            <div style="background: #e8f5e8; padding: 12px; border-radius: 6px; margin: 15px 0; border-left: 4px solid #2c5f2d;">
-                <div style="display: flex; justify-content: space-between; align-items: center;">
-                    <strong style="color: #2c5f2d;">Overall SEPI Score:</strong>
-                    <span style="font-size: 18px; font-weight: bold; color: ${this.getColor(sepiValue)};">
-                        ${sepiValue != null ? Number(sepiValue).toFixed(2) : 'No data'}
-                    </span>
-                </div>
-                <div style="margin-top: 5px; font-size: 12px; color: #2c5f2d; font-weight: 500;">
-                    ${this.getDescription(sepiValue)}
-                </div>
+        const chartHTML = this.createSEPIBreakdownChart(properties);
+        const sepiValue = properties[this.config.property];
+        
+        // Try multiple possible field names for district
+        const districtName = properties.ADM1_EN || properties.NAME_1 || 
+                           properties.admin1_name || properties.region || 
+                           properties.district || 'Unknown District';
+        
+        const districtDetails = this.districtInfo[districtName];
+        
+        return `
+            <div class="sepi-popup-header">
+                <h3 class="sepi-popup-title">🕊️ ${districtName}</h3>
             </div>
-            
-            ${districtDetails ? `
-                <div style="background: #fff3cd; padding: 12px; border-radius: 6px; border-left: 4px solid #ffc107;">
-                    <h4 style="margin: 0 0 8px 0; color: #856404; font-size: 13px; font-weight: 600;">District Overview</h4>
-                    <div style="font-size: 12px; color: #856404; line-height: 1.4;">
-                        ${districtDetails}
+            <div style="padding: 15px;">
+                ${chartHTML}
+                
+                <div style="background: #e8f5e8; padding: 12px; border-radius: 6px; margin: 15px 0; border-left: 4px solid #2c5f2d;">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <strong style="color: #2c5f2d;">Overall SEPI Score:</strong>
+                        <span style="font-size: 18px; font-weight: bold; color: ${this.getColor(sepiValue)};">
+                            ${sepiValue != null ? Number(sepiValue).toFixed(2) : 'No data'}
+                        </span>
+                    </div>
+                    <div style="margin-top: 5px; font-size: 12px; color: #2c5f2d; font-weight: 500;">
+                        ${this.getDescription(sepiValue)}
                     </div>
                 </div>
-            ` : ''}
-        </div>
-    `;
-}
+                
+                ${districtDetails ? `
+                    <div style="background: #fff3cd; padding: 12px; border-radius: 6px; border-left: 4px solid #ffc107;">
+                        <h4 style="margin: 0 0 8px 0; color: #856404; font-size: 13px; font-weight: 600;">District Overview</h4>
+                        <div style="font-size: 12px; color: #856404; line-height: 1.4;">
+                            ${districtDetails}
+                        </div>
+                    </div>
+                ` : ''}
+            </div>
+        `;
+    }
     
     /**
      * Create additional properties section
      */
     createAdditionalPropertiesSection(properties) {
-        const skipFields = [this.config.property, 'ADM1_EN', 'geometry'];
+        const skipFields = [this.config.property, 'ADM1_EN', 'NAME_1', 'geometry'];
         const additionalProps = Object.entries(properties)
             .filter(([key, value]) => !skipFields.includes(key) && value != null)
             .map(([key, value]) => `

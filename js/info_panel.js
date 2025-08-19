@@ -788,11 +788,11 @@ export class InfoPanel {
      */
     detectPillarProperty(properties) {
  const pillarPatterns = [
-        'Education_Index',
-        'Food_Security_Index',
-        'Poverty_Index',
-        'Health_Index',
-        'Climate_Vulnerability_Index'
+        'education_index_new_minmax',
+        'Food_security_index_new_minmax',
+        'poverty_index_new_minmax',
+        'health_index_new_minmax',
+        'climate_vulnerability_index_new_minmax'
     ];
     
     for (const pattern of pillarPatterns) {

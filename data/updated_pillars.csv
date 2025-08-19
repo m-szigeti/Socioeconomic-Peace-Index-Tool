@@ -1,4 +1,4 @@
-ADM1_EN,ADM0_EN,adm1_pcode,adm1_name,Score_pop_frac_3+,Education_Index,Food_Security_Index,Poverty_Index,Health_Index,Climate_Vulnerability_Index
+ADM1_EN,ADM0_EN,adm1_pcode,adm1_name,Score_pop_frac_3+,education_index_new_minmax,Food_security_index_new_minmax,poverty_index_new_minmax,health_index_new_minmax,climate_vulnerability_index_new_minmax
 Awdal,Somalia,SO11,Awdal,0.111111111,0.740712,0.89215,0.007289,0.38121,0.446686
 Bakool,Somalia,SO25,Bakool,0.407407407,0.297924,0.040439,0.783801,0.762963,0.660833
 Banadir,Somalia,SO22,Banadir,0.37037037,0.523004,0.731342,0.0575,0.148148,0.559071
