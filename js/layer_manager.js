@@ -514,7 +514,7 @@ export class SimplifiedPillarManager {
         if (this.pillarsData) return this.pillarsData;
     
         try {
-            const response = await fetch('data/sepi_with_pillars_3.geojson');
+            const response = await fetch('data/sepi_with_pillars_5.geojson');
             if (!response.ok) {
                 throw new Error(`Failed to load pillars data: ${response.status}`);
             }

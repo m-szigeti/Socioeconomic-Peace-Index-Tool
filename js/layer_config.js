@@ -160,31 +160,31 @@ export const LAYER_CONFIG = {
 export const PILLAR_CONFIG = {
     education: {
         name: 'Education Index',
-        file: 'data/sepi_with_pillars_2.geojson',
-        property: 'education_index_new_minmax',
+        file: 'data/sepi_with_pillars_5.geojson',
+        property: 'education_index_minmax',
         description: 'Composite measure of educational access, attendance, and attainment across all levels'
     },
     food_security: {
         name: 'Food Security Index',
-        file: 'data/sepi_with_pillars_2.geojson',
-        property: 'Food_security_index_new_minmax',
+        file: 'data/sepi_with_pillars_5.geojson',
+        property: 'Food_security_index_new_minmax_minmax',
         description: 'Household food security based on food expenditure share and total expenditure capacity'
     },
     poverty: {
         name: 'Poverty Reduction Index',
-        file: 'data/sepi_with_pillars_2.geojson',
-        property: 'poverty_index_new_minmax',
+        file: 'data/sepi_with_pillars_5.geojson',
+        property: 'poverty_index_new_minmax_minmax',
         description: 'Non-poverty levels combining general and extreme poverty measures'
     },
     health: {
         name: 'Health Access Index',
-        file: 'data/sepi_with_pillars_2.geojson',
+        file: 'data/sepi_with_pillars_5.geojson',
         property: 'health_index_new_minmax',
         description: 'Healthcare infrastructure access based on facilities per population and density'
     },
     climate_vulnerability: {
         name: 'Climate Vulnerability Index',
-        file: 'data/sepi_with_pillars_2.geojson',
+        file: 'data/sepi_with_pillars_5.geojson',
         property: 'climate_vulnerability_index_new_minmax',
         description: 'Climate vulnerability based on temperature, vegetation change, and elevation factors'
     }
