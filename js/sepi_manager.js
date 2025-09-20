@@ -1,4 +1,4 @@
-// sepi_manager.js - Fixed for sepi_with_pillars_5.geojson
+// sepi_manager.js - Fixed for sepi_with_pillars_7.geojson
 // Replaces: sepi_integration.js + sepi_popups.js
 
 import { updateSEPILegend } from './legend.js';
@@ -12,7 +12,7 @@ export class SEPIManager {
         this.layers = layers;
         this.sepiLayer = null;
         this.config = {
-            dataUrl: 'data/sepi_with_pillars_5.geojson', // UPDATED: New file
+            dataUrl: 'data/sepi_with_pillars_7.geojson', // UPDATED: New file
             property: 'peacebuilding_index', // Check if this exists in new file, might need to be 'index'
             colors: ['#dc3545', '#fd7e14', '#ffc107', '#28a745', '#155724'],
             breaks: [0.2, 0.4, 0.6, 0.8]
@@ -131,11 +131,11 @@ export class SEPIManager {
     createSEPIBreakdownChart(properties) {
         // UPDATED: Use new column names
         const pillars = [
-            { name: 'Education', value: properties['education_index_new_minmax'] || 0, color: '#28a745' },
-            { name: 'Food Security', value: properties['Food_security_index_new_minmax'] || 0, color: '#ffc107' },
-            { name: 'Poverty', value: properties['poverty_index_new_minmax'] || 0, color: '#17a2b8' },
-            { name: 'Health', value: properties['health_index_new_minmax'] || 0, color: '#dc3545' },
-            { name: 'Climate', value: properties['climate_vulnerability_index_new_minmax'] || 0, color: '#6f42c1' }
+            { name: 'Education', value: properties['education'] || 0, color: '#28a745' },
+            { name: 'Food Security', value: properties['Food_security'] || 0, color: '#ffc107' },
+            { name: 'Poverty', value: properties['poverty'] || 0, color: '#17a2b8' },
+            { name: 'Health', value: properties['health'] || 0, color: '#dc3545' },
+            { name: 'Climate', value: properties['climate_vulnerability'] || 0, color: '#6f42c1' }
         ];
         
         // Sort pillars by value (descending)

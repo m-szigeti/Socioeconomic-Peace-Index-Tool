@@ -788,11 +788,11 @@ export class InfoPanel {
      */
     detectPillarProperty(properties) {
  const pillarPatterns = [
-        'education_index_new_minmax',
-        'Food_security_index_new_minmax',
-        'poverty_index_new_minmax',
-        'health_index_new_minmax',
-        'climate_vulnerability_index_new_minmax'
+        'education',
+        'Food_security',
+        'poverty',
+        'health',
+        'climate_vulnerability'
     ];
     
     for (const pattern of pillarPatterns) {
@@ -1058,7 +1058,7 @@ export class InfoPanel {
         let implications;
         if (absCorr >= 0.6) {
             if (attributeInfo.isHealthIndicator && isPositive) {
-                implications = `The strong positive correlation suggests that peacebuilding interventions could significantly improve ${attributeInfo.displayName} outcomes. Priority should be given to regions with lower peace scores for maximum impact.`;
+                implications = `The strong positive correlation suggests that peacebuilding_index interventions could significantly improve ${attributeInfo.displayName} outcomes. Priority should be given to regions with lower peace scores for maximum impact.`;
             } else if (attributeInfo.isEconomicIndicator && isPositive) {
                 implications = `The strong correlation indicates that ${attributeInfo.displayName} could serve as a reliable indicator of peace levels. Resources should be allocated proportionally to support both peace and economic development.`;
             } else {
@@ -1067,7 +1067,7 @@ export class InfoPanel {
         } else if (absCorr >= 0.3) {
             implications = `The moderate correlation suggests some relationship between peace levels and ${attributeInfo.displayName}, but other factors also play important roles. A multi-faceted approach addressing various determinants would be most effective.`;
         } else {
-            implications = `The weak correlation suggests peace levels and ${attributeInfo.displayName} are largely independent. Different intervention strategies may be needed for each, and peacebuilding may not directly impact ${attributeInfo.displayName}.`;
+            implications = `The weak correlation suggests peace levels and ${attributeInfo.displayName} are largely independent. Different intervention strategies may be needed for each, and peacebuilding_index may not directly impact ${attributeInfo.displayName}.`;
         }
         
         return {

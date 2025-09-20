@@ -160,33 +160,45 @@ export const LAYER_CONFIG = {
 export const PILLAR_CONFIG = {
     education: {
         name: 'Education Index',
-        file: 'data/sepi_with_pillars_5.geojson',
-        property: 'education_index_minmax',
+        file: 'data/sepi_with_pillars_7.geojson',
+        property: 'education',
         description: 'Composite measure of educational access, attendance, and attainment across all levels'
     },
     food_security: {
         name: 'Food Security Index',
-        file: 'data/sepi_with_pillars_5.geojson',
-        property: 'Food_security_index_new_minmax_minmax',
+        file: 'data/sepi_with_pillars_7.geojson',
+        property: 'Food_security',
         description: 'Household food security based on food expenditure share and total expenditure capacity'
     },
     poverty: {
         name: 'Poverty Reduction Index',
-        file: 'data/sepi_with_pillars_5.geojson',
-        property: 'poverty_index_new_minmax_minmax',
+        file: 'data/sepi_with_pillars_7.geojson',
+        property: 'poverty',
         description: 'Non-poverty levels combining general and extreme poverty measures'
     },
     health: {
         name: 'Health Access Index',
-        file: 'data/sepi_with_pillars_5.geojson',
-        property: 'health_index_new_minmax',
+        file: 'data/sepi_with_pillars_7.geojson',
+        property: 'health',
         description: 'Healthcare infrastructure access based on facilities per population and density'
     },
     climate_vulnerability: {
         name: 'Climate Vulnerability Index',
-        file: 'data/sepi_with_pillars_5.geojson',
-        property: 'climate_vulnerability_index_new_minmax',
+        file: 'data/sepi_with_pillars_7.geojson',
+        property: 'climate_vulnerability',
         description: 'Climate vulnerability based on temperature, vegetation change, and elevation factors'
+    },
+    conflict_events: {
+        name: 'Conflict Events',
+        file: 'data/sepi_with_pillars_7.geojson',
+        property: 'Events',
+        description: 'Number of recorded conflict events in the region'
+    },
+    conflict_fatalities: {
+        name: 'Conflict Fatalities',
+        file: 'data/sepi_with_pillars_7.geojson',
+        property: 'Fatalities',
+        description: 'Number of recorded fatalities from conflict events'
     }
 };
 
@@ -197,7 +209,43 @@ export const PILLAR_COLOR_SCHEME = {
     colors: ['#d73027', '#fc8d59', '#ffffbf', '#91cf60', '#1a9850'], // Red to Green
     breaks: [0.2, 0.4, 0.6, 0.8] // Quantile breaks
 };
+export const CONFLICT_COLOR_SCHEME = {
+    colors: ['#ffffcc', '#ffeda0', '#fed976', '#fd8d3c', '#e31a1c'], // Yellow to Red
+    breaks: [0.2, 0.4, 0.6, 0.8] // Quantile breaks
+};
+export function getConflictColor(value) {
+    if (value == null || isNaN(value)) return '#cccccc';
+    
+    const numValue = Number(value);
+    const { colors, breaks } = CONFLICT_COLOR_SCHEME;
+    
+    // Normalize the value to 0-1 scale based on data distribution
+    // You might want to adjust this based on your actual data range
+    const normalizedValue = Math.min(numValue / 6000, 1); // Assuming max ~100 events/fatalities
+    
+    // Yellow to Red scale (higher values = red)
+    if (normalizedValue >= breaks[3]) return colors[4]; // High = Red
+    if (normalizedValue >= breaks[2]) return colors[3]; // Medium-High = Orange-Red
+    if (normalizedValue >= breaks[1]) return colors[2]; // Medium = Orange
+    if (normalizedValue >= breaks[0]) return colors[1]; // Low = Light Orange
+    return colors[0]; // Very Low = Yellow
+}
 
+/**
+ * NEW: Get description for conflict values
+ */
+export function getConflictDescription(value, type = 'events') {
+    if (value == null) return 'No data available';
+    
+    const numValue = Number(value);
+    const label = type === 'events' ? 'conflict events' : 'fatalities';
+    
+    if (numValue >= 1500) return `Very High: ${numValue} ${label}`;
+    if (numValue >= 1000) return `High: ${numValue} ${label}`;
+    if (numValue >= 500) return `Moderate: ${numValue} ${label}`;
+    if (numValue >= 1) return `Low: ${numValue} ${label}`;
+    return `None recorded: ${numValue} ${label}`;
+}
 /**
  * Get color for pillar value using Green-to-Red scale
  */

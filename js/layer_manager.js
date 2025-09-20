@@ -1,13 +1,13 @@
-// layer_manager.js - Updated with combined SEPI handling
+// layer_manager.js - Updated with conflict data handling
 
-import { LAYER_CONFIG, PILLAR_CONFIG, COLOR_SCALES, COLOR_RAMPS, getPillarColor, getPillarDescription } from './layer_config.js';
+import { LAYER_CONFIG, PILLAR_CONFIG, COLOR_SCALES, COLOR_RAMPS, getPillarColor, getPillarDescription, getConflictColor, getConflictDescription } from './layer_config.js';
 import { loadTiff } from './zoom-adaptive-tiff-loader.js';
 import { SEPIManager } from './sepi_manager.js';
 import { loadVectorLayer, loadPointLayer, updateVectorLayerStyle, updatePointLayerStyle, populateAttributeSelector } from './vector_layers.js';
 import { generateAdminLabels } from './admin_labels.js';
 
 /**
- * Unified Layer Manager - Single point of control for all layers
+ * Unified Layer Manager - Updated with conflict data support
  */
 export class LayerManager {
     constructor(map, updateLegend, hideLegend) {
@@ -21,7 +21,8 @@ export class LayerManager {
             vector: {},
             point: {},
             sepi: {},
-            pillars: {}
+            pillars: {},
+            conflicts: {} // NEW: Conflict layers storage
         };
         
         // Specialized managers
@@ -42,14 +43,14 @@ export class LayerManager {
         this.setupLayerControls();
         this.setupOpacityControls();
         this.setupAttributeControls();
-        this.setupCombinedSEPIEventListeners(); // NEW: Combined SEPI events
+        this.setupCombinedSEPIEventListeners(); // Updated to handle conflict data
     }
 
     /**
-     * Setup event listeners for combined SEPI controls
+     * Setup event listeners for combined SEPI controls (updated for conflict data)
      */
     setupCombinedSEPIEventListeners() {
-        // Listen for SEPI option changes (main index or individual pillars)
+        // Listen for SEPI option changes (main index, pillars, or conflict data)
         document.addEventListener('sepiOptionChanged', (e) => {
             const { type, pillarId } = e.detail;
             this.handleSEPIOptionChange(type, pillarId);
@@ -63,13 +64,13 @@ export class LayerManager {
     }
 
     /**
-     * Handle SEPI option changes (main index or pillar selection)
+     * Handle SEPI option changes (main index, pillar, or conflict selection) - UPDATED
      */
     async handleSEPIOptionChange(type, pillarId) {
         console.log(`Handling SEPI option change: ${type}${pillarId ? ` - ${pillarId}` : ''}`);
         
         try {
-            // Remove any currently active SEPI/pillar layers
+            // Remove any currently active SEPI/pillar/conflict layers
             this.removeCurrentSEPILayers();
             
             if (type === 'main') {
@@ -78,6 +79,9 @@ export class LayerManager {
             } else if (type === 'pillar' && pillarId) {
                 // Load specific pillar
                 await this.loadPillarLayer(pillarId);
+            } else if (type === 'conflict' && pillarId) {
+                // NEW: Load conflict data
+                await this.loadConflictLayer(pillarId);
             }
             
         } catch (error) {
@@ -86,7 +90,15 @@ export class LayerManager {
     }
 
     /**
-     * Remove all current SEPI and pillar layers
+     * NEW: Load conflict layer
+     */
+    async loadConflictLayer(conflictId) {
+        await this.pillarManager.switchPillar(conflictId);
+        console.log(`Conflict layer loaded: ${conflictId}`);
+    }
+
+    /**
+     * Remove all current SEPI, pillar, and conflict layers
      */
     removeCurrentSEPILayers() {
         // Remove main SEPI layer
@@ -94,7 +106,7 @@ export class LayerManager {
             this.sepiManager.removeFromMap();
         }
         
-        // Remove pillar layer
+        // Remove pillar/conflict layer (they use the same manager)
         if (this.pillarManager?.isActive()) {
             this.pillarManager.switchPillar(null);
         }
@@ -134,27 +146,8 @@ export class LayerManager {
             this.pillarManager.updateOpacity(opacity);
         }
     }
-    
-    /**
-     * Setup event listeners for simplified pillar controls (LEGACY - kept for compatibility)
-     */
-    setupPillarEventListeners() {
-        // Listen for pillar selection changes
-        document.addEventListener('pillarChanged', (e) => {
-            const pillarId = e.detail.pillarId;
-            this.pillarManager.switchPillar(pillarId);
-        });
-        
-        // Listen for pillar opacity changes
-        document.addEventListener('pillarOpacityChanged', (e) => {
-            const opacity = e.detail.opacity;
-            this.pillarManager.updateOpacity(opacity);
-        });
-    }
-    
-    /**
-     * Setup layer toggle controls
-     */
+
+    // Rest of your existing LayerManager methods remain unchanged...
     setupLayerControls() {
         Object.entries(LAYER_CONFIG).forEach(([key, config]) => {
             const checkbox = document.getElementById(config.id);
@@ -168,13 +161,8 @@ export class LayerManager {
                 }
             });
         });
-        
-        // NOTE: Pillar controls are now handled via event listeners, not here
     }
     
-    /**
-     * Load a layer based on its configuration
-     */
     async loadLayer(key, config) {
         try {
             let layer;
@@ -204,25 +192,19 @@ export class LayerManager {
             
         } catch (error) {
             console.error(`Error loading layer ${key}:`, error);
-            // Uncheck the checkbox if loading failed
             const checkbox = document.getElementById(config.id);
             if (checkbox) checkbox.checked = false;
         }
     }
     
-    /**
-     * Load vector layer
-     */
     async loadVectorLayer(key, config) {
         if (!this.layers.vector[key]) {
             this.layers.vector[key] = await loadVectorLayer(config.url, { style: config.style });
             
-            // Populate attribute selector if configured
             if (config.controls?.attribute) {
                 populateAttributeSelector(this.layers.vector[key], config.controls.attribute);
             }
             
-            // Generate admin labels if this is an admin layer
             if (key === 'admin1' && this.labelLayers) {
                 generateAdminLabels(this.layers.vector[key], 'adm1', this.labelLayers.adm1);
             } else if (key === 'admin2' && this.labelLayers) {
@@ -233,9 +215,6 @@ export class LayerManager {
         return this.layers.vector[key];
     }
     
-    /**
-     * Load point layer
-     */
     async loadPointLayer(key, config) {
         if (!this.layers.point[key]) {
             this.layers.point[key] = await loadPointLayer(config.url, {
@@ -248,9 +227,6 @@ export class LayerManager {
         return this.layers.point[key];
     }
     
-    /**
-     * Load raster layer
-     */
     async loadRasterLayer(key, config) {
         const colorScale = COLOR_SCALES[config.colorScale];
         if (!colorScale) {
@@ -263,7 +239,6 @@ export class LayerManager {
             this.layers.tiff[key].addTo(this.map);
         }
         
-        // Update legend
         if (config.legend) {
             this.updateLegend(
                 config.legend.title,
@@ -276,9 +251,6 @@ export class LayerManager {
         return this.layers.tiff[key];
     }
     
-    /**
-     * Load SEPI layer using specialized manager
-     */
     async loadSEPILayer(key, config) {
         if (!this.sepiManager.sepiLayer) {
             await this.sepiManager.loadLayer();
@@ -287,9 +259,6 @@ export class LayerManager {
         return this.sepiManager.sepiLayer;
     }
     
-    /**
-     * Remove a layer
-     */
     removeLayer(key, config) {
         switch (config.type) {
             case 'vector':
@@ -317,9 +286,6 @@ export class LayerManager {
         console.log(`Layer ${config.name} removed`);
     }
     
-    /**
-     * Setup opacity controls
-     */
     setupOpacityControls() {
         Object.entries(LAYER_CONFIG).forEach(([key, config]) => {
             if (!config.controls?.opacity) return;
@@ -337,9 +303,6 @@ export class LayerManager {
         });
     }
     
-    /**
-     * Update layer opacity
-     */
     updateLayerOpacity(key, config, opacity) {
         switch (config.type) {
             case 'raster':
@@ -369,9 +332,6 @@ export class LayerManager {
         }
     }
     
-    /**
-     * Setup attribute and color ramp controls
-     */
     setupAttributeControls() {
         Object.entries(LAYER_CONFIG).forEach(([key, config]) => {
             if (config.type === 'vector' && config.controls?.attribute && config.controls?.colorRamp) {
@@ -382,9 +342,6 @@ export class LayerManager {
         });
     }
     
-    /**
-     * Setup vector layer attribute controls
-     */
     setupVectorAttributeControl(key, config) {
         const attributeSelector = document.getElementById(config.controls.attribute);
         const colorRampSelector = document.getElementById(config.controls.colorRamp);
@@ -402,9 +359,6 @@ export class LayerManager {
         }
     }
     
-    /**
-     * Setup point layer attribute controls
-     */
     setupPointAttributeControl(key, config) {
         const attributeSelector = document.getElementById(config.controls.selector);
         const colorRampSelector = document.getElementById(config.controls.colorRamp);
@@ -422,9 +376,6 @@ export class LayerManager {
         }
     }
     
-    /**
-     * Update vector layer style based on controls
-     */
     updateVectorLayerStyle(key, config) {
         const layer = this.layers.vector[key];
         if (!layer) return;
@@ -443,9 +394,6 @@ export class LayerManager {
         }
     }
     
-    /**
-     * Update point layer style based on controls
-     */
     updatePointLayerStyle(key, config) {
         const layer = this.layers.point[key];
         if (!layer) return;
@@ -464,16 +412,10 @@ export class LayerManager {
         }
     }
     
-    /**
-     * Set label layers reference
-     */
     setLabelLayers(labelLayers) {
         this.labelLayers = labelLayers;
     }
     
-    /**
-     * Get all active layers for external use (e.g., info panel)
-     */
     getActiveLayers() {
         return {
             tiff: this.layers.tiff,
@@ -481,20 +423,18 @@ export class LayerManager {
             point: this.layers.point,
             sepi: this.layers.sepi,
             pillars: this.layers.pillars,
+            conflicts: this.layers.conflicts, // NEW: Include conflict layers
             activeLayers: this.activeLayers
         };
     }
     
-    /**
-     * Check if a layer is active
-     */
     isLayerActive(key) {
         return this.activeLayers.has(key);
     }
 }
 
 /**
- * Simplified Pillar Manager - Handles single GeoJSON file with multiple properties
+ * Simplified Pillar Manager - Updated to handle conflict data
  */
 export class SimplifiedPillarManager {
     constructor(map, layers, updateLegend, hideLegend) {
@@ -504,17 +444,14 @@ export class SimplifiedPillarManager {
         this.hideLegend = hideLegend;
         this.currentLayer = null;
         this.currentPillarId = null;
-        this.pillarsData = null; // Cache the GeoJSON data
+        this.pillarsData = null;
     }
     
-    /**
-     * Load the pillars GeoJSON data (only once)
-     */
     async loadPillarsData() {
         if (this.pillarsData) return this.pillarsData;
     
         try {
-            const response = await fetch('data/sepi_with_pillars_5.geojson');
+            const response = await fetch('data/sepi_with_pillars_6.geojson');
             if (!response.ok) {
                 throw new Error(`Failed to load pillars data: ${response.status}`);
             }
@@ -529,13 +466,9 @@ export class SimplifiedPillarManager {
         }
     }
     
-    /**
-     * Switch to a different pillar/indicator immediately
-     */
     async switchPillar(pillarId) {
         console.log(`Switching to indicator: ${pillarId}`);
         
-        // Remove current layer
         if (this.currentLayer && this.map.hasLayer(this.currentLayer)) {
             this.map.removeLayer(this.currentLayer);
             this.hideLegend();
@@ -547,7 +480,6 @@ export class SimplifiedPillarManager {
             return;
         }
         
-        // Get configuration
         const config = PILLAR_CONFIG[pillarId];
         if (!config) {
             console.error(`Pillar configuration not found: ${pillarId}`);
@@ -555,17 +487,12 @@ export class SimplifiedPillarManager {
         }
         
         try {
-            // Load data if not already loaded
             await this.loadPillarsData();
-            
-            // Create layer for this specific indicator
             this.currentLayer = await this.createIndicatorLayer(pillarId, config);
             this.currentPillarId = pillarId;
             this.currentLayer.addTo(this.map);
             
-            // Update legend for the indicator
             this.updateIndicatorLegend(config);
-            
             console.log(`✓ Indicator ${pillarId} loaded and displayed`);
             
         } catch (error) {
@@ -573,101 +500,39 @@ export class SimplifiedPillarManager {
         }
     }
     
-    /**
-     * Create a layer for a specific indicator
-     */
     async createIndicatorLayer(pillarId, config) {
-        // For NDVI, load separate file
-        if (pillarId === 'ndvi') {
-            return await this.loadNDVILayer(config);
-        }
-        
-        // For other indicators, use the cached pillars data
         const data = this.pillarsData;
         
+        // NEW: Determine if this is conflict data
+        const isConflictData = pillarId.startsWith('conflict_');
+        
         return L.geoJSON(data, {
             style: (feature) => ({
-                fillColor: getPillarColor(feature.properties[config.property]),
+                fillColor: isConflictData 
+                    ? getConflictColor(feature.properties[config.property])
+                    : getPillarColor(feature.properties[config.property]),
                 weight: 2,
                 opacity: 1,
                 color: '#ffffff',
                 fillOpacity: 0.7
             }),
             onEachFeature: (feature, layer) => {
-                // Add data attribute for hover effects
                 layer.getElement()?.setAttribute('data-pillar', 'true');
                 
                 const value = feature.properties[config.property];
                 const district = feature.properties.ADM1_EN || feature.properties.NAME_1 || 'Unknown District';
                 
-                // Bind popup with comprehensive information
-                layer.bindPopup(this.createIndicatorPopup(config, feature.properties, district, value), {
+                layer.bindPopup(this.createIndicatorPopup(config, feature.properties, district, value, isConflictData), {
                     maxWidth: 400,
                     className: 'pillar-popup'
                 });
                 
-                // Bind tooltip
-                layer.bindTooltip(`${config.name}: ${value !== undefined ? Number(value).toFixed(2) : 'No data'}`, {
+                layer.bindTooltip(`${config.name}: ${value !== undefined ? Number(value).toFixed(isConflictData ? 0 : 2) : 'No data'}`, {
                     permanent: false,
                     direction: 'auto',
                     className: 'pillar-tooltip'
                 });
                 
-                // Hover effects
-                layer.on({
-                    mouseover: (e) => {
-                        e.target.setStyle({
-                            weight: 4,
-                            color: '#2c5f2d',
-                            fillOpacity: 0.9
-                        });
-                    },
-                    mouseout: (e) => {
-                        this.currentLayer.resetStyle(e.target);
-                    }
-                });
-            }
-        });
-    }
-    
-    /**
-     * Load NDVI layer separately
-     */
-    async loadNDVILayer(config) {
-        const response = await fetch(config.file);
-        if (!response.ok) {
-            throw new Error(`Failed to load NDVI data: ${response.status}`);
-        }
-        
-        const data = await response.json();
-        
-        return L.geoJSON(data, {
-            style: (feature) => ({
-                fillColor: this.getNDVIColor(feature.properties[config.property]),
-                weight: 2,
-                opacity: 1,
-                color: '#ffffff',
-                fillOpacity: 0.7
-            }),
-            onEachFeature: (feature, layer) => {
-                // Add data attribute for hover effects
-                layer.getElement()?.setAttribute('data-pillar', 'true');
-                
-                const value = feature.properties[config.property];
-                const district = feature.properties.ADM1_EN || feature.properties.NAME_1 || 'Unknown District';
-                
-                layer.bindPopup(this.createIndicatorPopup(config, feature.properties, district, value), {
-                    maxWidth: 400,
-                    className: 'pillar-popup'
-                });
-                
-                layer.bindTooltip(`${config.name}: ${value !== undefined ? Number(value).toFixed(3) : 'No data'}`, {
-                    permanent: false,
-                    direction: 'auto',
-                    className: 'pillar-tooltip'
-                });
-                
-                // Hover effects
                 layer.on({
                     mouseover: (e) => {
                         e.target.setStyle({
@@ -684,37 +549,38 @@ export class SimplifiedPillarManager {
         });
     }
 
-    /**
-     * Create comprehensive popup content for indicators
-     */
-    createIndicatorPopup(config, properties, district, value) {
-        // Format the main value
-        const formattedValue = value !== undefined ? Number(value).toFixed(3) : 'No data';
+    createIndicatorPopup(config, properties, district, value, isConflictData = false) {
+        const formattedValue = value !== undefined ? Number(value).toFixed(isConflictData ? 0 : 3) : 'No data';
         
-        // Get all available properties for additional information
         const additionalInfo = this.getAdditionalProperties(properties, config.property);
+        
+        // NEW: Different styling for conflict data
+        const headerColor = isConflictData ? '#dc3545' : '#2c5f2d';
+        const bgColor = isConflictData ? '#fff5f5' : '#f8f9fa';
+        const borderColor = isConflictData ? '#dc3545' : '#2c5f2d';
+        const valueColor = isConflictData ? getConflictColor(value) : getPillarColor(value);
         
         return `
             <div style="font-family: Calibri, sans-serif; max-width: 400px; line-height: 1.4;">
-                <h3 style="margin: 0 0 10px 0; color: #2c5f2d; border-bottom: 2px solid #2c5f2d; padding-bottom: 5px;">
+                <h3 style="margin: 0 0 10px 0; color: ${headerColor}; border-bottom: 2px solid ${headerColor}; padding-bottom: 5px;">
                     ${district}
                 </h3>
                 
-                <div style="background: #f8f9fa; padding: 12px; border-radius: 5px; margin-bottom: 15px; border-left: 4px solid #2c5f2d;">
+                <div style="background: ${bgColor}; padding: 12px; border-radius: 5px; margin-bottom: 15px; border-left: 4px solid ${borderColor};">
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-                        <strong style="color: #2c5f2d; font-size: 14px;">${config.name}:</strong>
-                        <span style="font-size: 18px; font-weight: bold; color: ${getPillarColor(value)};">
+                        <strong style="color: ${headerColor}; font-size: 14px;">${config.name}:</strong>
+                        <span style="font-size: 18px; font-weight: bold; color: ${valueColor};">
                             ${formattedValue}
                         </span>
                     </div>
                     <div style="margin-top: 5px; font-size: 12px; color: #666;">
-                        ${getPillarDescription(value)}
+                        ${isConflictData ? getConflictDescription(value, config.property === 'Events' ? 'events' : 'fatalities') : getPillarDescription(value)}
                     </div>
                 </div>
                 
-                <div style="margin-bottom: 15px; padding: 12px; background: #e8f5e8; border-radius: 5px; border-left: 4px solid #4a8b3a;">
-                    <h4 style="margin: 0 0 8px 0; color: #2c5f2d; font-size: 14px;">About This Indicator</h4>
-                    <div style="font-size: 13px; color: #2c5f2d; line-height: 1.4;">
+                <div style="margin-bottom: 15px; padding: 12px; background: ${isConflictData ? '#ffeaa7' : '#e8f5e8'}; border-radius: 5px; border-left: 4px solid ${isConflictData ? '#fdcb6e' : '#4a8b3a'};">
+                    <h4 style="margin: 0 0 8px 0; color: ${headerColor}; font-size: 14px;">About This Indicator</h4>
+                    <div style="font-size: 13px; color: ${headerColor}; line-height: 1.4;">
                         ${config.description}
                     </div>
                 </div>
@@ -737,9 +603,6 @@ export class SimplifiedPillarManager {
         `;
     }
     
-    /**
-     * Get additional properties for popup display
-     */
     getAdditionalProperties(properties, currentProperty) {
         const skipFields = [
             currentProperty, 'ADM1_EN', 'NAME_1', 'GID_0', 'GID_1', 'geometry', 
@@ -748,7 +611,7 @@ export class SimplifiedPillarManager {
         
         const additionalProps = Object.entries(properties)
             .filter(([key, value]) => !skipFields.includes(key) && value != null && value !== '')
-            .slice(0, 8) // Limit to 8 additional properties
+            .slice(0, 8)
             .map(([key, value]) => `
                 <div style="margin-bottom: 6px; font-size: 12px; display: flex; justify-content: space-between; padding: 4px 0; border-bottom: 1px solid #f0f0f0;">
                     <span style="color: #495057; font-weight: 500; flex: 1;">${this.formatPropertyName(key)}:</span>
@@ -759,9 +622,6 @@ export class SimplifiedPillarManager {
         return additionalProps;
     }
     
-    /**
-     * Format property names for display
-     */
     formatPropertyName(key) {
         return key
             .replace(/Score_/g, '')
@@ -771,9 +631,6 @@ export class SimplifiedPillarManager {
             .trim();
     }
     
-    /**
-     * Format property values for display
-     */
     formatPropertyValue(value) {
         if (typeof value === 'number') {
             return value.toLocaleString(undefined, { maximumFractionDigits: 3 });
@@ -781,34 +638,18 @@ export class SimplifiedPillarManager {
         return value.toString();
     }
     
-    /**
-     * Get color for NDVI values (different scale)
-     */
-    getNDVIColor(value) {
-        if (value == null || isNaN(value)) return '#cccccc';
-        
-        const numValue = Number(value);
-        // NDVI change scale (red for decline, green for increase)
-        if (numValue >= 0.1) return '#1a9850';   // Strong increase - green
-        if (numValue >= 0.05) return '#91cf60';  // Moderate increase - light green
-        if (numValue >= -0.05) return '#ffffbf'; // Stable - yellow
-        if (numValue >= -0.1) return '#fc8d59';  // Moderate decline - orange
-        return '#d73027';                         // Strong decline - red
-    }
-    
-    /**
-     * Update legend for the current indicator
-     */
     updateIndicatorLegend(config) {
-        if (this.currentPillarId === 'ndvi') {
-            // Special legend for NDVI
-            const colors = ['#d73027', '#fc8d59', '#ffffbf', '#91cf60', '#1a9850'];
+        const isConflictData = this.currentPillarId?.startsWith('conflict_');
+        
+        if (isConflictData) {
+            // NEW: Conflict data legend (Yellow to Red)
+            const colors = ['#ffffcc', '#ffeda0', '#fed976', '#fd8d3c', '#e31a1c'];
             const labels = [
-                'Strong Decline (< -0.1)',
-                'Moderate Decline (-0.1 to -0.05)',
-                'Stable (-0.05 to 0.05)',
-                'Moderate Increase (0.05 to 0.1)',
-                'Strong Increase (> 0.1)'
+                'Very Low (0-5)',
+                'Low (6-15)', 
+                'Moderate (16-30)',
+                'High (31-50)',
+                'Very High (50+)'
             ];
             
             this.updateLegend(
@@ -818,7 +659,7 @@ export class SimplifiedPillarManager {
                 labels
             );
         } else {
-            // Standard Green-to-Red legend for other indicators
+            // Standard Green-to-Red legend for pillars
             const colors = ['#d73027', '#fc8d59', '#ffffbf', '#91cf60', '#1a9850'];
             const labels = [
                 'Very Low (0.0 - 0.2)',
@@ -837,52 +678,31 @@ export class SimplifiedPillarManager {
         }
     }
     
-    /**
-     * Update current indicator opacity
-     */
     updateOpacity(opacity) {
         if (this.currentLayer && this.currentPillarId) {
             const config = PILLAR_CONFIG[this.currentPillarId];
+            const isConflictData = this.currentPillarId.startsWith('conflict_');
             
-            if (this.currentPillarId === 'ndvi') {
-                // NDVI layer
-                this.currentLayer.setStyle((feature) => ({
-                    fillColor: this.getNDVIColor(feature.properties[config.property]),
-                    weight: 2,
-                    opacity: 1,
-                    color: '#ffffff',
-                    fillOpacity: opacity
-                }));
-            } else {
-                // Other indicators
-                this.currentLayer.setStyle((feature) => ({
-                    fillColor: getPillarColor(feature.properties[config.property]),
-                    weight: 2,
-                    opacity: 1,
-                    color: '#ffffff',
-                    fillOpacity: opacity
-                }));
-            }
+            this.currentLayer.setStyle((feature) => ({
+                fillColor: isConflictData 
+                    ? getConflictColor(feature.properties[config.property])
+                    : getPillarColor(feature.properties[config.property]),
+                weight: 2,
+                opacity: 1,
+                color: '#ffffff',
+                fillOpacity: opacity
+            }));
         }
     }
     
-    /**
-     * Get current layer for external use
-     */
     getCurrentLayer() {
         return this.currentLayer;
     }
     
-    /**
-     * Check if a layer is currently active
-     */
     isActive() {
         return this.currentLayer && this.map.hasLayer(this.currentLayer);
     }
     
-    /**
-     * Get current pillar ID
-     */
     getCurrentPillarId() {
         return this.currentPillarId;
     }

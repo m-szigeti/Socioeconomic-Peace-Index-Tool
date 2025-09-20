@@ -1,4 +1,4 @@
-// pillars_integration.js - Complete Peacebuilding Pillars integration
+// pillars_integration.js - Complete peacebuilding_index Pillars integration
 
 import { updateSEPILegend } from './legend.js';
 

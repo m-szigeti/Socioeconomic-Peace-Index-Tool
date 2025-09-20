@@ -434,7 +434,6 @@ function updateInfoPanelWithSEPI() {
     // Update vector layers with selected attributes
     Object.entries(activeLayers.vector).forEach(([id, layer]) => {
         if (map.hasLayer(layer)) {
-            // Get selected attribute for this layer
             const selectedAttribute = getSelectedAttribute(id);
             
             infoPanel.addLayer(id, {
@@ -462,20 +461,29 @@ function updateInfoPanelWithSEPI() {
         infoPanel.removeLayer('sepi');
     }
     
-    // Update pillar layers
+    // Update pillar and conflict layers
     if (layerManager.pillarManager?.isActive()) {
         const currentPillar = layerManager.pillarManager.getCurrentPillarId();
         if (currentPillar) {
-            infoPanel.addLayer('pillar', {
-                name: `Pillar: ${getPillarDisplayName(currentPillar)}`,
-                type: 'pillar',
+            // NEW: Determine if this is conflict data
+            const isConflictData = currentPillar.startsWith('conflict_');
+            const layerType = isConflictData ? 'conflict' : 'pillar';
+            const displayName = isConflictData 
+                ? `Conflict: ${getPillarDisplayName(currentPillar)}`
+                : `Pillar: ${getPillarDisplayName(currentPillar)}`;
+            
+            infoPanel.addLayer(layerType, {
+                name: displayName,
+                type: layerType,
                 layer: layerManager.pillarManager.getCurrentLayer(),
                 selectedAttribute: currentPillar,
                 featureCount: layerManager.pillarManager.getCurrentLayer()?.getLayers?.()?.length || 0
             });
         }
     } else {
+        // Remove both pillar and conflict entries when nothing is active
         infoPanel.removeLayer('pillar');
+        infoPanel.removeLayer('conflict');
     }
 }
 
@@ -486,7 +494,10 @@ function getPillarDisplayName(pillarId) {
         'food_security': 'Food Security Index',
         'poverty': 'Poverty Reduction Index',
         'health': 'Health Access Index',
-        'climate_vulnerability': 'Climate Vulnerability Index'
+        'climate_vulnerability': 'Climate Vulnerability Index',
+        // NEW: Conflict data display names
+        'conflict_events': 'Conflict Events',
+        'conflict_fatalities': 'Conflict Fatalities'
     };
     
     return pillarNames[pillarId] || pillarId;
@@ -516,12 +527,14 @@ function getLayerDisplayName(layerId) {
         'tiffLayer19': 'Health Facility Access',
         'tiffLayer20': 'Cell Tower Coverage',
         'pointLayer': 'DHS Statistics',
-        'pointLayer2': 'Cities'
+        'pointLayer2': 'Cities',
+        // NEW: Conflict data layer names
+        'conflict_events': 'Conflict Events',
+        'conflict_fatalities': 'Conflict Fatalities'
     };
     
     return layerNames[layerId] || layerId.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase());
 }
-
 /**
  * Initialize SEPI-specific features on startup
  * Add this to your existing initialization

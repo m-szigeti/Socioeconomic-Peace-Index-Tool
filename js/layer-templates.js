@@ -24,16 +24,16 @@ export class LayerTemplates {
                 
                 <div class="sepi-selector">
                     <!-- Main SEPI Index -->
-                   <div class="sepi-option active" data-sepi-type="main">
-    <span class="sepi-option-text">Overall Peace Index</span>
-    <div style="display: flex; align-items: center;">
-        <span class="sepi-info-icon" onclick="showSEPIInfo()" title="Learn about SEPI">ⓘ</span>
-        <span class="sepi-checkmark">✓</span>
-    </div>
-</div>
+                    <div class="sepi-option active" data-sepi-type="main">
+                        <span class="sepi-option-text">Overall Peace Index</span>
+                        <div style="display: flex; align-items: center;">
+                            <span class="sepi-info-icon" onclick="showSEPIInfo()" title="Learn about SEPI">ℹ</span>
+                            <span class="sepi-checkmark">✓</span>
+                        </div>
+                    </div>
 
                     <!-- Individual Pillars -->
-                    <div class="sepi-pillars-label">Peacebuilding Pillars:</div>
+                    <div class="sepi-pillars-label">peacebuilding_index Pillars:</div>
                     
                     <div class="sepi-option" data-sepi-type="pillar" data-pillar-id="education">
                         <span class="sepi-option-text">Education Index</span>
@@ -56,7 +56,20 @@ export class LayerTemplates {
                     </div>
                     
                     <div class="sepi-option" data-sepi-type="pillar" data-pillar-id="climate_vulnerability">
-                        <span class="sepi-option-text">Climate Vulnerability Index</span>
+                        <span class="sepi-option-text">Climate Resilience Index</span>
+                        <span class="sepi-checkmark">✓</span>
+                    </div>
+
+                    <!-- NEW: Conflict Data Section -->
+                    <div class="sepi-pillars-label">Conflict Data:</div>
+                    
+                    <div class="sepi-option" data-sepi-type="conflict" data-pillar-id="conflict_events">
+                        <span class="sepi-option-text">Conflict Events</span>
+                        <span class="sepi-checkmark">✓</span>
+                    </div>
+                    
+                    <div class="sepi-option" data-sepi-type="conflict" data-pillar-id="conflict_fatalities">
+                        <span class="sepi-option-text">Conflict Fatalities</span>
                         <span class="sepi-checkmark">✓</span>
                     </div>
                 </div>
@@ -74,7 +87,6 @@ export class LayerTemplates {
             </div>
         `;
     }
-
     static generateVectorLayersSection() {
         return `
             <!-- Vector Layers Dropdown - ONLY Subnational Statistics -->
@@ -156,7 +168,6 @@ export class LayerTemplates {
             </div>
         `;
     }
-
     static generateRasterLayersSection() {
         const rasterLayers = [
             { id: 'streetNetworkLayer', label: 'Street Network' },
@@ -251,10 +262,9 @@ export class LayerTemplates {
     static generateAllLayerControls() {
         return [
             this.generateSidebarTitle(),  
-            this.generateSEPISection(),    // Combined SEPI section
+            this.generateSEPISection(),    // Updated SEPI section with conflict data
             this.generateVectorLayersSection(),
-            this.generateRasterLayersSection(),
-            //this.generatePointLayersSection()
+            this.generateRasterLayersSection()
         ].join('\n');
     }
 }
