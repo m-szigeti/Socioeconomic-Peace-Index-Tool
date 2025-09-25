@@ -12,7 +12,7 @@ export class SEPIManager {
         this.layers = layers;
         this.sepiLayer = null;
         this.config = {
-            dataUrl: 'data/sepi_with_pillars_7.geojson', // UPDATED: New file
+            dataUrl: 'data/sepi_with_pillars_8.geojson', // UPDATED: New file
             property: 'peacebuilding_index', // Check if this exists in new file, might need to be 'index'
             colors: ['#dc3545', '#fd7e14', '#ffc107', '#28a745', '#155724'],
             breaks: [0.2, 0.4, 0.6, 0.8]

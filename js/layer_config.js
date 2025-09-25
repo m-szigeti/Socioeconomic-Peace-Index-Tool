@@ -160,43 +160,43 @@ export const LAYER_CONFIG = {
 export const PILLAR_CONFIG = {
     education: {
         name: 'Education Index',
-        file: 'data/sepi_with_pillars_7.geojson',
+        file: 'data/sepi_with_pillars_8.geojson',
         property: 'education',
         description: 'Composite measure of educational access, attendance, and attainment across all levels'
     },
     food_security: {
         name: 'Food Security Index',
-        file: 'data/sepi_with_pillars_7.geojson',
+        file: 'data/sepi_with_pillars_8.geojson',
         property: 'Food_security',
         description: 'Household food security based on food expenditure share and total expenditure capacity'
     },
     poverty: {
         name: 'Poverty Reduction Index',
-        file: 'data/sepi_with_pillars_7.geojson',
+        file: 'data/sepi_with_pillars_8.geojson',
         property: 'poverty',
         description: 'Non-poverty levels combining general and extreme poverty measures'
     },
     health: {
         name: 'Health Access Index',
-        file: 'data/sepi_with_pillars_7.geojson',
+        file: 'data/sepi_with_pillars_8.geojson',
         property: 'health',
         description: 'Healthcare infrastructure access based on facilities per population and density'
     },
     climate_vulnerability: {
         name: 'Climate Vulnerability Index',
-        file: 'data/sepi_with_pillars_7.geojson',
+        file: 'data/sepi_with_pillars_8.geojson',
         property: 'climate_vulnerability',
         description: 'Climate vulnerability based on temperature, vegetation change, and elevation factors'
     },
     conflict_events: {
         name: 'Conflict Events',
-        file: 'data/sepi_with_pillars_7.geojson',
+        file: 'data/sepi_with_pillars_8.geojson',
         property: 'Events',
         description: 'Number of recorded conflict events in the region'
     },
     conflict_fatalities: {
         name: 'Conflict Fatalities',
-        file: 'data/sepi_with_pillars_7.geojson',
+        file: 'data/sepi_with_pillars_8.geojson',
         property: 'Fatalities',
         description: 'Number of recorded fatalities from conflict events'
     }
