@@ -135,8 +135,8 @@ function getRegionalImage(districtName) {
     
     // Map district names to image files
     const imageMap = {
-        'Awdal': 'images/regions/awdal.jpg',
-        'Woqooyi Galbeed': 'images/regions/woqooyi_galbeed.jpg',
+        'Awdal': 'images/regions/awdal.PNG',
+        'Woqooyi Galbeed': 'images/regions/woqooyi_galbeed.PNG',
         'Togdheer': 'images/regions/togdheer.jpg',
         'Sool': 'images/regions/sool.jpg',
         'Sanaag': 'images/regions/sanaag.jpg',
@@ -144,7 +144,7 @@ function getRegionalImage(districtName) {
         'Nugaal': 'images/regions/nugaal.jpg',
         'Mudug': 'images/regions/mudug.jpg',
         'Galgaduud': 'images/regions/galgaduud.jpg',
-        'Hiran': 'images/regions/hiran.jpg',
+        'Hiraan': 'images/regions/Hiraan.PNG',
         'Middle Shabelle': 'images/regions/middle_shabelle.jpg',
         'Banaadir': 'images/regions/banaadir.jpg',
         'Lower Shabelle': 'images/regions/lower_shabelle.jpg',

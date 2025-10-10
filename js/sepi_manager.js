@@ -29,7 +29,7 @@ export class SEPIManager {
             'Nugaal': 'Central region. Capital: Garowe, administrative center of Puntland.',
             'Mudug': 'Central region with mixed pastoral and agricultural activities.',
             'Galgaduud': 'Central region with pastoral communities and trade routes.',
-            'Hiran': 'Central region along Shabelle River. Agriculture and livestock.',
+            'Hiraan': 'Central region along Shabelle River. Agriculture and livestock.',
             'Middle Shabelle': 'Agricultural region along Shabelle River. Crop production.',
             'Banaadir': 'Capital region with Mogadishu. Political and economic center.',
             'Lower Shabelle': 'Southern agricultural region. Banana and crop production.',
@@ -110,21 +110,21 @@ export class SEPIManager {
         
         // Create chart HTML
         let chartHTML = `
-            <div class="sepi-breakdown-chart">
-                <h4>📊 SEPI Pillar Breakdown</h4>
-        `;
+    <div class="sepi-breakdown-chart" style="margin: 15px 0; padding: 15px; background: #f8f9fa; border-radius: 6px; border-left: 4px solid #2c5f2d; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
+        <h4 style="margin: 0 0 12px 0; color: #2c5f2d; font-size: 14px; font-weight: 600;">📊 SEPI Pillar Breakdown</h4>
+`;
         
         pillars.forEach(pillar => {
             const percentage = Math.round(pillar.value * 100);
-            chartHTML += `
-                <div class="pillar-bar">
-                    <div class="pillar-label">${pillar.name}:</div>
-                    <div class="pillar-bar-container">
-                        <div class="pillar-bar-fill" style="width: ${percentage}%; background: ${pillar.color};"></div>
-                    </div>
-                    <div class="pillar-value">${pillar.value.toFixed(2)}</div>
-                </div>
-            `;
+chartHTML += `
+    <div class="pillar-bar" style="display: flex; align-items: center; margin-bottom: 8px; font-size: 12px;">
+        <div class="pillar-label" style="width: 90px; flex-shrink: 0; font-weight: 500; color: #495057;">${pillar.name}:</div>
+        <div class="pillar-bar-container" style="flex: 1; height: 18px; background: #e9ecef; border-radius: 9px; margin: 0 8px; position: relative; overflow: hidden; box-shadow: inset 0 1px 2px rgba(0,0,0,0.1);">
+            <div class="pillar-bar-fill" style="width: ${percentage}%; height: 100%; border-radius: 9px; background: ${pillar.color}; transition: width 0.4s ease; box-shadow: 0 1px 2px rgba(0,0,0,0.1);"></div>
+        </div>
+        <div class="pillar-value" style="min-width: 35px; text-align: right; font-weight: 600; color: #2c5f2d; font-size: 11px;">${pillar.value.toFixed(2)}</div>
+    </div>
+`;
         });
         
         // Add overall SEPI score - UPDATED: Use dynamic property

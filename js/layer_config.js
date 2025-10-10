@@ -162,43 +162,43 @@ export const PILLAR_CONFIG = {
         name: 'Education Index',
         file: 'data/sepi_with_pillars_9.geojson',
         property: 'education',
-        description: 'Composite measure of educational access, attendance, and attainment across all levels'
+        description: 'Composite measure of educational access,<br> attendance, and attainment across all levels'
     },
     food_security: {
         name: 'Food Security Index',
         file: 'data/sepi_with_pillars_9.geojson',
         property: 'Food_security',
-        description: 'Household food security based on food expenditure share and total expenditure capacity'
+        description: 'Household food security based on food expenditure <br> share and total expenditure capacity'
     },
     poverty: {
         name: 'Poverty Reduction Index',
         file: 'data/sepi_with_pillars_9.geojson',
         property: 'poverty',
-        description: 'Non-poverty levels combining general and extreme poverty measures'
+        description: 'Non-poverty levels combining <br> general and extreme poverty measures'
     },
     health: {
         name: 'Health Access Index',
         file: 'data/sepi_with_pillars_9.geojson',
         property: 'health',
-        description: 'Healthcare infrastructure access based on facilities per population and density'
+        description: 'Healthcare infrastructure access<br> based on facilities per population and density'
     },
     climate_vulnerability: {
         name: 'Climate Resilience Index',
         file: 'data/sepi_with_pillars_9.geojson',
         property: 'climate_vulnerability',
-        description: 'Climate resilience based on temperature, vegetation change, and elevation factors'
+        description: 'Climate resilience based on temperature, <br> vegetation change, and elevation factors'
     },
     conflict_events: {
         name: 'Conflict Events (2020-2025)',
         file: 'data/sepi_with_pillars_9.geojson',
         property: 'Conflict_Event_per_100k_Pop',
-        description: 'Number of recorded conflict events between 2020-2025 in the region weighted by population (conflict event / population)'
+        description: 'Number of recorded conflict events between 2020-2025 in the region <br> weighted by population (conflict event / population)'
     },
     conflict_fatalities: {
         name: 'Conflict Fatalities (2020-2025)',
         file: 'data/sepi_with_pillars_9.geojson',
         property: 'Fatalities_Event_per_100k_Pop',
-        description: 'Number of recorded fatalities from conflict events between 2020-2025 weighted by population (fatalities / population)'
+        description: 'Number of recorded fatalities from conflict events between 2020-2025 <br> weighted by population (fatalities / population)'
     }
 };
 

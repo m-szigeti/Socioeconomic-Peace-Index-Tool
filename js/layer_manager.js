@@ -457,7 +457,7 @@ export class SimplifiedPillarManager {
             'Nugaal': 'Central region. Capital: Garowe, administrative center of Puntland.',
             'Mudug': 'Central region with mixed pastoral and agricultural activities.',
             'Galgaduud': 'Central region with pastoral communities and trade routes.',
-            'Hiran': 'Central region along Shabelle River. Agriculture and livestock.',
+            'Hiraan': 'Central region along Shabelle River. Agriculture and livestock.',
             'Middle Shabelle': 'Agricultural region along Shabelle River. Crop production.',
             'Banaadir': 'Capital region with Mogadishu. Political and economic center.',
             'Lower Shabelle': 'Southern agricultural region. Banana and crop production.',
