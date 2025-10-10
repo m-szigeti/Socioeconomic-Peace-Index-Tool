@@ -63,13 +63,13 @@ export class LayerTemplates {
                     <!-- NEW: Conflict Data Section -->
                     <div class="sepi-pillars-label">Conflict Data:</div>
                     
-                    <div class="sepi-option" data-sepi-type="conflict" data-pillar-id="conflict_events">
-                        <span class="sepi-option-text">Conflict Events</span>
-                        <span class="sepi-checkmark">✓</span>
-                    </div>
-                    
                     <div class="sepi-option" data-sepi-type="conflict" data-pillar-id="conflict_fatalities">
                         <span class="sepi-option-text">Conflict Fatalities</span>
+                        <span class="sepi-checkmark">✓</span>
+                    </div>
+
+                    <div class="sepi-option" data-sepi-type="conflict" data-pillar-id="conflict_events">
+                        <span class="sepi-option-text">Conflict Events</span>
                         <span class="sepi-checkmark">✓</span>
                     </div>
                 </div>

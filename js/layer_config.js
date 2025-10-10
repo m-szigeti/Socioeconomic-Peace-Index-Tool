@@ -160,45 +160,45 @@ export const LAYER_CONFIG = {
 export const PILLAR_CONFIG = {
     education: {
         name: 'Education Index',
-        file: 'data/sepi_with_pillars_8.geojson',
+        file: 'data/sepi_with_pillars_9.geojson',
         property: 'education',
         description: 'Composite measure of educational access, attendance, and attainment across all levels'
     },
     food_security: {
         name: 'Food Security Index',
-        file: 'data/sepi_with_pillars_8.geojson',
+        file: 'data/sepi_with_pillars_9.geojson',
         property: 'Food_security',
         description: 'Household food security based on food expenditure share and total expenditure capacity'
     },
     poverty: {
         name: 'Poverty Reduction Index',
-        file: 'data/sepi_with_pillars_8.geojson',
+        file: 'data/sepi_with_pillars_9.geojson',
         property: 'poverty',
         description: 'Non-poverty levels combining general and extreme poverty measures'
     },
     health: {
         name: 'Health Access Index',
-        file: 'data/sepi_with_pillars_8.geojson',
+        file: 'data/sepi_with_pillars_9.geojson',
         property: 'health',
         description: 'Healthcare infrastructure access based on facilities per population and density'
     },
     climate_vulnerability: {
-        name: 'Climate Vulnerability Index',
-        file: 'data/sepi_with_pillars_8.geojson',
+        name: 'Climate Resilience Index',
+        file: 'data/sepi_with_pillars_9.geojson',
         property: 'climate_vulnerability',
-        description: 'Climate vulnerability based on temperature, vegetation change, and elevation factors'
+        description: 'Climate resilience based on temperature, vegetation change, and elevation factors'
     },
     conflict_events: {
-        name: 'Conflict Events',
-        file: 'data/sepi_with_pillars_8.geojson',
-        property: 'Events',
-        description: 'Number of recorded conflict events in the region'
+        name: 'Conflict Events (2020-2025)',
+        file: 'data/sepi_with_pillars_9.geojson',
+        property: 'Conflict_Event_per_100k_Pop',
+        description: 'Number of recorded conflict events between 2020-2025 in the region weighted by population (conflict event / population)'
     },
     conflict_fatalities: {
-        name: 'Conflict Fatalities',
-        file: 'data/sepi_with_pillars_8.geojson',
-        property: 'Fatalities',
-        description: 'Number of recorded fatalities from conflict events'
+        name: 'Conflict Fatalities (2020-2025)',
+        file: 'data/sepi_with_pillars_9.geojson',
+        property: 'Fatalities_Event_per_100k_Pop',
+        description: 'Number of recorded fatalities from conflict events between 2020-2025 weighted by population (fatalities / population)'
     }
 };
 
@@ -221,7 +221,7 @@ export function getConflictColor(value) {
     
     // Normalize the value to 0-1 scale based on data distribution
     // You might want to adjust this based on your actual data range
-    const normalizedValue = Math.min(numValue / 6000, 1); // Assuming max ~100 events/fatalities
+    const normalizedValue = Math.min(numValue / 800, 1); // Assuming max ~100 events/fatalities
     
     // Yellow to Red scale (higher values = red)
     if (normalizedValue >= breaks[3]) return colors[4]; // High = Red

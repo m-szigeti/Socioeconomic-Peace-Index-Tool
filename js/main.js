@@ -494,7 +494,7 @@ function getPillarDisplayName(pillarId) {
         'food_security': 'Food Security Index',
         'poverty': 'Poverty Reduction Index',
         'health': 'Health Access Index',
-        'climate_vulnerability': 'Climate Vulnerability Index',
+        'climate_vulnerability': 'Climate Resilience Index',
         // NEW: Conflict data display names
         'conflict_events': 'Conflict Events',
         'conflict_fatalities': 'Conflict Fatalities'

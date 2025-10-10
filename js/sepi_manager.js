@@ -12,7 +12,7 @@ export class SEPIManager {
         this.layers = layers;
         this.sepiLayer = null;
         this.config = {
-            dataUrl: 'data/sepi_with_pillars_8.geojson', // UPDATED: New file
+            dataUrl: 'data/sepi_with_pillars_9.geojson', // UPDATED: New file
             property: 'peacebuilding_index', // Check if this exists in new file, might need to be 'index'
             colors: ['#dc3545', '#fd7e14', '#ffc107', '#28a745', '#155724'],
             breaks: [0.2, 0.4, 0.6, 0.8]
@@ -94,39 +94,6 @@ export class SEPIManager {
         }
     }
     
-    makeDraggable(element, handle) {
-        // Prevent re-initializing if already draggable
-        if (element.dataset.draggable) return;
-        element.dataset.draggable = 'true';
-
-        handle.addEventListener('mousedown', (e) => {
-            // **This is the fix**: Stop the click from closing the popup
-            L.DomEvent.stopPropagation(e);
-
-            const initialX = e.clientX - element.offsetLeft;
-            const initialY = e.clientY - element.offsetTop;
-            handle.style.cursor = 'grabbing';
-
-            // Function to handle mouse movement
-            const onMouseMove = (moveEvent) => {
-                const currentX = moveEvent.clientX - initialX;
-                const currentY = moveEvent.clientY - initialY;
-                element.style.transform = `translate(${currentX}px, ${currentY}px)`;
-            };
-
-            // Function to handle mouse release
-            const onMouseUp = () => {
-                handle.style.cursor = 'move';
-                // Clean up by removing the event listeners from the document
-                document.removeEventListener('mousemove', onMouseMove);
-                document.removeEventListener('mouseup', onMouseUp);
-            };
-
-            // Add temporary listeners to the document for the drag duration
-            document.addEventListener('mousemove', onMouseMove);
-            document.addEventListener('mouseup', onMouseUp);
-        });
-    }
     
     createSEPIBreakdownChart(properties) {
         // UPDATED: Use new column names
@@ -285,17 +252,6 @@ export class SEPIManager {
             autoPan: true,
             autoPanPadding: L.point(50, 50),
             offset: L.point(20, 0)
-        });
-
-        // Make popup draggable when it opens
-        layer.on('popupopen', (e) => {
-            const popup = e.popup;
-            const popupEl = popup._container;
-            const header = popupEl.querySelector('.sepi-popup-header');
-            
-            if (header) {
-                this.makeDraggable(popupEl, header);
-            }
         });
     }
  

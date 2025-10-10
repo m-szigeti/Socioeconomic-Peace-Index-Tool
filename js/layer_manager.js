@@ -1,4 +1,4 @@
-// layer_manager.js - Updated with conflict data handling
+// layer_manager.js - Updated with aligned popup styling
 
 import { LAYER_CONFIG, PILLAR_CONFIG, COLOR_SCALES, COLOR_RAMPS, getPillarColor, getPillarDescription, getConflictColor, getConflictDescription } from './layer_config.js';
 import { loadTiff } from './zoom-adaptive-tiff-loader.js';
@@ -22,7 +22,7 @@ export class LayerManager {
             point: {},
             sepi: {},
             pillars: {},
-            conflicts: {} // NEW: Conflict layers storage
+            conflicts: {}
         };
         
         // Specialized managers
@@ -43,7 +43,7 @@ export class LayerManager {
         this.setupLayerControls();
         this.setupOpacityControls();
         this.setupAttributeControls();
-        this.setupCombinedSEPIEventListeners(); // Updated to handle conflict data
+        this.setupCombinedSEPIEventListeners();
     }
 
     /**
@@ -64,7 +64,7 @@ export class LayerManager {
     }
 
     /**
-     * Handle SEPI option changes (main index, pillar, or conflict selection) - UPDATED
+     * Handle SEPI option changes (main index, pillar, or conflict selection)
      */
     async handleSEPIOptionChange(type, pillarId) {
         console.log(`Handling SEPI option change: ${type}${pillarId ? ` - ${pillarId}` : ''}`);
@@ -80,7 +80,7 @@ export class LayerManager {
                 // Load specific pillar
                 await this.loadPillarLayer(pillarId);
             } else if (type === 'conflict' && pillarId) {
-                // NEW: Load conflict data
+                // Load conflict data
                 await this.loadConflictLayer(pillarId);
             }
             
@@ -90,7 +90,7 @@ export class LayerManager {
     }
 
     /**
-     * NEW: Load conflict layer
+     * Load conflict layer
      */
     async loadConflictLayer(conflictId) {
         await this.pillarManager.switchPillar(conflictId);
@@ -423,7 +423,7 @@ export class LayerManager {
             point: this.layers.point,
             sepi: this.layers.sepi,
             pillars: this.layers.pillars,
-            conflicts: this.layers.conflicts, // NEW: Include conflict layers
+            conflicts: this.layers.conflicts,
             activeLayers: this.activeLayers
         };
     }
@@ -434,7 +434,7 @@ export class LayerManager {
 }
 
 /**
- * Simplified Pillar Manager - Updated to handle conflict data
+ * Simplified Pillar Manager - Updated with SEPI-style popup
  */
 export class SimplifiedPillarManager {
     constructor(map, layers, updateLegend, hideLegend) {
@@ -445,13 +445,35 @@ export class SimplifiedPillarManager {
         this.currentLayer = null;
         this.currentPillarId = null;
         this.pillarsData = null;
+        
+        // District information lookup (same as SEPI)
+        this.districtInfo = {
+            'Awdal': 'Northwestern region known for agricultural activities and livestock. Capital: Borama.',
+            'Woqooyi Galbeed': 'Northwestern region with Hargeisa. Economic hub of Somaliland.',
+            'Togdheer': 'Central region known for pastoralism and trade. Capital: Burao.',
+            'Sool': 'Eastern region with disputed territories. Mainly pastoral communities.',
+            'Sanaag': 'Northeastern coastal region. Diverse landscapes from coast to highlands.',
+            'Bari': 'Northeastern region with Bosaso port. Major trade and fishing activities.',
+            'Nugaal': 'Central region. Capital: Garowe, administrative center of Puntland.',
+            'Mudug': 'Central region with mixed pastoral and agricultural activities.',
+            'Galgaduud': 'Central region with pastoral communities and trade routes.',
+            'Hiran': 'Central region along Shabelle River. Agriculture and livestock.',
+            'Middle Shabelle': 'Agricultural region along Shabelle River. Crop production.',
+            'Banaadir': 'Capital region with Mogadishu. Political and economic center.',
+            'Lower Shabelle': 'Southern agricultural region. Banana and crop production.',
+            'Bay': 'Southern region with agricultural potential. Mixed farming.',
+            'Bakool': 'Western region bordering Ethiopia. Primarily pastoral.',
+            'Gedo': 'Southwestern region bordering Kenya and Ethiopia.',
+            'Middle Juba': 'Southern region with Juba River. Agricultural potential.',
+            'Lower Juba': 'Southernmost region with Kismayo port. Trade and fishing.'
+        };
     }
     
     async loadPillarsData() {
         if (this.pillarsData) return this.pillarsData;
     
         try {
-            const response = await fetch('data/sepi_with_pillars_8.geojson');
+            const response = await fetch('data/sepi_with_pillars_9.geojson');
             if (!response.ok) {
                 throw new Error(`Failed to load pillars data: ${response.status}`);
             }
@@ -503,7 +525,7 @@ export class SimplifiedPillarManager {
     async createIndicatorLayer(pillarId, config) {
         const data = this.pillarsData;
         
-        // NEW: Determine if this is conflict data
+        // Determine if this is conflict data
         const isConflictData = pillarId.startsWith('conflict_');
         
         return L.geoJSON(data, {
@@ -522,15 +544,16 @@ export class SimplifiedPillarManager {
                 const value = feature.properties[config.property];
                 const district = feature.properties.ADM1_EN || feature.properties.NAME_1 || 'Unknown District';
                 
+                // Updated to use SEPI-style popup
                 layer.bindPopup(this.createIndicatorPopup(config, feature.properties, district, value, isConflictData), {
-                    maxWidth: 400,
-                    className: 'pillar-popup'
+                    maxWidth: 450,
+                    className: 'sepi-popup' // Using SEPI popup class for consistent styling
                 });
                 
                 layer.bindTooltip(`${config.name}: ${value !== undefined ? Number(value).toFixed(isConflictData ? 0 : 2) : 'No data'}`, {
                     permanent: false,
                     direction: 'auto',
-                    className: 'pillar-tooltip'
+                    className: 'sepi-tooltip' // Using SEPI tooltip class
                 });
                 
                 layer.on({
@@ -549,32 +572,34 @@ export class SimplifiedPillarManager {
         });
     }
 
+    /**
+     * Create SEPI-style popup for indicators - Updated to match SEPI popup structure
+     */
     createIndicatorPopup(config, properties, district, value, isConflictData = false) {
         const formattedValue = value !== undefined ? Number(value).toFixed(isConflictData ? 0 : 3) : 'No data';
+        const districtDetails = this.districtInfo[district];
         
-        const additionalInfo = this.getAdditionalProperties(properties, config.property);
-        
-        // NEW: Different styling for conflict data
+        // Use consistent color scheme
         const headerColor = isConflictData ? '#dc3545' : '#2c5f2d';
-        const bgColor = isConflictData ? '#fff5f5' : '#f8f9fa';
-        const borderColor = isConflictData ? '#dc3545' : '#2c5f2d';
         const valueColor = isConflictData ? getConflictColor(value) : getPillarColor(value);
         
+        // Get additional properties (similar to SEPI)
+        const additionalInfo = this.getAdditionalProperties(properties, config.property);
+        
         return `
-            <div style="font-family: Calibri, sans-serif; max-width: 400px; line-height: 1.4;">
-                <h3 style="margin: 0 0 10px 0; color: ${headerColor}; border-bottom: 2px solid ${headerColor}; padding-bottom: 5px;">
-                    ${district}
-                </h3>
-                
-                <div style="background: ${bgColor}; padding: 12px; border-radius: 5px; margin-bottom: 15px; border-left: 4px solid ${borderColor};">
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+            <div class="sepi-popup-header">
+                <h3 class="sepi-popup-title">${isConflictData ? '⚠️' : '📊'} ${district}</h3>
+            </div>
+            <div style="padding: 15px;">
+                <div style="background: ${isConflictData ? '#fff5f5' : '#e8f5e8'}; padding: 12px; border-radius: 6px; margin: 15px 0; border-left: 4px solid ${headerColor};">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
                         <strong style="color: ${headerColor}; font-size: 14px;">${config.name}:</strong>
                         <span style="font-size: 18px; font-weight: bold; color: ${valueColor};">
                             ${formattedValue}
                         </span>
                     </div>
-                    <div style="margin-top: 5px; font-size: 12px; color: #666;">
-                        ${isConflictData ? getConflictDescription(value, config.property === 'Events' ? 'events' : 'fatalities') : getPillarDescription(value)}
+                    <div style="margin-top: 5px; font-size: 12px; color: ${headerColor}; font-weight: 500;">
+                        ${isConflictData ? getConflictDescription(value, config.property === 'Conflict_Event_per_100k_Pop' ? 'events' : 'fatalities') : getPillarDescription(value)}
                     </div>
                 </div>
                 
@@ -584,6 +609,15 @@ export class SimplifiedPillarManager {
                         ${config.description}
                     </div>
                 </div>
+                
+                ${districtDetails ? `
+                    <div style="background: #fff3cd; padding: 12px; border-radius: 6px; border-left: 4px solid #ffc107; margin-bottom: 15px;">
+                        <h4 style="margin: 0 0 8px 0; color: #856404; font-size: 13px; font-weight: 600;">District Overview</h4>
+                        <div style="font-size: 12px; color: #856404; line-height: 1.4;">
+                            ${districtDetails}
+                        </div>
+                    </div>
+                ` : ''}
                 
                 ${additionalInfo.length > 0 ? `
                     <div style="margin-bottom: 12px;">
@@ -642,14 +676,14 @@ export class SimplifiedPillarManager {
         const isConflictData = this.currentPillarId?.startsWith('conflict_');
         
         if (isConflictData) {
-            // NEW: Conflict data legend (Yellow to Red)
+            // Conflict data legend (Yellow to Red)
             const colors = ['#ffffcc', '#ffeda0', '#fed976', '#fd8d3c', '#e31a1c'];
             const labels = [
-                'Very Low (0-5)',
-                'Low (6-15)', 
-                'Moderate (16-30)',
-                'High (31-50)',
-                'Very High (50+)'
+                'Very Low (0-50)',
+                'Low (50-100)', 
+                'Moderate (100-250)',
+                'High (250-500)',
+                'Very High (500+)'
             ];
             
             this.updateLegend(
