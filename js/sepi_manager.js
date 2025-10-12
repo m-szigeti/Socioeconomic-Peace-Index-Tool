@@ -31,7 +31,7 @@ export class SEPIManager {
             'Galgaduud': 'Central region with pastoral communities and trade routes.',
             'Hiraan': 'Central region along Shabelle River. Agriculture and livestock.',
             'Middle Shabelle': 'Agricultural region along Shabelle River. Crop production.',
-            'Banaadir': 'Capital region with Mogadishu. Political and economic center.',
+            'Banadir': 'Capital region with Mogadishu. Political and economic center.',
             'Lower Shabelle': 'Southern agricultural region. Banana and crop production.',
             'Bay': 'Southern region with agricultural potential. Mixed farming.',
             'Bakool': 'Western region bordering Ethiopia. Primarily pastoral.',

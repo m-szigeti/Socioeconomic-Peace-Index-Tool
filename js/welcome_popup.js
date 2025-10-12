@@ -94,7 +94,7 @@ export class WelcomePopup {
         
         header.innerHTML = `
             <h2 style="margin: 0; font-size: 24px; text-align: center;">
-                Welcome to the Socio-Economic Peace Index Tool
+                Welcome to the Socioeconomic Peace Index Tool
             </h2>
             <button class="welcome-close-btn" style="
                 position: absolute;
@@ -136,7 +136,7 @@ export class WelcomePopup {
                     🎯 What is SEPI?
                 </h3>
                 <p style="margin: 0; color: #333; font-size: 14px;">
-                    The <strong>Socio-Economic Peace Index</strong> is a composite indicator that measures economic development, 
+                    The <strong>Socioeconomic Peace Index</strong> is a composite indicator that measures economic development, 
                     social vulnerability, peace stability, and infrastructure accessibility across Somalia.
                 </p>
             </div>

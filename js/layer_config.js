@@ -191,14 +191,16 @@ export const PILLAR_CONFIG = {
     conflict_events: {
         name: 'Conflict Events (2020-2025)',
         file: 'data/sepi_with_pillars_9.geojson',
-        property: 'Conflict_Event_per_100k_Pop',
-        description: 'Number of recorded conflict events between 2020-2025 in the region <br> weighted by population (conflict event / population)'
+        property: 'Events',
+        description: 'Number of recorded conflict events between 2020-2025'
+        // 'Number of recorded conflict events between 2020-2025 in the region <br> weighted by population (conflict event / population)'
     },
     conflict_fatalities: {
         name: 'Conflict Fatalities (2020-2025)',
         file: 'data/sepi_with_pillars_9.geojson',
-        property: 'Fatalities_Event_per_100k_Pop',
-        description: 'Number of recorded fatalities from conflict events between 2020-2025 <br> weighted by population (fatalities / population)'
+        property: 'Fatalities',
+        description: 'Number of recorded fatalities from conflict events between 2020-2025'
+        // 'Number of recorded fatalities from conflict events between 2020-2025 <br> weighted by population (fatalities / population)'
     }
 };
 
@@ -221,7 +223,7 @@ export function getConflictColor(value) {
     
     // Normalize the value to 0-1 scale based on data distribution
     // You might want to adjust this based on your actual data range
-    const normalizedValue = Math.min(numValue / 800, 1); // Assuming max ~100 events/fatalities
+    const normalizedValue = Math.min(numValue / 4000, 1); // Assuming max ~100 events/fatalities
     
     // Yellow to Red scale (higher values = red)
     if (normalizedValue >= breaks[3]) return colors[4]; // High = Red

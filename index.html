@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Online Tool for Socio Economic Peace Index Tool</title>
+    <title>Online Tool for Socioeconomic Peace Index Tool</title>
     
     <!-- Simplified CSS structure -->
     <link rel="stylesheet" href="css/styles.css">
@@ -41,7 +41,7 @@
             <img src="assets/pigeon2.png" alt="SDG AI Logo" class="logo-image_left">
         </div>
         <div class="navbar-logo navbar-logo-left">
-            <h2 class="tool-title">Socio Economic Peace Index Tool</h2>
+            <h2 class="tool-title">Socioeconomic Peace Index Tool</h2>
         </div>
         
         <!-- <ul class="navbar-menu">
@@ -312,6 +312,7 @@ function hideSEPIInfo() {
         }
     </script>
                         <!-- ADD: Info popup HTML (add anywhere in body) -->
+<!-- ADD: Info popup HTML (add anywhere in body) -->
 <div class="sepi-info-overlay" id="sepiInfoOverlay" onclick="hideSEPIInfo()"></div>
 <div class="sepi-info-popup" id="sepiInfoPopup">
     <div class="sepi-info-header">
@@ -320,17 +321,50 @@ function hideSEPIInfo() {
     </div>
     <div class="sepi-info-content">
         <h4>What is SEPI?</h4>
-        <p>The Socioeconomic Peace Index measures regional peace by combining five key development factors.</p>
+        <p>The Socioeconomic Peace Index measures regional peace by combining five key development factors derived from 14 socioeconomic indicators.</p>
         
-        <h4>The Five Pillars:</h4>
-        <p><strong>📚 Education:</strong> School enrollment and literacy rates</p>
-        <p><strong>🌾 Food Security:</strong> Household food access and nutrition</p>
-        <p><strong>💰 Poverty Reduction:</strong> Income levels and economic opportunities</p>
-        <p><strong>🏥 Health Access:</strong> Healthcare facilities and services</p>
-        <p><strong>🌍 Climate Resilience:</strong> Environmental vulnerability factors</p>
+        <h4>The Five Pillars & Their Indicators:</h4>
+        
+        <p><strong>📚 Education Index:</strong></p>
+        <ul style="margin: 5px 0 10px 20px; font-size: 13px;">
+            <li>Percent with no formal education</li>
+            <li>Primary school gross attendance rates</li>
+            <li>Secondary school gross attendance rates</li>
+            <li>Percent with primary education as highest level</li>
+            <li>Percent with secondary education as highest level</li>
+            <li>Percent with university education as highest level</li>
+        </ul>
+        
+        <p><strong>🌾 Food Security Index:</strong></p>
+        <ul style="margin: 5px 0 10px 20px; font-size: 13px;">
+            <li>Population fraction in IPC Phase 3+ (crisis or worse food insecurity)</li>
+            <li>Food expenditure as percentage share of total household spending</li>
+        </ul>
+        
+        <p><strong>💰 Poverty Reduction Index:</strong></p>
+        <ul style="margin: 5px 0 10px 20px; font-size: 13px;">
+            <li>Poverty headcount percentage</li>
+            <li>Extreme poverty headcount percentage</li>
+            <li>Total household expenditure (USD)</li>
+        </ul>
+        
+        <p><strong>🏥 Health Access Index:</strong></p>
+        <ul style="margin: 5px 0 10px 20px; font-size: 13px;">
+            <li>Health facilities per 10,000 population</li>
+        </ul>
+        
+        <p><strong>🌍 Climate Resilience Index:</strong></p>
+        <ul style="margin: 5px 0 10px 20px; font-size: 13px;">
+            <li>Precipitation anomaly for 2023</li>
+            <li>Mean NDVI change from 2015 to 2023 (vegetation health)</li>
+        </ul>
         
         <h4>Score Ranges:</h4>
-        <p>0.8-1.0: Very High Peace | 0.6-0.8: High Peace | 0.4-0.6: Moderate | 0.2-0.4: Low | 0.0-0.2: Very Low</p>
+        <p style="font-size: 13px; line-height: 1.4;">
+            <strong>0.8-1.0:</strong> Very High Peace | <strong>0.6-0.8:</strong> High Peace | 
+            <strong>0.4-0.6:</strong> Moderate | <strong>0.2-0.4:</strong> Low | 
+            <strong>0.0-0.2:</strong> Very Low
+        </p>
     </div>
 </div>
 </body>

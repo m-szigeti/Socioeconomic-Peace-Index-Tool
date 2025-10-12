@@ -274,7 +274,7 @@ function getDistrictDetails(districtName) {
         'Galgaduud': 'Central region with significant pastoral communities. Strategic location for trade routes.',
         'Hiraan': 'Central region along the Shabelle River. Important for agriculture and livestock.',
         'Middle Shabelle': 'Agricultural region along the Shabelle River. Important for crop production.',
-        'Banaadir': 'Capital region containing Mogadishu. Political, economic, and cultural center of Somalia.',
+        'Banadir': 'Capital region containing Mogadishu. Political, economic, and cultural center of Somalia.',
         'Lower Shabelle': 'Southern agricultural region. Important for banana and other crop production.',
         'Bay': 'Southern region with agricultural potential. Mixed farming and pastoral activities.',
         'Bakool': 'Western region bordering Ethiopia. Primarily pastoral with some agriculture.',

@@ -856,7 +856,7 @@ export class InfoPanel {
             'Galgaduud': 569434,
             'Hiran': 520685,
             'Middle Shabelle': 516036,
-            'Banaadir': 1650227,
+            'Banadir': 1650227,
             'Lower Shabelle': 1202219,
             'Bay': 792182,
             'Bakool': 367226,
