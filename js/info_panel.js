@@ -936,7 +936,7 @@ export class InfoPanel {
                             </ul>
                         </div>
                         <div class="interpretation-implications">
-                            <p><strong>Policy Implications:</strong></p>
+                            <p><strong>Implications:</strong></p>
                             <p>${interpretation.implications}</p>
                         </div>
                     </div>
