@@ -1,13 +1,13 @@
-// main.js - Optimized with welcome_popup merged and duplicate code removed
+// main.js - Fixed Raster De-selection & Race Conditions
 
 import { addDefaultBasemap } from './basemaps.js';
 import { initializeLegend, updateLegend, hideLegend } from './legend.js';
 import { LayerManager } from './layer_manager.js';
 import { createAdminLabelLayers, loadCountryOutline } from './admin_labels.js';
 import { InfoPanel } from './info_panel.js';
-import { populateColorRampSelector } from './layer_config.js'; // Updated import
-//import { COLOR_RAMPS } from './layer_config.js';
-import { loadTiff, removeTiffLayer } from './zoom-adaptive-tiff-loader.js';
+import { populateColorRampSelector } from './layer_config.js';
+// We only import loadTiff. We handle removal manually to ensure compatibility.
+import { loadTiff } from './zoom-adaptive-tiff-loader.js'; 
 import { WelcomePopup } from './welcome_popup.js';
 
 // Global references
@@ -16,6 +16,9 @@ let infoPanel = null;
 let map = null;
 let activeLayers = new Set();
 let tiffLayers = {}; // Global TIFF layers storage for proper cleanup
+
+// Track async loading states to prevent race conditions
+const loadingTracker = {};
 
 // Layer configuration for raster layers (consolidated)
 const RASTER_LAYER_CONFIG = {
@@ -68,7 +71,7 @@ document.addEventListener('DOMContentLoaded', async function() {
         // Auto-enable SEPI layer and show welcome
         setTimeout(() => {
             enableDefaultLayers();
-            new WelcomePopup(); // Merged welcome popup functionality
+            new WelcomePopup(); 
         }, 1000);
         
         // Initialize opacity displays
@@ -94,14 +97,23 @@ function setupAllLayerControls() {
                 console.log(`Raster layer ${layerId} toggled: ${this.checked}`);
                 
                 if (this.checked) {
+                    // --- RACE CONDITION FIX START ---
+                    // Generate a unique ID for this load request
+                    const requestId = Date.now();
+                    loadingTracker[layerId] = requestId;
+                    
                     try {
-                        await loadRasterLayer(layerId);
-                        console.log(`Successfully loaded ${layerId}`);
+                        await loadRasterLayer(layerId, requestId);
+                        // The async check happens INSIDE loadRasterLayer now
                     } catch (error) {
                         console.error(`Failed to load ${layerId}:`, error);
                         this.checked = false;
+                        removeRasterLayer(layerId); // Ensure cleanup on error
                     }
                 } else {
+                    // --- RACE CONDITION FIX END ---
+                    // Invalidate any pending loads
+                    loadingTracker[layerId] = null; 
                     removeRasterLayer(layerId);
                 }
                 
@@ -137,9 +149,9 @@ function setupAllLayerControls() {
 }
 
 /**
- * OPTIMIZED: Load raster layer with improved error handling
+ * OPTIMIZED: Load raster layer with improved error handling and race condition checks
  */
-async function loadRasterLayer(layerId) {
+async function loadRasterLayer(layerId, requestId) {
     console.log(`Loading raster layer: ${layerId}`);
     
     // Clean up any orphaned layers first
@@ -158,7 +170,15 @@ async function loadRasterLayer(layerId) {
                 style: { color: "#3388ff", weight: 0.5, opacity: 1, fillOpacity: 0 }
             });
         }
+        
+        // Async Check: Did user uncheck while vector was loading?
+        if (loadingTracker[layerId] !== requestId || !document.getElementById(layerId).checked) {
+             console.log(`Load cancelled for ${layerId}`);
+             return; 
+        }
+
         layerManager.layers.vector[layerId].addTo(map);
+
     } else {
         // Handle TIFF layers
         const { COLOR_SCALES } = await import('./layer_config.js');
@@ -169,8 +189,18 @@ async function loadRasterLayer(layerId) {
         }
         
         try {
-            const layer = await loadTiff(config.url, layerId, tiffLayers, map, colorScale);
+            // Pass the global tiffLayers object
+            await loadTiff(config.url, layerId, tiffLayers, map, colorScale);
             
+            // --- VITAL ASYNC CHECK ---
+            // If the user unchecked the box while `loadTiff` was processing (downloading/parsing),
+            // we must immediately remove what we just added.
+            if (loadingTracker[layerId] !== requestId || !document.getElementById(layerId).checked) {
+                console.warn(`Layer ${layerId} finished loading but was unchecked. Removing immediately.`);
+                removeRasterLayer(layerId);
+                return;
+            }
+
             // Verify layer was properly stored
             if (!tiffLayers[layerId] || !map.hasLayer(tiffLayers[layerId])) {
                 throw new Error(`Layer ${layerId} was not properly loaded`);
@@ -185,67 +215,48 @@ async function loadRasterLayer(layerId) {
             
         } catch (error) {
             // Clean up any partial state
-            if (tiffLayers[layerId]) {
-                if (map.hasLayer(tiffLayers[layerId])) {
-                    map.removeLayer(tiffLayers[layerId]);
-                }
-                delete tiffLayers[layerId];
-            }
+            removeRasterLayer(layerId);
             throw error;
         }
     }
 }
 
 /**
- * OPTIMIZED: Remove raster layer with comprehensive cleanup
+ * Hardened Removal of Raster Layers
  */
 function removeRasterLayer(layerId) {
-    console.log(`Removing raster layer: ${layerId}`);
+    console.log(`Force removing layer: ${layerId}`);
     
-    let removalSuccess = false;
-    
-    if (layerId === 'streetNetworkLayer') {
-        const layer = layerManager.layers.vector[layerId];
-        if (layer && map.hasLayer(layer)) {
-            map.removeLayer(layer);
-            removalSuccess = true;
+    // 1. Remove from Global tracking objects
+    if (window.tiffLayers && window.tiffLayers[layerId]) {
+        if (map.hasLayer(window.tiffLayers[layerId])) {
+            map.removeLayer(window.tiffLayers[layerId]);
         }
-    } else {
-        // Try multiple removal strategies for TIFF layers
-        if (tiffLayers[layerId]) {
-            const success = removeTiffLayer(layerId, tiffLayers, map);
-            if (success) removalSuccess = true;
-        }
-        
-        if (layerManager?.layers?.tiff?.[layerId]) {
-            const layer = layerManager.layers.tiff[layerId];
-            if (map.hasLayer(layer)) {
-                map.removeLayer(layer);
-                removalSuccess = true;
-            }
-            delete layerManager.layers.tiff[layerId];
-        }
-        
-        // Nuclear option: find and remove orphaned layers
-        if (!removalSuccess) {
-            map.eachLayer(function(layer) {
-                if (layer instanceof L.ImageOverlay && 
-                    (layer._layerName === layerId || layer.options?.layerId === layerId)) {
-                    map.removeLayer(layer);
-                    removalSuccess = true;
-                }
-            });
-        }
-        
-        // Clean up tracking references
-        if (tiffLayers[layerId]) delete tiffLayers[layerId];
-        if (layerManager?.layers?.tiff?.[layerId]) delete layerManager.layers.tiff[layerId];
-        
-        // Final cleanup of any remaining orphans
-        cleanupOrphanedTiffLayers();
+        delete window.tiffLayers[layerId];
     }
-    
-    console.log(removalSuccess ? `✅ Successfully removed: ${layerId}` : `❌ Failed to remove: ${layerId}`);
+
+    if (layerManager?.layers?.tiff?.[layerId]) {
+        if (map.hasLayer(layerManager.layers.tiff[layerId])) {
+            map.removeLayer(layerManager.layers.tiff[layerId]);
+        }
+        delete layerManager.layers.tiff[layerId];
+    }
+
+    // 2. Nuclear scan of the map to ensure NO instances remain
+    // This catches "zombie" layers that lost their variable reference
+    map.eachLayer(function(layer) {
+        if (layer instanceof L.ImageOverlay) {
+            const config = RASTER_LAYER_CONFIG[layerId];
+            // Match by URL or by a custom property if we assigned one
+            if (config && layer._url && layer._url.includes(config.url)) {
+                console.log(`Cleaning up orphaned map instance of ${layerId}`);
+                map.removeLayer(layer);
+            }
+        }
+    });
+
+    // 3. Clear UI
+    hideLegend();
 }
 
 /**
@@ -258,6 +269,7 @@ function cleanupOrphanedTiffLayers(excludeLayerId = null) {
             const isTracked = Object.values(tiffLayers).includes(layer) ||
                             Object.values(layerManager?.layers?.tiff || {}).includes(layer);
             
+            // Be careful not to remove the layer we are currently trying to load
             if (!isTracked && layer._layerName !== excludeLayerId) {
                 orphanedLayers.push(layer);
             }
@@ -321,15 +333,13 @@ function updateLegendBasedOnActiveLayers() {
         }
     });
     
-    console.log('Active layer types:', activeLayerTypes);
-    
     if (activeLayerTypes.length === 0) {
         hideLegend();
     }
 }
 
 
-// === UTILITY FUNCTIONS (consolidated) ===
+// === UTILITY FUNCTIONS ===
 
 /**
  * Setup the main map
@@ -383,7 +393,6 @@ async function loadSomaliaOutline(map) {
  */
 function setupInfoPanel() {
     try {
-        // Import the updated InfoPanel class
         infoPanel = new InfoPanel({
             position: 'topright',
             width: '420px',
@@ -399,7 +408,6 @@ function setupInfoPanel() {
         window.infoPanelManager = { getInfoPanel: () => infoPanel };
         window.infoPanelInstance = infoPanel;
         
-        // Show panel initially and start minimized
         infoPanel.show();
         infoPanel.toggleMinimize();
         
@@ -431,7 +439,7 @@ function updateInfoPanelWithSEPI() {
         }
     });
     
-    // Update vector layers with selected attributes
+    // Update vector layers
     Object.entries(activeLayers.vector).forEach(([id, layer]) => {
         if (map.hasLayer(layer)) {
             const selectedAttribute = getSelectedAttribute(id);
@@ -465,7 +473,6 @@ function updateInfoPanelWithSEPI() {
     if (layerManager.pillarManager?.isActive()) {
         const currentPillar = layerManager.pillarManager.getCurrentPillarId();
         if (currentPillar) {
-            // NEW: Determine if this is conflict data
             const isConflictData = currentPillar.startsWith('conflict_');
             const layerType = isConflictData ? 'conflict' : 'pillar';
             const displayName = isConflictData 
@@ -481,7 +488,6 @@ function updateInfoPanelWithSEPI() {
             });
         }
     } else {
-        // Remove both pillar and conflict entries when nothing is active
         infoPanel.removeLayer('pillar');
         infoPanel.removeLayer('conflict');
     }
@@ -495,7 +501,6 @@ function getPillarDisplayName(pillarId) {
         'poverty': 'Poverty Reduction Index',
         'health': 'Health Access Index',
         'climate_vulnerability': 'Climate Resilience Index',
-        // NEW: Conflict data display names
         'conflict_events': 'Conflict Events',
         'conflict_fatalities': 'Conflict Fatalities'
     };
@@ -503,9 +508,6 @@ function getPillarDisplayName(pillarId) {
     return pillarNames[pillarId] || pillarId;
 }
 
-/**
- * Updated layer display names to include SEPI - matches your actual main.js
- */
 function getLayerDisplayName(layerId) {
     const layerNames = {
         'sepi': 'Socioeconomic Peace Index (SEPI)',
@@ -528,26 +530,20 @@ function getLayerDisplayName(layerId) {
         'tiffLayer20': 'Cell Tower Coverage',
         'pointLayer': 'DHS Statistics',
         'pointLayer2': 'Cities',
-        // NEW: Conflict data layer names
         'conflict_events': 'Conflict Events',
         'conflict_fatalities': 'Conflict Fatalities'
     };
     
     return layerNames[layerId] || layerId.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase());
 }
-/**
- * Initialize SEPI-specific features on startup
- * Add this to your existing initialization
- */
+
 function initializeSEPIFeatures() {
-    // Auto-enable SEPI layer if not already enabled
     setTimeout(() => {
         const sepiCheckbox = document.getElementById('sepiLayer');
         if (sepiCheckbox && !sepiCheckbox.checked) {
             sepiCheckbox.checked = true;
             sepiCheckbox.dispatchEvent(new Event('change', { bubbles: true }));
             
-            // Show controls
             const sepiSection = sepiCheckbox.closest('.sepi-section');
             if (sepiSection) {
                 const controls = sepiSection.querySelector('.layer-controls');
@@ -559,15 +555,8 @@ function initializeSEPIFeatures() {
             }
         }
     }, 1500);
-    
-    // Show welcome message after initialization
-    setTimeout(() => {
-        showSEPIWelcome();
-    }, 2000);
 }
-/**
- * Get selected attribute for a vector layer
- */
+
 function getSelectedAttribute(layerId) {
     const attributeSelectors = {
         'geojsonLayer': 'vectorAttribute1',
@@ -584,9 +573,7 @@ function getSelectedAttribute(layerId) {
     
     return null;
 }
-/**
- * Initialize color ramp selectors
- */
+
 function initializeColorRampSelectors() {
     const colorRampSelectors = [
         'vectorColorRamp1', 'vectorColorRamp2',
@@ -600,21 +587,10 @@ function initializeColorRampSelectors() {
     console.log('Color ramp selectors initialized');
 }
 
-/**
- * Enable default layers on startup
- */
-/**
- * Updated enableDefaultLayers function for main.js
- */
 function enableDefaultLayers() {
-    // The SEPI section is now active by default with the "Overall Peace Index" selected
-    // No need to check any checkboxes - the combined section handles this internally
     console.log('Combined SEPI section initialized with Overall Peace Index active by default');
 }
 
-/**
- * Setup dropdown toggle functionality
- */
 function setupDropdownToggles() {
     document.querySelectorAll('.dropdown-btn').forEach(button => {
         button.addEventListener('click', function() {
@@ -629,9 +605,6 @@ function setupDropdownToggles() {
     });
 }
 
-/**
- * Initialize opacity value displays
- */
 function setupOpacityDisplays() {
     document.querySelectorAll('input[type="range"]').forEach(slider => {
         const displayId = slider.id.replace('Opacity', 'OpacityValue');
@@ -649,9 +622,6 @@ function setupOpacityDisplays() {
     });
 }
 
-/**
- * Show error message to user
- */
 function showErrorMessage(message) {
     const errorDiv = document.createElement('div');
     errorDiv.style.cssText = `
