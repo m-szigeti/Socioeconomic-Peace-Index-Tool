@@ -1,0 +1,92 @@
+ADM2_EN_Old,ADM2_EN,Region,Population_2014,Urban_Population,Rural_Population,IDP_Population,Area_km2,Population_Density,Federal_State,Health_Facilities,Primary_Schools,Secondary_Schools,Literacy_Rate_Percent,Primary_Enrollment_Rate,Water_Access_Percent,Electricity_Access_Percent,Road_Access_Percent,Poverty_Rate_Percent,Main_Economic_Activity,Unemployment_Rate_Percent
+Baki,Baki,Awdal,45000,12000,30000,3000,3850,11.7,Somaliland,3,12,2,42,35,28,15,65,58,Livestock/Agriculture,35
+Borama,Borama,Awdal,215000,180000,30000,5000,4200,51.2,Somaliland,8,45,8,65,55,45,35,85,45,Trade/Services,25
+Lughaye,Lughaye,Awdal,65000,25000,35000,5000,2950,22,Somaliland,4,18,3,48,40,32,20,70,52,Livestock/Fishing,32
+Zeylac,Zeylac,Awdal,38000,20000,15000,3000,1750,21.7,Somaliland,2,10,1,50,42,35,25,75,50,Trade/Fishing,30
+Ceel Barde,Ceel Barde,Bakool,35000,8000,25000,2000,4200,8.3,South West,2,8,1,25,20,18,8,45,70,Agriculture/Livestock,45
+Rab Dhuure,Rab Dhuure,Bakool,28000,5000,21000,2000,3500,8,South West,1,6,0,22,18,15,5,40,72,Agriculture/Livestock,48
+Tayeeglow,Tayeeglow,Bakool,42000,9000,30000,3000,4800,8.8,South West,2,10,1,28,25,20,10,50,68,Agriculture/Livestock,42
+Waajid,Waajid,Bakool,55000,15000,35000,5000,5200,10.6,South West,3,15,2,30,28,22,12,55,65,Agriculture/Livestock,40
+Xudur,Xudur,Bakool,85000,35000,45000,5000,6500,13.1,South West,4,22,3,35,32,25,18,60,62,Agriculture/Trade,38
+Bondhere,Bondhere,Banaadir,185000,175000,5000,5000,25,7400,Federal Government,15,35,12,75,80,85,75,95,35,Services/Trade,22
+Cabdulasis,Cabdulasis,Banaadir,75000,70000,2000,3000,15,5000,Federal Government,8,18,6,70,75,80,70,90,38,Services/Trade,25
+Daynile,Daynile,Banaadir,295000,280000,8000,7000,35,8428.6,Federal Government,18,55,18,72,78,82,72,92,36,Services/Trade,24
+Dharkenley,Dharkenley,Banaadir,385000,370000,10000,5000,40,9625,Federal Government,25,68,22,74,80,85,75,95,34,Services/Trade,23
+Hamar Jabjab,Hamar Jabjab,Banaadir,125000,120000,3000,2000,18,6944.4,Federal Government,12,28,10,73,77,83,74,93,37,Services/Trade,24
+Hamar Weyne,Hamar Weyne,Banaadir,95000,90000,3000,2000,12,7916.7,Federal Government,10,22,8,76,79,86,76,94,35,Services/Trade,22
+Hawl Wadaag,Hawl Wadaag,Banaadir,215000,205000,5000,5000,22,9772.7,Federal Government,16,42,15,74,78,84,73,94,36,Services/Trade,23
+Heliwa,Heliwa,Banaadir,85000,80000,3000,2000,15,5666.7,Federal Government,8,20,7,71,76,81,71,91,38,Services/Trade,25
+Hodan,Hodan,Banaadir,425000,410000,10000,5000,45,9444.4,Federal Government,28,78,25,75,81,86,76,96,33,Services/Trade,21
+Kahda,Kahda,Banaadir,365000,350000,10000,5000,42,8690.5,Federal Government,24,68,20,73,79,84,74,95,35,Services/Trade,23
+Karaan,Karaan,Banaadir,185000,175000,5000,5000,25,7400,Federal Government,15,38,13,72,77,83,73,93,37,Services/Trade,24
+Shangaani,Shangaani,Banaadir,65000,62000,2000,1000,8,8125,Federal Government,6,16,6,77,80,87,78,95,32,Services/Trade,20
+Shibis,Shibis,Banaadir,285000,275000,5000,5000,32,8906.3,Federal Government,20,58,18,74,79,85,75,94,35,Services/Trade,22
+Unspecified,Unspecified,Banaadir,45000,40000,3000,2000,12,3750,Federal Government,4,12,4,68,72,78,68,88,42,Services/Mixed,28
+Waaberi,Waaberi,Banaadir,315000,305000,5000,5000,38,8289.5,Federal Government,22,62,20,75,80,86,76,95,34,Services/Trade,21
+Wadajir (Medina),Wadajir (Medina),Banaadir,225000,215000,5000,5000,28,8035.7,Federal Government,17,45,16,74,78,84,74,94,36,Services/Trade,23
+Wardhigley,Wardhigley,Banaadir,185000,175000,5000,5000,25,7400,Federal Government,15,38,13,73,78,83,74,93,37,Services/Trade,24
+Yaaqshid,Yaaqshid,Banaadir,385000,370000,10000,5000,42,9166.7,Federal Government,25,72,22,74,80,85,75,95,34,Services/Trade,22
+Bandarbeyla,Bandarbeyla,Bari,25000,8000,15000,2000,8500,2.9,Puntland,1,5,1,35,25,20,12,35,65,Fishing/Livestock,40
+Bossaso,Bossaso,Bari,485000,420000,55000,10000,9200,52.7,Puntland,25,85,25,55,50,55,45,75,48,Trade/Port Services,28
+Caluula,Caluula,Bari,35000,12000,20000,3000,6800,5.1,Puntland,2,8,1,38,28,22,15,40,62,Fishing/Livestock,38
+Iskushuban,Iskushuban,Bari,45000,18000,24000,3000,7200,6.3,Puntland,2,10,2,40,30,25,18,45,60,Livestock/Fishing,36
+Qandala,Qandala,Bari,55000,25000,25000,5000,5800,9.5,Puntland,3,12,2,42,32,28,20,50,58,Fishing/Trade,34
+Qardho,Qardho,Bari,125000,85000,35000,5000,7500,16.7,Puntland,8,28,8,48,42,38,30,65,52,Trade/Services,30
+Baydhaba,Baydhaba,Bay,485000,285000,180000,20000,8500,57.1,South West,18,85,15,38,35,30,25,60,65,Agriculture/Trade,42
+Buur Hakaba,Buur Hakaba,Bay,95000,35000,55000,5000,6200,15.3,South West,4,22,3,32,28,25,15,50,68,Agriculture/Livestock,45
+Diinsoor,Diinsoor,Bay,125000,45000,70000,10000,7800,16,South West,5,28,4,35,30,28,18,55,66,Agriculture/Livestock,43
+Qansax Dheere,Qansax Dheere,Bay,65000,20000,40000,5000,4500,14.4,South West,3,15,2,30,25,22,12,48,70,Agriculture/Livestock,46
+Cabudwaaq,Cabudwaaq,Galguduud,125000,65000,55000,5000,8200,15.2,Galmudug,6,28,5,42,38,32,25,58,58,Livestock/Trade,35
+Cadaado,Cadaado,Galguduud,85000,35000,45000,5000,6800,12.5,Galmudug,4,18,3,38,32,28,20,52,62,Livestock/Agriculture,38
+Ceel Buur,Ceel Buur,Galguduud,65000,25000,35000,5000,5200,12.5,Galmudug,3,15,2,35,28,25,18,48,65,Agriculture/Livestock,40
+Ceel Dheer,Ceel Dheer,Galguduud,45000,15000,26000,4000,4800,9.4,Galmudug,2,10,1,32,25,22,15,45,68,Agriculture/Livestock,42
+Dhuusamarreeb,Dhuusamarreeb,Galguduud,185000,125000,55000,5000,7200,25.7,Galmudug,10,42,8,45,40,35,28,62,55,Trade/Services,32
+Baardheere,Baardheere,Gedo,185000,85000,85000,15000,12500,14.8,Jubaland,8,38,6,35,32,28,20,55,68,Agriculture/Livestock,45
+Belet Xaawo,Belet Xaawo,Gedo,95000,35000,55000,5000,8500,11.2,Jubaland,4,22,3,32,28,25,15,50,70,Agriculture/Livestock,48
+Ceel Waaq,Ceel Waaq,Gedo,65000,25000,35000,5000,6800,9.6,Jubaland,3,15,2,30,25,22,12,45,72,Agriculture/Livestock,50
+Doolow,Doolow,Gedo,85000,35000,45000,5000,7200,11.8,Jubaland,4,18,3,33,28,25,15,48,70,Agriculture/Livestock,47
+Garbahaarey,Garbahaarey,Gedo,125000,55000,65000,5000,9500,13.2,Jubaland,5,28,4,36,30,28,18,52,66,Agriculture/Livestock,44
+Luuq,Luuq,Gedo,95000,45000,45000,5000,8200,11.6,Jubaland,4,22,3,34,29,26,16,50,68,Agriculture/Livestock,46
+Belet Weyne,Belet Weyne,Hiran,385000,285000,85000,15000,8500,45.3,Hirshabelle,18,75,18,45,42,38,30,68,58,Agriculture/Trade,38
+Bulo Burto,Bulo Burto,Hiran,95000,45000,45000,5000,6200,15.3,Hirshabelle,4,22,4,40,35,32,22,60,62,Agriculture/Livestock,40
+Jalalaqsi,Jalalaqsi,Hiran,85000,25000,55000,5000,5800,14.7,Hirshabelle,3,18,3,38,32,28,18,55,65,Agriculture/Livestock,42
+Afmadow,Afmadow,Lower Juba,125000,65000,55000,5000,9500,13.2,Jubaland,5,28,5,36,32,30,20,58,64,Agriculture/Livestock,43
+Badhaadhe,Badhaadhe,Lower Juba,85000,35000,45000,5000,7800,10.9,Jubaland,3,18,3,33,28,26,16,52,68,Agriculture/Fishing,46
+Jamaame,Jamaame,Lower Juba,125000,55000,65000,5000,8200,15.2,Jubaland,5,28,4,35,30,28,18,55,66,Agriculture/Livestock,44
+Kismaayo,Kismaayo,Lower Juba,485000,425000,45000,15000,9200,52.7,Jubaland,22,88,22,50,48,45,40,75,52,Port/Trade Services,32
+Afgooye,Afgooye,Lower Shabelle,185000,125000,55000,5000,4200,44,South West,8,38,8,42,38,35,25,65,60,Agriculture/Trade,40
+Baraawe,Baraawe,Lower Shabelle,125000,85000,35000,5000,3800,32.9,South West,6,28,5,45,40,38,28,70,58,Fishing/Trade,38
+Kurtunwaarey,Kurtunwaarey,Lower Shabelle,65000,25000,35000,5000,3200,20.3,South West,3,15,2,35,28,25,18,55,65,Agriculture/Livestock,45
+Marka,Marka,Lower Shabelle,225000,185000,35000,5000,3500,64.3,South West,12,48,12,48,45,42,32,72,55,Trade/Agriculture,36
+Qoryooley,Qoryooley,Lower Shabelle,95000,45000,45000,5000,2800,33.9,South West,4,22,4,40,35,32,22,60,62,Agriculture/Livestock,42
+Sablaale,Sablaale,Lower Shabelle,85000,35000,45000,5000,3600,23.6,South West,3,18,3,38,32,28,20,58,64,Agriculture/Livestock,44
+Wanla Weyn,Wanla Weyn,Lower Shabelle,125000,65000,55000,5000,4500,27.8,South West,5,28,5,42,38,35,25,62,60,Agriculture/Livestock,40
+Bu'aale,Bu'aale,Middle Juba,95000,45000,45000,5000,8500,11.2,Jubaland,4,22,3,34,30,26,18,52,68,Agriculture/Livestock,46
+Jilib,Jilib,Middle Juba,125000,65000,55000,5000,7800,16,Jubaland,5,28,4,36,32,30,20,55,64,Agriculture/Livestock,43
+Saakow,Saakow,Middle Juba,85000,35000,45000,5000,9200,9.2,Jubaland,3,18,3,32,28,25,16,50,70,Agriculture/Livestock,48
+Adan Yabaal,Adan Yabaal,Middle Shabelle,65000,25000,35000,5000,3800,17.1,Hirshabelle,3,15,3,38,32,30,20,58,64,Agriculture/Livestock,42
+Balcad,Balcad,Middle Shabelle,85000,45000,35000,5000,3200,26.6,Hirshabelle,4,18,4,42,38,35,25,62,60,Agriculture/Trade,38
+Cadale,Cadale,Middle Shabelle,95000,35000,55000,5000,4200,22.6,Hirshabelle,4,22,4,40,35,32,22,60,62,Agriculture/Livestock,40
+Jowhar,Jowhar,Middle Shabelle,285000,225000,55000,5000,4500,63.3,Hirshabelle,15,58,15,48,45,42,35,70,55,Agriculture/Trade,35
+Gaalkacyo,Gaalkacyo,Mudug,425000,385000,35000,5000,8500,50,Galmudug/Puntland,20,78,20,52,48,45,38,72,50,Trade/Services,30
+Galdogob,Galdogob,Mudug,85000,45000,35000,5000,7200,11.8,Galmudug,4,18,3,40,35,30,22,55,62,Livestock/Trade,38
+Hobyo,Hobyo,Mudug,65000,35000,25000,5000,6800,9.6,Galmudug,3,15,2,38,32,28,20,52,65,Fishing/Livestock,40
+Jariiban,Jariiban,Mudug,45000,18000,24000,3000,5200,8.7,Puntland,2,10,2,36,28,25,18,48,68,Livestock/Agriculture,42
+Xarardheere,Xarardheere,Mudug,55000,25000,25000,5000,6200,8.9,Galmudug,2,12,2,35,30,26,18,50,66,Livestock/Fishing,40
+Burtinle,Burtinle,Nugaal,65000,25000,35000,5000,8500,7.6,Puntland,3,15,2,40,32,28,20,52,64,Livestock/Agriculture,38
+Eyl,Eyl,Nugaal,45000,18000,24000,3000,6800,6.6,Puntland,2,10,1,38,30,25,18,48,66,Fishing/Livestock,40
+Garoowe,Garoowe,Nugaal,285000,225000,55000,5000,7200,39.6,Puntland,15,58,15,52,48,42,35,68,52,Government/Services,28
+Ceel Afweyn,Ceel Afweyn,Sanaag,55000,18000,32000,5000,8500,6.5,Somaliland/Khatumo,2,12,2,38,30,25,15,45,66,Livestock/Agriculture,42
+Ceerigaabo,Ceerigaabo,Sanaag,125000,65000,55000,5000,9200,13.6,Somaliland,6,28,5,45,38,35,25,60,60,Livestock/Trade,36
+Laasqoray,Laasqoray,Sanaag,35000,15000,18000,2000,5800,6,Somaliland,2,8,1,40,32,28,18,50,64,Fishing/Livestock,40
+Caynabo,Caynabo,Sool,45000,15000,26000,4000,6200,7.3,Khatumo,2,10,1,35,28,22,12,42,68,Livestock/Agriculture,44
+Laas Caanood,Laas Caanood,Sool,125000,85000,35000,5000,7800,16,Khatumo,6,28,5,42,38,32,25,58,62,Trade/Livestock,38
+Taleex,Taleex,Sool,55000,18000,32000,5000,8200,6.7,Khatumo,2,12,2,36,30,24,15,46,66,Livestock/Agriculture,42
+Xudun,Xudun,Sool,65000,22000,38000,5000,7200,9,Khatumo,3,15,2,38,32,26,18,48,64,Livestock/Agriculture,40
+Burco,Burco,Togdheer,285000,225000,55000,5000,8500,33.5,Somaliland,15,58,15,55,50,42,32,68,55,Trade/Livestock,32
+Buuhoodle,Buuhoodle,Togdheer,95000,35000,55000,5000,7800,12.2,Khatumo,4,22,3,38,32,28,18,52,66,Livestock/Agriculture,42
+Owdweyne,Owdweyne,Togdheer,65000,25000,35000,5000,6200,10.5,Somaliland,3,15,2,42,35,30,20,55,62,Livestock/Agriculture,38
+Sheikh,Sheikh,Togdheer,85000,35000,45000,5000,5800,14.7,Somaliland,4,18,3,45,38,32,22,58,60,Livestock/Agriculture,36
+Berbera,Berbera,Woqooyi Galbeed,285000,225000,55000,5000,4200,67.9,Somaliland,15,58,15,60,55,48,40,75,50,Port/Trade Services,28
+Gebiley,Gebiley,Woqooyi Galbeed,125000,55000,65000,5000,5800,21.6,Somaliland,6,28,5,48,42,35,25,62,58,Livestock/Agriculture,35
+Hargeysa,Hargeysa,Woqooyi Galbeed,1285000,1125000,155000,5000,6200,207.3,Somaliland,68,285,68,65,62,58,50,85,45,Government/Services,25

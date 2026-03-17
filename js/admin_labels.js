@@ -1,6 +1,7 @@
 // admin_labels.js - Fixed to properly show district labels from ADM2_EN
 
 import { basemaps, basemapOptions } from './basemaps.js';
+import { LAYER_CONFIG } from './layer_config.js';
 
 /**
  * Create label layers for administrative boundaries and combined control panel
@@ -286,10 +287,10 @@ function toggleLabels(level, button, labelLayers, map) {
  * @param {Object} map - Leaflet map instance
  */
 function loadAndGenerateLabels(level, labelLayer, map) {
-    // FIXED: Use correct file paths and field names
-    const url = level === 'adm1' 
-        ? 'data/adm1_som_latest_cross_sec_2.geojson'  // ADM1 (Regions)
-        : 'data/adm2_summary_stats_3.geojson';        // ADM2 (Districts)
+    // Resolve admin boundary files from country-aware layer config.
+    const adm1Url = typeof LAYER_CONFIG.admin1?.url === 'function' ? LAYER_CONFIG.admin1.url() : LAYER_CONFIG.admin1?.url;
+    const adm2Url = typeof LAYER_CONFIG.admin2?.url === 'function' ? LAYER_CONFIG.admin2.url() : LAYER_CONFIG.admin2?.url;
+    const url = level === 'adm1' ? adm1Url : adm2Url;
     
     console.log(`Loading ${level} labels from: ${url}`);
     

@@ -6,6 +6,10 @@ import { SEPIManager } from './sepi_manager.js';
 import { loadVectorLayer, loadPointLayer, updateVectorLayerStyle, updatePointLayerStyle, populateAttributeSelector } from './vector_layers.js';
 import { generateAdminLabels } from './admin_labels.js';
 
+function resolvePath(pathOrResolver) {
+    return typeof pathOrResolver === 'function' ? pathOrResolver() : pathOrResolver;
+}
+
 /**
  * Unified Layer Manager - Updated with conflict data support
  */
@@ -116,6 +120,16 @@ export class LayerManager {
     }
 
     /**
+     * Reset country-scoped caches so newly selected country data is fetched.
+     */
+    resetCountryScopedData() {
+        this.sepiManager.sepiLayer = null;
+        this.pillarManager.pillarsData = null;
+        this.pillarManager.currentLayer = null;
+        this.pillarManager.currentPillarId = null;
+    }
+
+    /**
      * Load main SEPI layer
      */
     async loadMainSEPILayer() {
@@ -199,7 +213,7 @@ export class LayerManager {
     
     async loadVectorLayer(key, config) {
         if (!this.layers.vector[key]) {
-            this.layers.vector[key] = await loadVectorLayer(config.url, { style: config.style });
+            this.layers.vector[key] = await loadVectorLayer(resolvePath(config.url), { style: config.style });
             
             if (config.controls?.attribute) {
                 populateAttributeSelector(this.layers.vector[key], config.controls.attribute);
@@ -217,7 +231,7 @@ export class LayerManager {
     
     async loadPointLayer(key, config) {
         if (!this.layers.point[key]) {
-            this.layers.point[key] = await loadPointLayer(config.url, {
+            this.layers.point[key] = await loadPointLayer(resolvePath(config.url), {
                 selectorId: config.controls?.selector,
                 attributeSelector: config.controls?.selector,
                 colorRampSelector: config.controls?.colorRamp
@@ -234,7 +248,7 @@ export class LayerManager {
         }
         
         if (!this.layers.tiff[key]) {
-            await loadTiff(config.url, config.id, this.layers.tiff, this.map, colorScale);
+            await loadTiff(resolvePath(config.url), config.id, this.layers.tiff, this.map, colorScale);
         } else {
             this.layers.tiff[key].addTo(this.map);
         }
@@ -473,7 +487,9 @@ export class SimplifiedPillarManager {
         if (this.pillarsData) return this.pillarsData;
     
         try {
-            const response = await fetch('data/sepi_with_pillars_9.geojson');
+            const firstPillar = PILLAR_CONFIG.education || Object.values(PILLAR_CONFIG)[0];
+            const pillarsFile = resolvePath(firstPillar?.file);
+            const response = await fetch(pillarsFile);
             if (!response.ok) {
                 throw new Error(`Failed to load pillars data: ${response.status}`);
             }

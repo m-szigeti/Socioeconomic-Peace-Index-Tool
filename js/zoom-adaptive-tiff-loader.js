@@ -241,22 +241,3 @@ function createImageOverlay(rasterArray, bounds, colorScale, layerName, tiffLaye
         }
     });
 }
-
-function getColorForValue(value, colorScale) {
-    if (!colorScale || !colorScale.ranges || !colorScale.colors) return [128, 128, 128];
-    const { ranges, colors } = colorScale;
-    for (let i = 0; i < ranges.length - 1; i++) {
-        if (value >= ranges[i] && value < ranges[i + 1]) {
-            return hexToRgb(colors[i]);
-        }
-    }
-    return hexToRgb(colors[colors.length - 1]);
-}
-
-function hexToRgb(hex) {
-    if (!hex) return [128, 128, 128];
-    hex = hex.replace('#', '');
-    if (hex.length === 3) hex = hex[0]+hex[0]+hex[1]+hex[1]+hex[2]+hex[2];
-    const bigint = parseInt(hex, 16);
-    return [(bigint >> 16) & 255, (bigint >> 8) & 255, bigint & 255];
-}

@@ -5,7 +5,7 @@ import { initializeLegend, updateLegend, hideLegend } from './legend.js';
 import { LayerManager } from './layer_manager.js';
 import { createAdminLabelLayers, loadCountryOutline } from './admin_labels.js';
 import { InfoPanel } from './info_panel.js';
-import { populateColorRampSelector } from './layer_config.js';
+import { populateColorRampSelector, setConfigCountry, COUNTRY_VIEWS, getCountryOutlineCandidates, getCountryPath, getCurrentCountry } from './layer_config.js';
 // We only import loadTiff. We handle removal manually to ensure compatibility.
 import { loadTiff } from './zoom-adaptive-tiff-loader.js'; 
 import { WelcomePopup } from './welcome_popup.js';
@@ -19,27 +19,32 @@ let tiffLayers = {}; // Global TIFF layers storage for proper cleanup
 
 // Track async loading states to prevent race conditions
 const loadingTracker = {};
+let activeCountryOutline = null;
+
+function resolveConfigUrl(pathOrResolver) {
+    return typeof pathOrResolver === 'function' ? pathOrResolver() : pathOrResolver;
+}
 
 // Layer configuration for raster layers (consolidated)
 const RASTER_LAYER_CONFIG = {
-    'streetNetworkLayer': { type: 'vector', url: 'data/street_subset.geojson' },
-    'tiffLayer1': { colorScale: 'ndviChange', url: 'data/mean_ndvi_change_2015_to_2023.tif' },
-    'tiffLayer10': { colorScale: 'serviceAccess', url: 'data/som_service_area_2.tif' },
-    'tiffLayer11': { colorScale: 'nightlights', url: 'data/VNP46A2_2024_Somalia.tif' },
-    'tiffLayer12': { colorScale: 'elevation', url: 'data/elevation.tif' },
-    'tiffLayer13': { colorScale: 'soilMoisture', url: 'data/soil_moisture.tif' },
-    'tiffLayer14': { colorScale: 'temperature', url: 'data/temperature.tif' },
-    'tiffLayer15': { colorScale: 'rainfall', url: 'data/rainfall.tif' },
-    'tiffLayer16': { colorScale: 'populationDensity', url: 'data/population.tif' },
-    'tiffLayer17': { colorScale: 'roadAccess', url: 'data/roads.tif' },
-    'tiffLayer18': { colorScale: 'educationAccess', url: 'data/education.tif' },
-    'tiffLayer19': { colorScale: 'healthAccess', url: 'data/health.tif' },
-    'tiffLayer20': { colorScale: 'cellTowerDensity', url: 'data/celltower.tif' }
+    'streetNetworkLayer': { type: 'vector', url: () => getCountryPath('street_subset.geojson') },
+    'tiffLayer1': { colorScale: 'ndviChange', url: () => getCountryPath('mean_ndvi_change_2015_to_2023.tif') },
+    'tiffLayer10': { colorScale: 'serviceAccess', url: () => getCountryPath('som_service_area_2.tif') },
+    'tiffLayer11': { colorScale: 'nightlights', url: () => getCountryPath(`VNP46A2_2024_${getCurrentCountry()}.tif`) },
+    'tiffLayer12': { colorScale: 'elevation', url: () => getCountryPath('elevation.tif') },
+    'tiffLayer13': { colorScale: 'soilMoisture', url: () => getCountryPath('soil_moisture.tif') },
+    'tiffLayer14': { colorScale: 'temperature', url: () => getCountryPath('temperature.tif') },
+    'tiffLayer15': { colorScale: 'rainfall', url: () => getCountryPath('rainfall.tif') },
+    'tiffLayer16': { colorScale: 'populationDensity', url: () => getCountryPath('population.tif') },
+    'tiffLayer17': { colorScale: 'roadAccess', url: () => getCountryPath('roads.tif') },
+    'tiffLayer18': { colorScale: 'educationAccess', url: () => getCountryPath('education.tif') },
+    'tiffLayer19': { colorScale: 'healthAccess', url: () => getCountryPath('health.tif') },
+    'tiffLayer20': { colorScale: 'cellTowerDensity', url: () => getCountryPath('celltower.tif') }
 };
 
 // Initialize application
 document.addEventListener('DOMContentLoaded', async function() {
-    console.log('Initializing Somalia SEPI Mapping Tool...');
+    console.log('Initializing SEPI Mapping Tool...');
     
     try {
         // Setup map and globals
@@ -47,19 +52,21 @@ document.addEventListener('DOMContentLoaded', async function() {
         window.map = map;
         window.tiffLayers = tiffLayers;
         
+        setupCountrySelector();
+
         // Initialize UI components
         initializeLegend();
         setupDropdownToggles();
         initializeColorRampSelectors();
         
-        // Load country outline
-        await loadSomaliaOutline(map);
+        // Load default country outline
+        await loadDefaultCountryOutline();
         
         // Initialize layer management system
         layerManager = new LayerManager(map, updateLegend, hideLegend);
         
         // Setup admin labels
-        const labelLayers = createAdminLabelLayers(map, layerManager.getActiveLayers().vector, { somalia: window.somaliaOutline }, null);
+        const labelLayers = createAdminLabelLayers(map, layerManager.getActiveLayers().vector, {}, null);
         layerManager.setLabelLayers(labelLayers);
         
         // Initialize info panel
@@ -166,7 +173,7 @@ async function loadRasterLayer(layerId, requestId) {
         // Handle street network (vector layer)
         if (!layerManager.layers.vector[layerId]) {
             const { loadVectorLayer } = await import('./vector_layers.js');
-            layerManager.layers.vector[layerId] = await loadVectorLayer(config.url, {
+            layerManager.layers.vector[layerId] = await loadVectorLayer(resolveConfigUrl(config.url), {
                 style: { color: "#3388ff", weight: 0.5, opacity: 1, fillOpacity: 0 }
             });
         }
@@ -190,7 +197,7 @@ async function loadRasterLayer(layerId, requestId) {
         
         try {
             // Pass the global tiffLayers object
-            await loadTiff(config.url, layerId, tiffLayers, map, colorScale);
+            await loadTiff(resolveConfigUrl(config.url), layerId, tiffLayers, map, colorScale);
             
             // --- VITAL ASYNC CHECK ---
             // If the user unchecked the box while `loadTiff` was processing (downloading/parsing),
@@ -248,7 +255,8 @@ function removeRasterLayer(layerId) {
         if (layer instanceof L.ImageOverlay) {
             const config = RASTER_LAYER_CONFIG[layerId];
             // Match by URL or by a custom property if we assigned one
-            if (config && layer._url && layer._url.includes(config.url)) {
+            const targetUrl = resolveConfigUrl(config?.url);
+            if (targetUrl && layer._url && layer._url.includes(targetUrl)) {
                 console.log(`Cleaning up orphaned map instance of ${layerId}`);
                 map.removeLayer(layer);
             }
@@ -296,6 +304,7 @@ function handleLayerChange() {
  */
 function updateLegendBasedOnActiveLayers() {
     const activeLayerTypes = [];
+    const activeSEPIOption = document.querySelector('.sepi-option.active');
     
     // Check various layer types for active layers
     const layerChecks = [
@@ -333,7 +342,8 @@ function updateLegendBasedOnActiveLayers() {
         }
     });
     
-    if (activeLayerTypes.length === 0) {
+    // Keep legend visible when SEPI is active from the SEPI selector.
+    if (activeLayerTypes.length === 0 && !activeSEPIOption) {
         hideLegend();
     }
 }
@@ -344,6 +354,57 @@ function updateLegendBasedOnActiveLayers() {
 /**
  * Setup the main map
  */
+
+
+function setupCountrySelector() {
+    const sidebar = document.getElementById('sidebar');
+    if (!sidebar) return;
+
+    const syncCountrySelectorUI = () => {
+        const currentCountry = getCurrentCountry();
+        sidebar.querySelectorAll('.country-dot-option').forEach(option => {
+            option.classList.toggle('active', option.dataset.country === currentCountry);
+        });
+    };
+
+    // Initial sync and post-render sync for template-injected controls.
+    syncCountrySelectorUI();
+    setTimeout(syncCountrySelectorUI, 0);
+
+    sidebar.addEventListener('click', async (event) => {
+        const clickedOption = event.target.closest('.country-dot-option');
+        if (!clickedOption || !sidebar.contains(clickedOption)) return;
+
+        const selectedCountry = clickedOption.dataset.country;
+        if (!selectedCountry || selectedCountry === getCurrentCountry()) return;
+
+        console.log(`Switching to country: ${selectedCountry}`);
+        setConfigCountry(selectedCountry);
+        syncCountrySelectorUI();
+
+        clearCountryDependentLayers();
+        layerManager?.resetCountryScopedData();
+
+        const countryView = COUNTRY_VIEWS[selectedCountry] || COUNTRY_VIEWS.Somalia;
+        map.setView(countryView.center, countryView.zoom);
+
+        await loadOutlineWithFallbacks(selectedCountry);
+        await activateDefaultSEPISelection();
+        handleLayerChange();
+    });
+}
+
+async function activateDefaultSEPISelection() {
+    const sepiOptions = document.querySelectorAll('.sepi-option');
+    const defaultOption = document.querySelector('.sepi-option[data-sepi-type="main"]');
+    if (!defaultOption) return;
+
+    sepiOptions.forEach(option => option.classList.remove('active'));
+    defaultOption.classList.add('active');
+    document.querySelector('.sepi-section')?.classList.remove('no-active-layers');
+
+    await layerManager?.handleSEPIOptionChange('main', null);
+}
 function setupMap(mapId) {
     const leafletMap = L.map(mapId, {
         zoomControl: true,
@@ -367,25 +428,60 @@ function setupMap(mapId) {
 }
 
 /**
- * Load Somalia outline
+ * Load default country outline
  */
-async function loadSomaliaOutline(map) {
+async function loadDefaultCountryOutline() {
     try {
-        let outline = await loadCountryOutline('somalia', 'data/somalia_outline.geojson');
-        
-        if (!outline) {
-            outline = await loadCountryOutline('somalia', 'data/cutline.geojson');
-        }
-        
-        if (outline) {
-            outline.addTo(map);
-            window.somaliaOutline = outline;
-            console.log('Somalia outline loaded successfully');
-        }
-        
+        await loadOutlineWithFallbacks(getCurrentCountry());
     } catch (error) {
         console.error('Failed to load country outline:', error);
     }
+}
+
+async function loadOutlineWithFallbacks(country) {
+    const outlineCandidates = getCountryOutlineCandidates(country);
+    for (const outlinePath of outlineCandidates) {
+        const outline = await loadCountryOutline(country.toLowerCase(), outlinePath);
+        if (outline) {
+            if (activeCountryOutline && map.hasLayer(activeCountryOutline)) {
+                map.removeLayer(activeCountryOutline);
+            }
+            activeCountryOutline = outline;
+            outline.addTo(map);
+            window.activeCountryOutline = outline;
+            console.log(`${country} outline loaded from ${outlinePath}`);
+            return;
+        }
+    }
+    console.warn(`No valid outline file found for ${country}`);
+}
+
+function clearCountryDependentLayers() {
+    Object.keys(RASTER_LAYER_CONFIG).forEach(layerId => {
+        loadingTracker[layerId] = null;
+        removeRasterLayer(layerId);
+        const checkbox = document.getElementById(layerId);
+        if (checkbox) checkbox.checked = false;
+    });
+
+    ['geojsonLayer', 'geojsonLayer2', 'pointLayer', 'pointLayer2', 'ndviButtonLayer'].forEach(id => {
+        const checkbox = document.getElementById(id);
+        if (checkbox?.checked) {
+            checkbox.checked = false;
+            checkbox.dispatchEvent(new Event('change', { bubbles: true }));
+        }
+    });
+
+    layerManager?.removeCurrentSEPILayers();
+
+    if (layerManager?.layers) {
+        layerManager.layers.vector = {};
+        layerManager.layers.point = {};
+        layerManager.layers.tiff = {};
+    }
+    layerManager?.activeLayers?.clear?.();
+    tiffLayers = {};
+    window.tiffLayers = tiffLayers;
 }
 
 /**

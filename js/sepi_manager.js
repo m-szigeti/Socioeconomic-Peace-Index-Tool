@@ -2,6 +2,7 @@
 // Replaces: sepi_integration.js + sepi_popups.js
 
 import { updateSEPILegend } from './legend.js';
+import { getCountryPath } from './layer_config.js';
 
 /**
  * SEPI Manager - Handles all SEPI layer functionality
@@ -12,7 +13,7 @@ export class SEPIManager {
         this.layers = layers;
         this.sepiLayer = null;
         this.config = {
-            dataUrl: 'data/sepi_with_pillars_9.geojson', // UPDATED: New file
+            dataUrl: '',
             property: 'peacebuilding_index', // Check if this exists in new file, might need to be 'index'
             colors: ['#dc3545', '#fd7e14', '#ffc107', '#28a745', '#155724'],
             breaks: [0.2, 0.4, 0.6, 0.8]
@@ -46,18 +47,14 @@ export class SEPIManager {
      */
     async loadLayer() {
         try {
+            this.config.dataUrl = getCountryPath('sepi_with_pillars_9.geojson');
             console.log('Loading SEPI data from:', this.config.dataUrl);
             const response = await fetch(this.config.dataUrl);
             if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
             
             const geojsonData = await response.json();
-            console.log('SEPI data loaded, checking structure...');
-            
-            // DEBUG: Check the structure of the loaded data
             if (geojsonData.features && geojsonData.features.length > 0) {
                 const firstFeature = geojsonData.features[0];
-                console.log('First feature properties:', Object.keys(firstFeature.properties));
-                console.log('Sample properties:', firstFeature.properties);
                 
                 // Check which SEPI property exists
                 const possibleSEPIProps = ['peacebuilding_index', 'index', 'sepi', 'peace_index'];
@@ -67,7 +64,6 @@ export class SEPIManager {
                 
                 if (existingSEPIProp) {
                     this.config.property = existingSEPIProp;
-                    console.log('Using SEPI property:', existingSEPIProp);
                 } else {
                     console.error('No SEPI property found! Available properties:', Object.keys(firstFeature.properties));
                     // Try the first numeric property as fallback
@@ -75,7 +71,6 @@ export class SEPIManager {
                         .find(([key, value]) => typeof value === 'number' && value >= 0 && value <= 1);
                     if (numericProp) {
                         this.config.property = numericProp[0];
-                        console.log('Using fallback property:', numericProp[0]);
                     }
                 }
             }
@@ -151,7 +146,6 @@ chartHTML += `
     getFeatureStyle(feature) {
         const value = feature.properties[this.config.property];
         const color = this.getColor(value);
-        console.log(`Feature style - Property: ${this.config.property}, Value: ${value}, Color: ${color}`);
         
         return {
             fillColor: color,
@@ -167,23 +161,18 @@ chartHTML += `
      */
     getColor(value) {
         if (value == null || isNaN(value)) {
-            console.log('Invalid value for coloring:', value);
             return '#cccccc';
         }
         
         const numValue = Number(value);
         const { colors, breaks } = this.config;
-        
-        console.log(`Getting color for value: ${numValue}`);
-        
+
         for (let i = 0; i < breaks.length; i++) {
             if (numValue < breaks[i]) {
-                console.log(`Value ${numValue} < ${breaks[i]}, returning color: ${colors[i]}`);
                 return colors[i];
             }
         }
-        
-        console.log(`Value ${numValue} >= all breaks, returning color: ${colors[colors.length - 1]}`);
+
         return colors[colors.length - 1];
     }
     
@@ -213,8 +202,6 @@ chartHTML += `
                            properties.district || 'Unknown District';
         
         const sepiValue = properties[this.config.property];
-        
-        console.log(`Setting up interactions for: ${districtName}, SEPI: ${sepiValue}`);
         
         // Bind tooltip
         const scoreText = sepiValue != null ? Number(sepiValue).toFixed(2) : 'No data';
@@ -399,14 +386,12 @@ export function setupSEPIControls(map, layers) {
                     await sepiManager.loadLayer();
                 }
                 sepiManager.addToMap();
-                console.log('SEPI layer activated');
             } catch (error) {
                 console.error('Error activating SEPI layer:', error);
                 this.checked = false;
             }
         } else {
             sepiManager.removeFromMap();
-            console.log('SEPI layer deactivated');
         }
     });
     

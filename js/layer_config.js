@@ -1,5 +1,42 @@
-// layer_config.js - Consolidated layer configuration with color ramp utilities
-// Merged: color_ramp_selector.js functionality
+
+// In js/layer_config.js
+let currentCountry = 'Somalia';
+
+export const SUPPORTED_COUNTRIES = ['Somalia', 'Kenya', 'South_Sudan'];
+
+export const COUNTRY_VIEWS = {
+    Somalia: { center: [6.5707, 48.9962], zoom: 5 },
+    Kenya: { center: [0.0236, 37.9062], zoom: 5 },
+    South_Sudan: { center: [6.877, 31.307], zoom: 5 }
+};
+
+export function setConfigCountry(country) {
+    if (SUPPORTED_COUNTRIES.includes(country)) {
+        currentCountry = country;
+    } else {
+        console.warn(`Unsupported country '${country}', keeping '${currentCountry}'`);
+    }
+}
+
+export function getCurrentCountry() {
+    return currentCountry;
+}
+
+export function getCountryPath(filename, country = currentCountry) {
+    return `data/${country}/${filename}`;
+}
+
+export function getCountryOutlineCandidates(country = currentCountry) {
+    const lowerCountry = country.toLowerCase();
+    return [
+        getCountryPath('outline.geojson', country),
+        getCountryPath(`${lowerCountry}_outline.geojson`, country),
+        getCountryPath('somalia_outline.geojson', country),
+        getCountryPath('kenya_outline.geojson', country),
+        getCountryPath('south_sudan_outline.geojson', country),
+        getCountryPath('cutline.geojson', country)
+    ];
+}
 
 /**
  * Master layer configuration - single source of truth for all layers
@@ -10,7 +47,7 @@ export const LAYER_CONFIG = {
         id: 'geojsonLayer',
         name: 'Admin Level 1 Statistics',
         type: 'vector',
-        url: 'data/adm1_subnational_statistics.geojson',
+        url: () => getCountryPath('adm1_subnational_statistics.geojson'),
         style: { color: "#3388ff", weight: 1, opacity: 1, fillOpacity: 0 },
         controls: {
             opacity: 'geojsonOpacity',
@@ -26,7 +63,7 @@ export const LAYER_CONFIG = {
         id: 'geojsonLayer2',
         name: 'Admin Level 2 Statistics',
         type: 'vector',
-        url: 'data/adm2_summary_stats_3.geojson',
+        url: () => getCountryPath('adm2_summary_stats_3.geojson'),
         style: { color: "#FF5733", weight: 1, opacity: 1, fillOpacity: 0 },
         controls: {
             opacity: 'geojsonOpacity2',
@@ -42,7 +79,7 @@ export const LAYER_CONFIG = {
         id: 'streetNetworkLayer',
         name: 'Street Network',
         type: 'vector',
-        url: 'data/street_subset.geojson',
+        url: () => getCountryPath('street_subset.geojson'),
         style: { color: "#3388ff", weight: 0.5, opacity: 1, fillOpacity: 0 },
         controls: {
             opacity: 'streetNetworkOpacity',
@@ -58,7 +95,7 @@ export const LAYER_CONFIG = {
         id: 'sepiLayer',
         name: 'Socioeconomic Peace Index (SEPI)',
         type: 'sepi',
-        url: 'data/sepi2.geojson',
+        url: () => getCountryPath('sepi2.geojson'),
         property: 'peacebuilding_index',
         style: { color: "#2c5f2d", weight: 2, opacity: 1, fillOpacity: 0.7 },
         controls: {
@@ -73,7 +110,7 @@ export const LAYER_CONFIG = {
         id: 'ndviButtonLayer',
         name: 'NDVI Average Change',
         type: 'vector',
-        url: 'data/NDVI_button.geojson',
+        url: () => getCountryPath('NDVI_button.geojson'),
         property: 'NDVI_average_change_mean',
         style: { color: "#228b22", weight: 2, opacity: 1, fillOpacity: 0.7 },
         controls: {
@@ -89,7 +126,7 @@ export const LAYER_CONFIG = {
         id: 'pointLayer',
         name: 'DHS Statistics',
         type: 'point',
-        url: 'data/DHS_stats.geojson',
+        url: () => getCountryPath('DHS_stats.geojson'),
         controls: {
             opacity: 'pointOpacity',
             opacityDisplay: 'pointOpacityValue',
@@ -103,7 +140,7 @@ export const LAYER_CONFIG = {
         id: 'pointLayer2',
         name: 'Cities',
         type: 'point',
-        url: 'data/cities.geojson',
+        url: () => getCountryPath('cities.geojson'),
         controls: {
             opacity: 'pointOpacity2',
             opacityDisplay: 'pointOpacityValue2',
@@ -121,7 +158,7 @@ export const LAYER_CONFIG = {
         id: 'tiffLayer10',
         name: 'Service Coverage Areas',
         type: 'raster',
-        url: 'data/som_service_area_2.tif',
+        url: () => getCountryPath('som_service_area_2.tif'),
         colorScale: 'serviceAccess',
         legend: {
             title: 'Service Coverage Areas',
@@ -135,7 +172,7 @@ export const LAYER_CONFIG = {
         id: 'tiffLayer11',
         name: 'Nighttime Lights (2024)',
         type: 'raster',
-        url: 'data/VNP46A2_2024_Somalia.tif',
+        url: () => getCountryPath(`VNP46A2_2024_${currentCountry}.tif`),
         colorScale: 'nightlights',
         legend: {
             title: 'Nighttime Lights (2024)',
@@ -152,7 +189,6 @@ export const LAYER_CONFIG = {
     ...generateInfrastructureLayers()
 };
 
-/// Add these sections to your existing layer_config.js file
 
 /**
  * Updated Pillar configuration using single pillars.geojson file
@@ -160,44 +196,44 @@ export const LAYER_CONFIG = {
 export const PILLAR_CONFIG = {
     education: {
         name: 'Education Index',
-        file: 'data/sepi_with_pillars_9.geojson',
+        file: () => getCountryPath('sepi_with_pillars_9.geojson'),
         property: 'education',
         description: 'Composite measure of educational access,<br> attendance, and attainment across all levels'
     },
     food_security: {
         name: 'Food Security Index',
-        file: 'data/sepi_with_pillars_9.geojson',
+        file: () => getCountryPath('sepi_with_pillars_9.geojson'),
         property: 'Food_security',
         description: 'Household food security based on food expenditure <br> share and total expenditure capacity'
     },
     poverty: {
         name: 'Poverty Reduction Index',
-        file: 'data/sepi_with_pillars_9.geojson',
+        file: () => getCountryPath('sepi_with_pillars_9.geojson'),
         property: 'poverty',
         description: 'Non-poverty levels combining <br> general and extreme poverty measures'
     },
     health: {
         name: 'Health Access Index',
-        file: 'data/sepi_with_pillars_9.geojson',
+        file: () => getCountryPath('sepi_with_pillars_9.geojson'),
         property: 'health',
         description: 'Healthcare infrastructure access<br> based on facilities per population and density'
     },
     climate_vulnerability: {
         name: 'Climate Resilience Index',
-        file: 'data/sepi_with_pillars_9.geojson',
+        file: () => getCountryPath('sepi_with_pillars_9.geojson'),
         property: 'climate_vulnerability',
         description: 'Climate resilience based on temperature, <br> vegetation change, and elevation factors'
     },
     conflict_events: {
         name: 'Conflict Events (2020-2025)',
-        file: 'data/sepi_with_pillars_9.geojson',
+        file: () => getCountryPath('sepi_with_pillars_9.geojson'),
         property: 'Events',
         description: 'Number of recorded conflict events between 2020-2025'
         // 'Number of recorded conflict events between 2020-2025 in the region <br> weighted by population (conflict event / population)'
     },
     conflict_fatalities: {
         name: 'Conflict Fatalities (2020-2025)',
-        file: 'data/sepi_with_pillars_9.geojson',
+        file: () => getCountryPath('sepi_with_pillars_9.geojson'),
         property: 'Fatalities',
         description: 'Number of recorded fatalities from conflict events between 2020-2025'
         // 'Number of recorded fatalities from conflict events between 2020-2025 <br> weighted by population (fatalities / population)'
@@ -476,15 +512,15 @@ export function setupColorRampSelector(selectorId, previewId, onChange) {
 function generateNDVILayers() {
     const ndviLayers = {};
     const ndviData = [
-        { id: 'tiffLayer1', period: '2015-2023', file: 'mean_ndvi_change_2015_to_2023.tif', desc: 'Long-term vegetation change showing overall trends over 8 years.' },
-        { id: 'tiffLayer2', period: '2022-2023', file: 'Somalia_NDVI_Change_2022_to_2023.tif', desc: 'Recent vegetation change reflecting latest environmental conditions.' },
-        { id: 'tiffLayer3', period: '2021-2022', file: 'Somalia_NDVI_Change_2021_to_2022.tif', desc: 'Annual vegetation change during post-drought recovery period.' },
-        { id: 'tiffLayer4', period: '2020-2021', file: 'Somalia_NDVI_Change_2020_to_2021.tif', desc: 'Vegetation change during climate variability and locust impact period.' },
-        { id: 'tiffLayer5', period: '2019-2020', file: 'Somalia_NDVI_Change_2019_to_2020.tif', desc: 'Vegetation change during pre-drought conditions and early climate stress.' },
-        { id: 'tiffLayer6', period: '2018-2019', file: 'Somalia_NDVI_Change_2018_to_2019.tif', desc: 'Vegetation change during moderate climate conditions.' },
-        { id: 'tiffLayer7', period: '2017-2018', file: 'Somalia_NDVI_Change_2017_to_2018.tif', desc: 'Vegetation change during post-famine recovery period.' },
-        { id: 'tiffLayer8', period: '2016-2017', file: 'Somalia_NDVI_Change_2016_to_2017.tif', desc: 'Vegetation change during severe drought and famine period.' },
-        { id: 'tiffLayer9', period: '2015-2016', file: 'Somalia_NDVI_Change_2015_to_2016.tif', desc: 'Vegetation change during baseline period before major climate events.' }
+        { id: 'tiffLayer1', period: '2015-2023', file: () => getCountryPath('mean_ndvi_change_2015_to_2023.tif'), desc: 'Long-term vegetation change showing overall trends over 8 years.' },
+        { id: 'tiffLayer2', period: '2022-2023', file: () => getCountryPath(`NDVI_Change/${currentCountry}_NDVI_Change_2022_to_2023.tif`), desc: 'Recent vegetation change reflecting latest environmental conditions.' },
+        { id: 'tiffLayer3', period: '2021-2022', file: () => getCountryPath(`NDVI_Change/${currentCountry}_NDVI_Change_2021_to_2022.tif`), desc: 'Annual vegetation change during post-drought recovery period.' },
+        { id: 'tiffLayer4', period: '2020-2021', file: () => getCountryPath(`NDVI_Change/${currentCountry}_NDVI_Change_2020_to_2021.tif`), desc: 'Vegetation change during climate variability and locust impact period.' },
+        { id: 'tiffLayer5', period: '2019-2020', file: () => getCountryPath(`NDVI_Change/${currentCountry}_NDVI_Change_2019_to_2020.tif`), desc: 'Vegetation change during pre-drought conditions and early climate stress.' },
+        { id: 'tiffLayer6', period: '2018-2019', file: () => getCountryPath(`NDVI_Change/${currentCountry}_NDVI_Change_2018_to_2019.tif`), desc: 'Vegetation change during moderate climate conditions.' },
+        { id: 'tiffLayer7', period: '2017-2018', file: () => getCountryPath(`NDVI_Change/${currentCountry}_NDVI_Change_2017_to_2018.tif`), desc: 'Vegetation change during post-famine recovery period.' },
+        { id: 'tiffLayer8', period: '2016-2017', file: () => getCountryPath(`NDVI_Change/${currentCountry}_NDVI_Change_2016_to_2017.tif`), desc: 'Vegetation change during severe drought and famine period.' },
+        { id: 'tiffLayer9', period: '2015-2016', file: () => getCountryPath(`NDVI_Change/${currentCountry}_NDVI_Change_2015_to_2016.tif`), desc: 'Vegetation change during baseline period before major climate events.' }
     ];
     
     ndviData.forEach(({ id, period, file, desc }) => {
@@ -492,7 +528,7 @@ function generateNDVILayers() {
             id,
             name: `NDVI Change (${period})`,
             type: 'raster',
-            url: `data/${file}`,
+            url: file,
             colorScale: 'ndviChange',
             legend: {
                 title: `NDVI Change (${period})`,
@@ -518,7 +554,7 @@ function generateEnvironmentalLayers() {
             id: 'tiffLayer12',
             name: 'Elevation',
             type: 'raster',
-            url: 'data/elevation.tif',
+            url: () => getCountryPath('elevation.tif'),
             colorScale: 'elevation',
             legend: {
                 title: 'Elevation',
@@ -532,7 +568,7 @@ function generateEnvironmentalLayers() {
             id: 'tiffLayer13',
             name: 'Soil Moisture',
             type: 'raster',
-            url: 'data/soil_moisture.tif',
+            url: () => getCountryPath('soil_moisture.tif'),
             colorScale: 'soilMoisture',
             legend: {
                 title: 'Soil Moisture',
@@ -546,7 +582,7 @@ function generateEnvironmentalLayers() {
             id: 'tiffLayer14',
             name: 'Temperature',
             type: 'raster',
-            url: 'data/temperature.tif',
+            url: () => getCountryPath('temperature.tif'),
             colorScale: 'temperature',
             legend: {
                 title: 'Temperature',
@@ -560,7 +596,7 @@ function generateEnvironmentalLayers() {
             id: 'tiffLayer15',
             name: 'Rainfall',
             type: 'raster',
-            url: 'data/rainfall.tif',
+            url: () => getCountryPath('rainfall.tif'),
             colorScale: 'rainfall',
             legend: {
                 title: 'Rainfall',
@@ -581,7 +617,7 @@ function generateInfrastructureLayers() {
             id: 'tiffLayer16',
             name: 'Population Density',
             type: 'raster',
-            url: 'data/population.tif',
+            url: () => getCountryPath('population.tif'),
             colorScale: 'populationDensity',
             legend: {
                 title: 'Population Density',
@@ -595,7 +631,7 @@ function generateInfrastructureLayers() {
             id: 'tiffLayer17',
             name: 'Road Network',
             type: 'raster',
-            url: 'data/roads.tif',
+            url: () => getCountryPath('roads.tif'),
             colorScale: 'roadAccess',
             legend: {
                 title: 'Road Network',
@@ -609,7 +645,7 @@ function generateInfrastructureLayers() {
             id: 'tiffLayer18',
             name: 'Education Access',
             type: 'raster',
-            url: 'data/education.tif',
+            url: () => getCountryPath('education.tif'),
             colorScale: 'educationAccess',
             legend: {
                 title: 'Education Access',
@@ -623,7 +659,7 @@ function generateInfrastructureLayers() {
             id: 'tiffLayer19',
             name: 'Health Facility Access',
             type: 'raster',
-            url: 'data/health.tif',
+            url: () => getCountryPath('health.tif'),
             colorScale: 'healthAccess',
             legend: {
                 title: 'Health Facility Access',
@@ -637,7 +673,7 @@ function generateInfrastructureLayers() {
             id: 'tiffLayer20',
             name: 'Cell Tower Coverage',
             type: 'raster',
-            url: 'data/celltower.tif',
+            url: () => getCountryPath('celltower.tif'),
             colorScale: 'cellTowerDensity',
             legend: {
                 title: 'Cell Tower Coverage',
@@ -670,7 +706,11 @@ export const LayerConfigUtils = {
     getRasterLayers() {
         return Object.values(LAYER_CONFIG)
             .filter(layer => layer.type === 'raster')
-            .map(layer => ({ ...layer, colorScale: layer.colorScale }));
+            .map(layer => ({
+                ...layer,
+                url: typeof layer.url === 'function' ? layer.url() : layer.url,
+                colorScale: layer.colorScale
+            }));
     },
     
     getLayerOptions() {

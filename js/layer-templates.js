@@ -2,6 +2,28 @@
 
 export class LayerTemplates {
 
+    static generateCountrySelector() {
+    return `
+        <div class="country-selector-container">
+            <label class="country-selector-label">Country</label>
+            <div id="countryDotsSelector" class="country-dots-selector" role="tablist" aria-label="Country selector">
+                <button type="button" class="country-dot-option active" data-country="Somalia" title="Somalia" aria-label="Somalia">
+                    <span class="country-dot-indicator"></span>
+                    <span class="country-dot-label">Somalia</span>
+                </button>
+                <button type="button" class="country-dot-option" data-country="South_Sudan" title="South Sudan" aria-label="South Sudan">
+                    <span class="country-dot-indicator"></span>
+                    <span class="country-dot-label">South Sudan</span>
+                </button>
+                <button type="button" class="country-dot-option" data-country="Kenya" title="Kenya" aria-label="Kenya">
+                    <span class="country-dot-indicator"></span>
+                    <span class="country-dot-label">Kenya</span>
+                </button>
+            </div>
+        </div>
+    `;
+}
+
     static generateSidebarTitle() {
         return `
             <!-- Sidebar Title -->
@@ -261,8 +283,9 @@ export class LayerTemplates {
 
     static generateAllLayerControls() {
         return [
-            this.generateSidebarTitle(),  
-            this.generateSEPISection(),    // Updated SEPI section with conflict data
+            this.generateSidebarTitle(),
+            this.generateCountrySelector(),
+            this.generateSEPISection(),
             this.generateVectorLayersSection(),
             this.generateRasterLayersSection()
         ].join('\n');
