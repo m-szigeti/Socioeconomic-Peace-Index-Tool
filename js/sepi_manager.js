@@ -47,7 +47,7 @@ export class SEPIManager {
      */
     async loadLayer() {
         try {
-            this.config.dataUrl = getCountryPath('sepi_with_pillars_9.geojson');
+            this.config.dataUrl = getCountryPath('sepi_with_pillars_9_2.geojson');
             console.log('Loading SEPI data from:', this.config.dataUrl);
             const response = await fetch(this.config.dataUrl);
             if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
@@ -64,7 +64,7 @@ export class SEPIManager {
                 
                 if (existingSEPIProp) {
                     this.config.property = existingSEPIProp;
-                } else {
+                } else {    
                     console.error('No SEPI property found! Available properties:', Object.keys(firstFeature.properties));
                     // Try the first numeric property as fallback
                     const numericProp = Object.entries(firstFeature.properties)

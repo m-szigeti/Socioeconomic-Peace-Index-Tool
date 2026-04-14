@@ -129,10 +129,31 @@ function hideSEPIInfo() {
          */
         function setupCombinedSEPIControls() {
             const sepiOptions = document.querySelectorAll('.sepi-option');
+            const subPillarOptions = document.querySelectorAll('.sepi-subpillar-option');
+            const subPillarContainers = document.querySelectorAll('.sepi-subpillars');
             const sepiOpacity = document.getElementById('sepiOpacity');
             const sepiOpacityValue = document.getElementById('sepiOpacityValue');
+            const conflictYearControl = document.getElementById('conflictYearControl');
+            const conflictYearSlider = document.getElementById('conflictYearSlider');
+            const conflictYearValue = document.getElementById('conflictYearValue');
             
             if (sepiOptions.length === 0) return;
+
+            const updateSubPillarVisibility = (activePillarId = null) => {
+                subPillarContainers.forEach(container => {
+                    const shouldShow = container.getAttribute('data-parent-pillar') === activePillarId;
+                    container.classList.toggle('show', shouldShow);
+                });
+            };
+
+            const deactivateSubPillars = () => {
+                subPillarOptions.forEach(option => option.classList.remove('active'));
+            };
+
+            const updateConflictYearControlVisibility = (type) => {
+                if (!conflictYearControl) return;
+                conflictYearControl.style.display = type === 'conflict' ? 'block' : 'none';
+            };
             
             // Set initial state - Overall Peace Index active by default
             const defaultOption = document.querySelector('.sepi-option[data-sepi-type="main"]');
@@ -163,6 +184,9 @@ function hideSEPIInfo() {
                     if (wasActive) {
                         // If clicking on already active option, deactivate/turn off the layer
                         sepiOptions.forEach(opt => opt.classList.remove('active'));
+                        deactivateSubPillars();
+                        updateSubPillarVisibility(null);
+                        updateConflictYearControlVisibility(null);
                         
                         // Add visual feedback that no layers are active
                         if (sepiSection) {
@@ -185,9 +209,12 @@ function hideSEPIInfo() {
                         // If clicking on inactive option, activate it (existing behavior)
                         // Remove active class from all options
                         sepiOptions.forEach(opt => opt.classList.remove('active'));
+                        deactivateSubPillars();
                         
                         // Add active class to clicked option
                         this.classList.add('active');
+                        updateSubPillarVisibility(type === 'pillar' ? pillarId : null);
+                        updateConflictYearControlVisibility(type);
                         
                         // Remove the no-active-layers visual state
                         if (sepiSection) {
@@ -207,6 +234,57 @@ function hideSEPIInfo() {
                         this.dispatchEvent(event);
                     }
                 });
+            });
+
+            subPillarOptions.forEach(option => {
+                option.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+
+                    const type = this.getAttribute('data-sepi-type');
+                    const pillarId = this.getAttribute('data-pillar-id');
+                    const sepiSection = document.querySelector('.sepi-section');
+
+                    sepiOptions.forEach(opt => opt.classList.remove('active'));
+                    subPillarOptions.forEach(opt => opt.classList.remove('active'));
+                    this.classList.add('active');
+
+                    if (sepiSection) {
+                        sepiSection.classList.remove('no-active-layers');
+                    }
+
+                    const event = new CustomEvent('sepiOptionChanged', {
+                        detail: { type, pillarId },
+                        bubbles: true
+                    });
+                    this.dispatchEvent(event);
+                });
+            });
+
+            if (conflictYearSlider && conflictYearValue) {
+                conflictYearValue.textContent = conflictYearSlider.value;
+                conflictYearSlider.addEventListener('input', function() {
+                    conflictYearValue.textContent = this.value;
+                    const event = new CustomEvent('conflictYearChanged', {
+                        detail: { year: Number(this.value) },
+                        bubbles: true
+                    });
+                    this.dispatchEvent(event);
+                });
+            }
+
+            document.addEventListener('conflictYearsAvailable', function(e) {
+                if (!conflictYearSlider || !conflictYearValue) return;
+                const { years = [], selectedYear = null, isConflict = false } = e.detail || {};
+                updateConflictYearControlVisibility(isConflict ? 'conflict' : null);
+                if (!isConflict || years.length === 0) return;
+
+                const sortedYears = [...years].sort((a, b) => a - b);
+                conflictYearSlider.min = sortedYears[0];
+                conflictYearSlider.max = sortedYears[sortedYears.length - 1];
+                const nextYear = selectedYear || sortedYears[sortedYears.length - 1];
+                conflictYearSlider.value = nextYear;
+                conflictYearValue.textContent = String(nextYear);
             });
             
             // Setup opacity control for the entire SEPI section

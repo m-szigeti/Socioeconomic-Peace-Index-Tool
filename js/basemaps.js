@@ -99,11 +99,11 @@ export const basemapOptions = [
 ];
 
 /**
- * Function to add the default basemap (OSM) to the map
+ * Function to add the default basemap to the map
  * @param {Object} map - Leaflet map instance
  */
 export function addDefaultBasemap(map) {
-    basemaps.osm.addTo(map);  // Changed default to Carto Light for reliability
+    basemaps.cartoLight.addTo(map);
 }
 
 /**
@@ -139,7 +139,7 @@ export const BasemapControl = L.Control.extend({
         });
         
         // Set initial selected value
-        select.value = 'osm';  // Match the default basemap
+        select.value = 'cartoLight';  // Match the default basemap
 
         // Handle basemap change
         L.DomEvent.on(select, 'change', function () {

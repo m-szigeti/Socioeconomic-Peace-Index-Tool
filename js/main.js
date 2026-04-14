@@ -5,7 +5,7 @@ import { initializeLegend, updateLegend, hideLegend } from './legend.js';
 import { LayerManager } from './layer_manager.js';
 import { createAdminLabelLayers, loadCountryOutline } from './admin_labels.js';
 import { InfoPanel } from './info_panel.js';
-import { populateColorRampSelector, setConfigCountry, COUNTRY_VIEWS, getCountryOutlineCandidates, getCountryPath, getCurrentCountry } from './layer_config.js';
+import { populateColorRampSelector, setConfigCountry, COUNTRY_VIEWS, getCountryOutlineCandidates, getCountryPath, getCurrentCountry, SUPPORTED_COUNTRIES } from './layer_config.js';
 // We only import loadTiff. We handle removal manually to ensure compatibility.
 import { loadTiff } from './zoom-adaptive-tiff-loader.js'; 
 import { WelcomePopup } from './welcome_popup.js';
@@ -20,6 +20,7 @@ let tiffLayers = {}; // Global TIFF layers storage for proper cleanup
 // Track async loading states to prevent race conditions
 const loadingTracker = {};
 let activeCountryOutline = null;
+const countryOutlines = {};
 
 function resolveConfigUrl(pathOrResolver) {
     return typeof pathOrResolver === 'function' ? pathOrResolver() : pathOrResolver;
@@ -59,6 +60,9 @@ document.addEventListener('DOMContentLoaded', async function() {
         setupDropdownToggles();
         initializeColorRampSelectors();
         
+        // Preload all country outlines for map controls.
+        await preloadCountryOutlines();
+
         // Load default country outline
         await loadDefaultCountryOutline();
         
@@ -66,7 +70,7 @@ document.addEventListener('DOMContentLoaded', async function() {
         layerManager = new LayerManager(map, updateLegend, hideLegend);
         
         // Setup admin labels
-        const labelLayers = createAdminLabelLayers(map, layerManager.getActiveLayers().vector, {}, null);
+        const labelLayers = createAdminLabelLayers(map, layerManager.getActiveLayers().vector, countryOutlines, null);
         layerManager.setLabelLayers(labelLayers);
         
         // Initialize info panel
@@ -409,7 +413,7 @@ function setupMap(mapId) {
     const leafletMap = L.map(mapId, {
         zoomControl: true,
         attributionControl: true
-    }).setView([6.5707, 48.9962], 6);
+    }).setView([6.5707, 40.9962], 5);
     
     leafletMap.attributionControl.setPrefix('The boundaries and names shown do not imply official endorsement by the United Nations.');
     leafletMap.attributionControl.setPosition('bottomleft');
@@ -439,21 +443,64 @@ async function loadDefaultCountryOutline() {
 }
 
 async function loadOutlineWithFallbacks(country) {
+    const countryKey = toCountryOutlineKey(country);
+    if (countryOutlines[countryKey]) {
+        clearAllCountryOutlinesFromMap();
+        activeCountryOutline = countryOutlines[countryKey];
+        addOutlineToMapBottom(activeCountryOutline);
+        window.activeCountryOutline = activeCountryOutline;
+        return;
+    }
+
     const outlineCandidates = getCountryOutlineCandidates(country);
     for (const outlinePath of outlineCandidates) {
         const outline = await loadCountryOutline(country.toLowerCase(), outlinePath);
         if (outline) {
-            if (activeCountryOutline && map.hasLayer(activeCountryOutline)) {
-                map.removeLayer(activeCountryOutline);
-            }
+            countryOutlines[countryKey] = outline;
+            clearAllCountryOutlinesFromMap();
             activeCountryOutline = outline;
-            outline.addTo(map);
+            addOutlineToMapBottom(outline);
             window.activeCountryOutline = outline;
             console.log(`${country} outline loaded from ${outlinePath}`);
             return;
         }
     }
     console.warn(`No valid outline file found for ${country}`);
+}
+
+async function preloadCountryOutlines() {
+    for (const country of SUPPORTED_COUNTRIES) {
+        const key = toCountryOutlineKey(country);
+        if (countryOutlines[key]) continue;
+
+        const candidates = getCountryOutlineCandidates(country);
+        for (const outlinePath of candidates) {
+            const outline = await loadCountryOutline(key, outlinePath);
+            if (outline) {
+                countryOutlines[key] = outline;
+                break;
+            }
+        }
+    }
+}
+
+function toCountryOutlineKey(country) {
+    return country.toLowerCase();
+}
+
+function clearAllCountryOutlinesFromMap() {
+    Object.values(countryOutlines).forEach(outline => {
+        if (outline && map.hasLayer(outline)) {
+            map.removeLayer(outline);
+        }
+    });
+}
+
+function addOutlineToMapBottom(outline) {
+    if (!outline) return;
+    outline.addTo(map);
+    outline.bringToBack?.();
+    outline.eachLayer(layer => layer.bringToBack?.());
 }
 
 function clearCountryDependentLayers() {
@@ -594,11 +641,14 @@ function getPillarDisplayName(pillarId) {
     const pillarNames = {
         'education': 'Education Index',
         'food_security': 'Food Security Index',
+        'pop_frac_3plus': 'Food Security Sub-pillar: pop_frac_3plus',
         'poverty': 'Poverty Reduction Index',
         'health': 'Health Access Index',
         'climate_vulnerability': 'Climate Resilience Index',
         'conflict_events': 'Conflict Events',
-        'conflict_fatalities': 'Conflict Fatalities'
+        'conflict_fatalities': 'Conflict Fatalities',
+        'conflict_events_per_1k': 'Conflict Events per 1k',
+        'conflict_fatalities_per_1k': 'Conflict Fatalities per 1k'
     };
     
     return pillarNames[pillarId] || pillarId;
@@ -627,7 +677,9 @@ function getLayerDisplayName(layerId) {
         'pointLayer': 'DHS Statistics',
         'pointLayer2': 'Cities',
         'conflict_events': 'Conflict Events',
-        'conflict_fatalities': 'Conflict Fatalities'
+        'conflict_fatalities': 'Conflict Fatalities',
+        'conflict_events_per_1k': 'Conflict Events per 1k',
+        'conflict_fatalities_per_1k': 'Conflict Fatalities per 1k'
     };
     
     return layerNames[layerId] || layerId.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase());

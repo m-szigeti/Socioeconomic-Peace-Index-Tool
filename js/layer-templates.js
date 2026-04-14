@@ -66,6 +66,12 @@ export class LayerTemplates {
                         <span class="sepi-option-text">Food Security Index</span>
                         <span class="sepi-checkmark">✓</span>
                     </div>
+                    <div class="sepi-subpillars" data-parent-pillar="food_security">
+                        <button type="button" class="sepi-subpillar-option" data-sepi-type="pillar" data-pillar-id="pop_frac_3plus">
+                            <span class="sepi-subpillar-dot"></span>
+                            <span class="sepi-subpillar-text">pop_frac_3plus</span>
+                        </button>
+                    </div>
                     
                     <div class="sepi-option" data-sepi-type="pillar" data-pillar-id="poverty">
                         <span class="sepi-option-text">Poverty Reduction Index</span>
@@ -93,6 +99,21 @@ export class LayerTemplates {
                     <div class="sepi-option" data-sepi-type="conflict" data-pillar-id="conflict_events">
                         <span class="sepi-option-text">Conflict Events</span>
                         <span class="sepi-checkmark">✓</span>
+                    </div>
+
+                    <div class="sepi-option" data-sepi-type="conflict" data-pillar-id="conflict_events_per_1k">
+                        <span class="sepi-option-text">Conflict Events per 1k</span>
+                        <span class="sepi-checkmark">✓</span>
+                    </div>
+
+                    <div class="sepi-option" data-sepi-type="conflict" data-pillar-id="conflict_fatalities_per_1k">
+                        <span class="sepi-option-text">Conflict Fatalities per 1k</span>
+                        <span class="sepi-checkmark">✓</span>
+                    </div>
+
+                    <div id="conflictYearControl" class="conflict-year-control" style="display: none;">
+                        <label for="conflictYearSlider">Conflict Year: <span id="conflictYearValue">-</span></label>
+                        <input type="range" id="conflictYearSlider" min="2020" max="2025" step="1" value="2025">
                     </div>
                 </div>
                 

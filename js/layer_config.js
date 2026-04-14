@@ -196,47 +196,67 @@ export const LAYER_CONFIG = {
 export const PILLAR_CONFIG = {
     education: {
         name: 'Education Index',
-        file: () => getCountryPath('sepi_with_pillars_9.geojson'),
+        file: () => getCountryPath('sepi_with_pillars_9_2.geojson'),
         property: 'education',
         description: 'Composite measure of educational access,<br> attendance, and attainment across all levels'
     },
     food_security: {
         name: 'Food Security Index',
-        file: () => getCountryPath('sepi_with_pillars_9.geojson'),
+        file: () => getCountryPath('sepi_with_pillars_9_2.geojson'),
         property: 'Food_security',
         description: 'Household food security based on food expenditure <br> share and total expenditure capacity'
     },
+    pop_frac_3plus: {
+        name: 'Food Security Sub-pillar: pop_frac_3plus',
+        file: () => getCountryPath('sepi_with_pillars_9_2.geojson'),
+        property: 'pop_frac_3plus',
+        description: 'Population fraction in IPC Phase 3+ (crisis or worse food insecurity)'
+    },
     poverty: {
         name: 'Poverty Reduction Index',
-        file: () => getCountryPath('sepi_with_pillars_9.geojson'),
+        file: () => getCountryPath('sepi_with_pillars_9_2.geojson'),
         property: 'poverty',
         description: 'Non-poverty levels combining <br> general and extreme poverty measures'
     },
     health: {
         name: 'Health Access Index',
-        file: () => getCountryPath('sepi_with_pillars_9.geojson'),
+        file: () => getCountryPath('sepi_with_pillars_9_2.geojson'),
         property: 'health',
         description: 'Healthcare infrastructure access<br> based on facilities per population and density'
     },
     climate_vulnerability: {
         name: 'Climate Resilience Index',
-        file: () => getCountryPath('sepi_with_pillars_9.geojson'),
+        file: () => getCountryPath('sepi_with_pillars_9_2.geojson'),
         property: 'climate_vulnerability',
         description: 'Climate resilience based on temperature, <br> vegetation change, and elevation factors'
     },
     conflict_events: {
         name: 'Conflict Events (2020-2025)',
-        file: () => getCountryPath('sepi_with_pillars_9.geojson'),
-        property: 'Events',
-        description: 'Number of recorded conflict events between 2020-2025'
-        // 'Number of recorded conflict events between 2020-2025 in the region <br> weighted by population (conflict event / population)'
+        file: () => getCountryPath('sepi_with_pillars_9_2.geojson'),
+        property: 'count_conflict_events',
+        fallbackProperty: 'ACLED_count_conflict_events',
+        description: 'Number of recorded conflict events by year'
     },
     conflict_fatalities: {
         name: 'Conflict Fatalities (2020-2025)',
-        file: () => getCountryPath('sepi_with_pillars_9.geojson'),
-        property: 'Fatalities',
-        description: 'Number of recorded fatalities from conflict events between 2020-2025'
-        // 'Number of recorded fatalities from conflict events between 2020-2025 <br> weighted by population (fatalities / population)'
+        file: () => getCountryPath('sepi_with_pillars_9_2.geojson'),
+        property: 'total_fatalities',
+        fallbackProperty: 'total_fatalities',
+        description: 'Number of recorded fatalities from conflict events by year'
+    },
+    conflict_events_per_1k: {
+        name: 'Conflict Events per 1k',
+        file: () => getCountryPath('sepi_with_pillars_9_2.geojson'),
+        property: 'count_conflict_events_per_1k',
+        fallbackProperty: 'ACLED_conflict_events_per_1k_pop',
+        description: 'Conflict events per 1,000 population by year'
+    },
+    conflict_fatalities_per_1k: {
+        name: 'Conflict Fatalities per 1k',
+        file: () => getCountryPath('sepi_with_pillars_9_2.geojson'),
+        property: 'total_fatalities_per_1k',
+        fallbackProperty: 'total_fatalities_per_1k_pop',
+        description: 'Conflict fatalities per 1,000 population by year'
     }
 };
 

@@ -1,6 +1,6 @@
 // layer_manager.js - Updated with aligned popup styling
 
-import { LAYER_CONFIG, PILLAR_CONFIG, COLOR_SCALES, COLOR_RAMPS, getPillarColor, getPillarDescription, getConflictColor, getConflictDescription } from './layer_config.js';
+import { LAYER_CONFIG, PILLAR_CONFIG, COLOR_SCALES, COLOR_RAMPS, getPillarColor, getPillarDescription, getConflictDescription } from './layer_config.js';
 import { loadTiff } from './zoom-adaptive-tiff-loader.js';
 import { SEPIManager } from './sepi_manager.js';
 import { loadVectorLayer, loadPointLayer, updateVectorLayerStyle, updatePointLayerStyle, populateAttributeSelector } from './vector_layers.js';
@@ -58,6 +58,16 @@ export class LayerManager {
         document.addEventListener('sepiOptionChanged', (e) => {
             const { type, pillarId } = e.detail;
             this.handleSEPIOptionChange(type, pillarId);
+        });
+
+        document.addEventListener('conflictYearChanged', async (e) => {
+            const year = Number(e.detail?.year);
+            if (!Number.isFinite(year)) return;
+            const currentPillar = this.pillarManager?.getCurrentPillarId?.();
+            if (!currentPillar || !currentPillar.startsWith('conflict_')) return;
+
+            this.pillarManager.setConflictYear(year);
+            await this.pillarManager.switchPillar(currentPillar);
         });
         
         // Listen for SEPI opacity changes
@@ -127,6 +137,9 @@ export class LayerManager {
         this.pillarManager.pillarsData = null;
         this.pillarManager.currentLayer = null;
         this.pillarManager.currentPillarId = null;
+        this.pillarManager.currentPropertyName = null;
+        this.pillarManager.conflictYear = null;
+        this.pillarManager.availableConflictYears = [];
     }
 
     /**
@@ -458,7 +471,11 @@ export class SimplifiedPillarManager {
         this.hideLegend = hideLegend;
         this.currentLayer = null;
         this.currentPillarId = null;
+        this.currentPropertyName = null;
         this.pillarsData = null;
+        this.conflictBreaks = null;
+        this.conflictYear = null;
+        this.availableConflictYears = [];
         
         // District information lookup (same as SEPI)
         this.districtInfo = {
@@ -515,6 +532,9 @@ export class SimplifiedPillarManager {
         if (!pillarId) {
             this.currentLayer = null;
             this.currentPillarId = null;
+            this.currentPropertyName = null;
+            this.conflictBreaks = null;
+            this.dispatchConflictYearsAvailable(false);
             return;
         }
         
@@ -526,6 +546,22 @@ export class SimplifiedPillarManager {
         
         try {
             await this.loadPillarsData();
+            const isConflictData = pillarId.startsWith('conflict_');
+            if (isConflictData) {
+                this.availableConflictYears = this.getAvailableConflictYears(config.property);
+                if (!this.conflictYear || !this.availableConflictYears.includes(this.conflictYear)) {
+                    this.conflictYear = this.availableConflictYears[this.availableConflictYears.length - 1] || null;
+                }
+                const yearlyProperty = this.conflictYear ? `${config.property}_${this.conflictYear}` : null;
+                const desiredConflictProperty = yearlyProperty || config.fallbackProperty || config.property;
+                this.currentPropertyName = this.resolvePropertyName(desiredConflictProperty);
+                this.conflictBreaks = this.computeConflictBreaks(this.currentPropertyName);
+                this.dispatchConflictYearsAvailable(true);
+            } else {
+                this.currentPropertyName = this.resolvePropertyName(config.property);
+                this.conflictBreaks = null;
+                this.dispatchConflictYearsAvailable(false);
+            }
             this.currentLayer = await this.createIndicatorLayer(pillarId, config);
             this.currentPillarId = pillarId;
             this.currentLayer.addTo(this.map);
@@ -545,20 +581,24 @@ export class SimplifiedPillarManager {
         const isConflictData = pillarId.startsWith('conflict_');
         
         return L.geoJSON(data, {
-            style: (feature) => ({
+            style: (feature) => {
+                const value = this.getFeatureValue(feature, this.currentPropertyName);
+                return ({
                 fillColor: isConflictData 
-                    ? getConflictColor(feature.properties[config.property])
-                    : getPillarColor(feature.properties[config.property]),
+                    ? this.getConflictColorDynamic(value)
+                    : getPillarColor(value),
                 weight: 2,
                 opacity: 1,
                 color: '#ffffff',
                 fillOpacity: 0.7
-            }),
+                });
+            },
             onEachFeature: (feature, layer) => {
                 layer.getElement()?.setAttribute('data-pillar', 'true');
                 
-                const value = feature.properties[config.property];
+                const value = this.getFeatureValue(feature, this.currentPropertyName);
                 const district = feature.properties.ADM1_EN || feature.properties.NAME_1 || 'Unknown District';
+                const conflictDecimals = this.currentPillarId?.includes('_per_1k') ? 3 : 0;
                 
                 // Updated to use SEPI-style popup
                 layer.bindPopup(this.createIndicatorPopup(config, feature.properties, district, value, isConflictData), {
@@ -566,7 +606,7 @@ export class SimplifiedPillarManager {
                     className: 'sepi-popup' // Using SEPI popup class for consistent styling
                 });
                 
-                layer.bindTooltip(`${config.name}: ${value !== undefined ? Number(value).toFixed(isConflictData ? 0 : 2) : 'No data'}`, {
+                layer.bindTooltip(`${config.name}: ${value !== undefined ? Number(value).toFixed(isConflictData ? conflictDecimals : 2) : 'No data'}`, {
                     permanent: false,
                     direction: 'auto',
                     className: 'sepi-tooltip' // Using SEPI tooltip class
@@ -592,15 +632,17 @@ export class SimplifiedPillarManager {
      * Create SEPI-style popup for indicators - Updated to match SEPI popup structure
      */
     createIndicatorPopup(config, properties, district, value, isConflictData = false) {
-        const formattedValue = value !== undefined ? Number(value).toFixed(isConflictData ? 0 : 3) : 'No data';
+        const conflictDecimals = this.currentPillarId?.includes('_per_1k') ? 3 : 0;
+        const formattedValue = value !== undefined ? Number(value).toFixed(isConflictData ? conflictDecimals : 3) : 'No data';
         const districtDetails = this.districtInfo[district];
         
         // Use consistent color scheme
         const headerColor = isConflictData ? '#dc3545' : '#2c5f2d';
-        const valueColor = isConflictData ? getConflictColor(value) : getPillarColor(value);
+        const valueColor = isConflictData ? this.getConflictColorDynamic(value) : getPillarColor(value);
+        const conflictMetricType = this.currentPillarId?.includes('events') ? 'events' : 'fatalities';
         
         // Get additional properties (similar to SEPI)
-        const additionalInfo = this.getAdditionalProperties(properties, config.property);
+        const additionalInfo = this.getAdditionalProperties(properties, this.currentPropertyName);
         
         return `
             <div class="sepi-popup-header">
@@ -615,7 +657,7 @@ export class SimplifiedPillarManager {
                         </span>
                     </div>
                     <div style="margin-top: 5px; font-size: 12px; color: ${headerColor}; font-weight: 500;">
-                        ${isConflictData ? getConflictDescription(value, config.property === 'Conflict_Event_per_100k_Pop' ? 'events' : 'fatalities') : getPillarDescription(value)}
+                        ${isConflictData ? getConflictDescription(value, conflictMetricType) : getPillarDescription(value)}
                     </div>
                 </div>
                 
@@ -694,13 +736,7 @@ export class SimplifiedPillarManager {
         if (isConflictData) {
             // Conflict data legend (Yellow to Red)
             const colors = ['#ffffcc', '#ffeda0', '#fed976', '#fd8d3c', '#e31a1c'];
-            const labels = [
-                'Very Low (0-50)',
-                'Low (50-100)', 
-                'Moderate (100-250)',
-                'High (250-500)',
-                'Very High (500+)'
-            ];
+            const labels = this.getConflictLegendLabels();
             
             this.updateLegend(
                 config.name,
@@ -734,15 +770,134 @@ export class SimplifiedPillarManager {
             const isConflictData = this.currentPillarId.startsWith('conflict_');
             
             this.currentLayer.setStyle((feature) => ({
+                ...(() => {
+                    const value = this.getFeatureValue(feature, this.currentPropertyName);
+                    return {
                 fillColor: isConflictData 
-                    ? getConflictColor(feature.properties[config.property])
-                    : getPillarColor(feature.properties[config.property]),
+                    ? this.getConflictColorDynamic(value)
+                    : getPillarColor(value)
+                    };
+                })(),
                 weight: 2,
                 opacity: 1,
                 color: '#ffffff',
                 fillOpacity: opacity
             }));
         }
+    }
+
+    resolvePropertyName(desiredProperty) {
+        const sampleFeature = this.pillarsData?.features?.find(feature => feature?.properties);
+        const props = sampleFeature?.properties || {};
+        if (Object.prototype.hasOwnProperty.call(props, desiredProperty)) {
+            return desiredProperty;
+        }
+
+        const normalize = (value) => String(value).toLowerCase().replace(/[^a-z0-9]/g, '');
+        const desiredNormalized = normalize(desiredProperty);
+        const matchedKey = Object.keys(props).find(key => normalize(key) === desiredNormalized);
+
+        return matchedKey || desiredProperty;
+    }
+
+    getAvailableConflictYears(baseProperty) {
+        const sampleFeature = this.pillarsData?.features?.find(feature => feature?.properties);
+        const props = sampleFeature?.properties || {};
+        const regex = new RegExp(`^${baseProperty}_(\\d{4})$`);
+        const years = Object.keys(props)
+            .map(key => {
+                const match = key.match(regex);
+                return match ? Number(match[1]) : null;
+            })
+            .filter(year => Number.isFinite(year))
+            .sort((a, b) => a - b);
+        return [...new Set(years)];
+    }
+
+    setConflictYear(year) {
+        this.conflictYear = Number(year);
+    }
+
+    dispatchConflictYearsAvailable(isConflict) {
+        document.dispatchEvent(new CustomEvent('conflictYearsAvailable', {
+            detail: {
+                isConflict,
+                years: this.availableConflictYears || [],
+                selectedYear: this.conflictYear
+            }
+        }));
+    }
+
+    getFeatureValue(feature, desiredProperty) {
+        const props = feature?.properties || {};
+        if (Object.prototype.hasOwnProperty.call(props, desiredProperty)) {
+            return this.parseNumericIfPossible(props[desiredProperty]);
+        }
+
+        const normalize = (value) => String(value).toLowerCase().replace(/[^a-z0-9]/g, '');
+        const desiredNormalized = normalize(desiredProperty);
+        const matchedKey = Object.keys(props).find(key => normalize(key) === desiredNormalized);
+        if (matchedKey) {
+            return this.parseNumericIfPossible(props[matchedKey]);
+        }
+
+        return undefined;
+    }
+
+    parseNumericIfPossible(value) {
+        if (value == null || value === '') return undefined;
+        const numeric = Number(value);
+        return Number.isFinite(numeric) ? numeric : value;
+    }
+
+    computeConflictBreaks(propertyName) {
+        const values = (this.pillarsData?.features || [])
+            .map(feature => Number(feature?.properties?.[propertyName]))
+            .filter(value => Number.isFinite(value))
+            .sort((a, b) => a - b);
+
+        if (!values.length) {
+            return [0, 0, 0, 0];
+        }
+
+        const quantile = (q) => {
+            if (values.length === 1) return values[0];
+            const pos = (values.length - 1) * q;
+            const base = Math.floor(pos);
+            const rest = pos - base;
+            return values[base + 1] !== undefined
+                ? values[base] + rest * (values[base + 1] - values[base])
+                : values[base];
+        };
+
+        return [quantile(0.2), quantile(0.4), quantile(0.6), quantile(0.8)];
+    }
+
+    getConflictColorDynamic(value) {
+        if (value == null || isNaN(value)) return '#cccccc';
+
+        const numericValue = Number(value);
+        const colors = ['#ffffcc', '#ffeda0', '#fed976', '#fd8d3c', '#e31a1c'];
+        const breaks = this.conflictBreaks || [0, 0, 0, 0];
+
+        if (numericValue >= breaks[3]) return colors[4];
+        if (numericValue >= breaks[2]) return colors[3];
+        if (numericValue >= breaks[1]) return colors[2];
+        if (numericValue >= breaks[0]) return colors[1];
+        return colors[0];
+    }
+
+    getConflictLegendLabels() {
+        const breaks = this.conflictBreaks || [0, 0, 0, 0];
+        const format = (value) => Number(value).toLocaleString(undefined, { maximumFractionDigits: 2 });
+
+        return [
+            `Very Low (${format(0)} - ${format(breaks[0])})`,
+            `Low (${format(breaks[0])} - ${format(breaks[1])})`,
+            `Moderate (${format(breaks[1])} - ${format(breaks[2])})`,
+            `High (${format(breaks[2])} - ${format(breaks[3])})`,
+            `Very High (${format(breaks[3])}+)`
+        ];
     }
     
     getCurrentLayer() {

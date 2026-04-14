@@ -71,7 +71,7 @@ function createCombinedMapControl(map, labelLayers, countryOutlines, compareMap)
             const leftMapSelect = L.DomUtil.create('select', 'basemap-select', contentContainer);
             
             // Add basemap options
-            addBasemapOptions(leftMapSelect, 'osm');
+            addBasemapOptions(leftMapSelect, 'cartoLight');
             
             // Right map selection (only if compareMap exists)
             if (compareMap) {
@@ -127,6 +127,10 @@ function createCombinedMapControl(map, labelLayers, countryOutlines, compareMap)
             L.DomEvent.on(leftMapSelect, 'change', function() {
                 updateBasemap(map, this.value);
             });
+
+            // Ensure default outline selection is applied on startup.
+            // This avoids requiring a manual dropdown change.
+            toggleCountryOutline(outlineSelect.value, map, countryOutlines);
             
             // Set toggle handler
             L.DomEvent.on(toggleButton, 'click', function(e) {
@@ -155,6 +159,7 @@ function createCombinedMapControl(map, labelLayers, countryOutlines, compareMap)
 function addOutlineOptions(select) {
     const outlineOptions = [
         { value: '', label: 'No Outline' },
+        { value: 'show_all', label: 'Show All' },
         { value: 'somalia', label: 'Somalia' },
         { value: 'kenya', label: 'Kenya' },
         { value: 'south_sudan', label: 'South Sudan' }
@@ -165,8 +170,8 @@ function addOutlineOptions(select) {
         optionElement.value = option.value;
         optionElement.textContent = option.label;
         
-        // Set Somalia as default
-        if (option.value === 'somalia') {
+        // Set Show All as default
+        if (option.value === 'show_all') {
             optionElement.selected = true;
         }
         
@@ -466,12 +471,23 @@ function toggleCountryOutline(countryId, map, countryOutlines) {
             map.removeLayer(outline);
         }
     });
-    
+
+    if (countryId === 'show_all') {
+        Object.values(countryOutlines).forEach(outline => {
+            if (outline && !map.hasLayer(outline)) {
+                outline.addTo(map);
+                outline.bringToBack?.();
+                outline.eachLayer(layer => layer.bringToBack?.());
+            }
+        });
+        return;
+    }
+
     // If a specific country is selected, add it to the map
-    if (countryId && countryOutlines[countryId]) {
-        if (!map.hasLayer(countryOutlines[countryId])) {
-            countryOutlines[countryId].addTo(map);
-        }
+    if (countryId && countryOutlines[countryId] && !map.hasLayer(countryOutlines[countryId])) {
+        countryOutlines[countryId].addTo(map);
+        countryOutlines[countryId].bringToBack?.();
+        countryOutlines[countryId].eachLayer(layer => layer.bringToBack?.());
     }
 }
 
@@ -488,10 +504,11 @@ export async function loadCountryOutline(countryId, filepath) {
         
         const outlineLayer = L.geoJSON(data, {
             style: {
-                color: "#3388ff",
-                weight: 0,
-                opacity: 0,
-                fillOpacity: 0
+                color: "#8a8a8a",
+                weight: 1,
+                opacity: 1,
+                fillColor: "#ffffff",
+                fillOpacity: 0.18
             }
         });
         
