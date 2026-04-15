@@ -26,6 +26,33 @@
     overflow-y: auto;
 }
 
+/* Make the Leaflet close button clearly visible on styled popups */
+.sepi-popup .leaflet-popup-close-button,
+.pillar-popup .leaflet-popup-close-button {
+    color: #1f2937 !important;
+    background: rgba(255, 255, 255, 0.95);
+    border: 1px solid #cbd5e1;
+    border-radius: 999px;
+    width: 24px;
+    height: 24px;
+    line-height: 22px;
+    text-align: center;
+    font-size: 18px;
+    font-weight: 700;
+    right: 8px;
+    top: 8px;
+    opacity: 1 !important;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+    transition: background-color 0.2s ease, color 0.2s ease, transform 0.2s ease;
+}
+
+.sepi-popup .leaflet-popup-close-button:hover,
+.pillar-popup .leaflet-popup-close-button:hover {
+    background: #1f2937;
+    color: #ffffff !important;
+    transform: scale(1.05);
+}
+
 .sepi-tooltip,
 .pillar-tooltip {
     background: rgba(255, 255, 255, 0.95) !important;

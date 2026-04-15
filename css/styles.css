@@ -342,6 +342,10 @@ body {
     padding: 4px 10px;
     cursor: pointer;
     transition: all 0.2s ease;
+    max-width: 100%;
+    white-space: nowrap;
+    text-align: left;
+    overflow: hidden;
 }
 
 .sepi-subpillar-option:hover {
@@ -365,6 +369,16 @@ body {
 
 .sepi-subpillar-option.active .sepi-subpillar-dot {
     background: #2c5f2d;
+}
+
+.sepi-subpillar-text {
+    font-size: 11px;
+    line-height: 1.2;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: block;
+    min-width: 0;
 }
 
 .conflict-year-control {

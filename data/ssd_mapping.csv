@@ -1,0 +1,21 @@
+﻿country,pillar,indicator,label
+Ssd,Poverty Reduction Index,poverty_headcount_pct,Poverty headcount (population below poverty line)
+Ssd,Poverty Reduction Index,annual_cmb_mean,Average annual CMB cost
+Ssd,Poverty Reduction Index,non_agri_wage,Average non-agricultural wage
+Ssd,Climate Resilience Index,pdsi,PDSI
+Ssd,Climate Resilience Index,ndvi,NDVI
+Ssd,Climate Resilience Index,soil_moist,Soil Moisture
+Ssd,Climate Resilience Index,fapar,FAPAR
+Ssd,Health Access Index,health_fac_per_10k_pop,"Health facilities per 10,000 population"
+Ssd,Health Access Index,hp_hc_per_10k_pop,"Health posts plus health centres per 10,000 population"
+Ssd,Health Access Index,hospitals_per_100k_pop,"Hospitals per 100,000 population"
+Ssd,Education Index,percent_enrollment_male,Percent of male students
+Ssd,Education Index,percent_enrollment_female,Percent of female students
+Ssd,Education Index,gender_parity_index,Gender parity index
+Ssd,Education Index,dropout_pct,Student dropout rate
+Ssd,Education Index,pqtr_pct,Pupil-qualified teacher ratio
+Ssd,Education Index,on_payroll_pct,Share of teachers on payroll
+Ssd,Food Security,pop_frac_3plus,Fraction of population in IPC Phase 3 or higher
+Ssd,Poverty Reduction Index,youth_bulge,Share of male population aged 15 to 29
+Ssd,Health Access Index,healthcare_access_pop,Population with healthcare access
+Ssd,Education Index,school_access_pop,Population with school access

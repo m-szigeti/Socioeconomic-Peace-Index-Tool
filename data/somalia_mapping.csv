@@ -1,0 +1,38 @@
+﻿country,pillar,indicator,label
+Somalia,Food Security,pop_frac_3plus,Fraction of population in IPC Phase 3 or higher
+Somalia,Education,literacy_percent_total,Literacy percent total
+Somalia,Education,percent_no_formal_education,Percent no formal education
+Somalia,Education,percent_highest_level_secondary_education,Percent highest level secondary education
+Somalia,Education,percent_highest_level_primary_education,Percent highest level primary education
+Somalia,Education,percent_highest_level_university_education,Percent highest level university education
+Somalia,Education,primary_school_net_attendance_gp_index,Primary school net attendance gender parity index
+Somalia,Education,secondary_school_net_attendance_gp_index,Secondary school net attendance gender parity index
+Somalia,Health Access Index,health_fac_per_10k_pop,"Health facilities per 10,000 population"
+Somalia,Health Access Index,mch_ctr_per_10k_pop,"MCH centres per 10,000 population"
+Somalia,Health Access Index,hp_hc_per_10k_pop,"Health posts plus health centres per 10,000 population"
+Somalia,Health Access Index,hospitals_per_100k_pop,"Hospitals per 100,000 population"
+Somalia,Education Index,school_access_pop,Population with school access
+Somalia,Health Access Index,healthcare_access_pop,Population with healthcare access
+Somalia,Education Index,school_attendance,School Attendance Deprivation
+Somalia,Education Index,years_of_schooling,Years of Schooling Deprivation
+Somalia,Health Access Index,food_security,Food Security Deprivation
+Somalia,Health Access Index,access_to_healthcare,Access to Healthcare Deprivation
+Somalia,Poverty Reduction Index,housing,Housing Deprivation
+Somalia,Poverty Reduction Index,cooking_fuel,Cooking Fuel Deprivation
+Somalia,Poverty Reduction Index,overcrowding,Overcrowding Deprivation
+Somalia,Poverty Reduction Index,sanitation,Sanitation Deprivation
+Somalia,Poverty Reduction Index,water,Drinking Water Deprivation
+Somalia,Poverty Reduction Index,electricity,Electricity Deprivation
+Somalia,Poverty Reduction Index,assets,Assets Deprivation
+Somalia,Poverty Reduction Index,unemployment,Unemployment Deprivation
+Somalia,Poverty Reduction Index,shocks,Shocks Deprivation
+Somalia,Poverty Reduction Index,total_expenditure_usd,Total expenditure usd
+Somalia,Poverty Reduction Index,food_percentage_share_pct,Food percentage share percent
+Somalia,Poverty Reduction Index,poverty_headcount_pct,Poverty headcount (population below poverty line)
+Somalia,Poverty Reduction Index,extreme_poverty_headcount_pct,Extreme poverty headcount
+Somalia,Poverty Reduction Index,youth_unemployment,Share of youth unemployed
+Somalia,Poverty Reduction Index,youth_bulge,Share of male population aged 15 to 29
+Somalia,Climate Resilience Index,fapar,FAPAR
+Somalia,Climate Resilience Index,pdsi,PDSI
+Somalia,Climate Resilience Index,soil_moist,Soil Moisture
+Somalia,Climate Resilience Index,ndvi,NDVI

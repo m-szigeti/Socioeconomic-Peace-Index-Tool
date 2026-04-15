@@ -94,7 +94,7 @@ function hideSEPIInfo() {
     <!-- Layer templates initialization -->
     <script type="module">
         import { LayerTemplates } from './js/layer-templates.js';
-        import { populateColorRampSelector } from './js/layer_config.js';
+        import { populateColorRampSelector, getCurrentCountry } from './js/layer_config.js';
         
         document.addEventListener('DOMContentLoaded', function() {
             // Generate layer controls using JavaScript templates
@@ -108,6 +108,58 @@ function hideSEPIInfo() {
             
             // Initialize color ramp selectors after DOM is ready
             initializeColorRampSelectors();
+            applyCountrySubpillarVisibility(getCurrentCountry());
+        });
+
+        function countryToMappingKey(country) {
+            if (country === 'South_Sudan') return 'Ssd';
+            return country;
+        }
+
+        function applyCountrySubpillarVisibility(country) {
+            const mappingKey = countryToMappingKey(country || getCurrentCountry());
+            const subPillarOptions = document.querySelectorAll('.sepi-subpillar-option[data-countries]');
+
+            subPillarOptions.forEach(option => {
+                const countries = (option.dataset.countries || '')
+                    .split(',')
+                    .map(value => value.trim())
+                    .filter(Boolean);
+                const isVisible = countries.includes(mappingKey);
+                option.style.display = isVisible ? '' : 'none';
+                if (!isVisible) option.classList.remove('active');
+            });
+
+            fitSubpillarLabelsToSingleLine();
+        }
+
+        function fitSubpillarLabelsToSingleLine() {
+            const MIN_FONT_SIZE = 8;
+            const MAX_FONT_SIZE = 11;
+            const STEP = 0.5;
+
+            document.querySelectorAll('.sepi-subpillar-option').forEach(option => {
+                if (option.style.display === 'none') return;
+                const textEl = option.querySelector('.sepi-subpillar-text');
+                if (!textEl) return;
+
+                let fontSize = MAX_FONT_SIZE;
+                textEl.style.fontSize = `${fontSize}px`;
+
+                // Shrink text until the chip fits on a single line.
+                while (option.scrollWidth > option.clientWidth && fontSize > MIN_FONT_SIZE) {
+                    fontSize -= STEP;
+                    textEl.style.fontSize = `${fontSize}px`;
+                }
+            });
+        }
+
+        document.addEventListener('countryChanged', function(e) {
+            applyCountrySubpillarVisibility(e.detail?.country);
+        });
+
+        window.addEventListener('resize', function() {
+            fitSubpillarLabelsToSingleLine();
         });
         
         function initializeLayerControls() {
@@ -276,7 +328,8 @@ function hideSEPIInfo() {
             document.addEventListener('conflictYearsAvailable', function(e) {
                 if (!conflictYearSlider || !conflictYearValue) return;
                 const { years = [], selectedYear = null, isConflict = false } = e.detail || {};
-                updateConflictYearControlVisibility(isConflict ? 'conflict' : null);
+                const hasMultipleYears = Array.isArray(years) && years.length > 1;
+                updateConflictYearControlVisibility(isConflict && hasMultipleYears ? 'conflict' : null);
                 if (!isConflict || years.length === 0) return;
 
                 const sortedYears = [...years].sort((a, b) => a - b);

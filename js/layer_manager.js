@@ -558,7 +558,8 @@ export class SimplifiedPillarManager {
                 this.conflictBreaks = this.computeConflictBreaks(this.currentPropertyName);
                 this.dispatchConflictYearsAvailable(true);
             } else {
-                this.currentPropertyName = this.resolvePropertyName(config.property);
+                const desiredProperty = this.pickAvailableProperty(config.property, config.fallbackProperty);
+                this.currentPropertyName = this.resolvePropertyName(desiredProperty);
                 this.conflictBreaks = null;
                 this.dispatchConflictYearsAvailable(false);
             }
@@ -800,18 +801,41 @@ export class SimplifiedPillarManager {
         return matchedKey || desiredProperty;
     }
 
+    pickAvailableProperty(primaryProperty, fallbackProperty) {
+        const sampleFeature = this.pillarsData?.features?.find(feature => feature?.properties);
+        const props = sampleFeature?.properties || {};
+        if (Object.prototype.hasOwnProperty.call(props, primaryProperty)) {
+            return primaryProperty;
+        }
+        if (fallbackProperty && Object.prototype.hasOwnProperty.call(props, fallbackProperty)) {
+            return fallbackProperty;
+        }
+        return primaryProperty;
+    }
+
     getAvailableConflictYears(baseProperty) {
         const sampleFeature = this.pillarsData?.features?.find(feature => feature?.properties);
         const props = sampleFeature?.properties || {};
         const regex = new RegExp(`^${baseProperty}_(\\d{4})$`);
-        const years = Object.keys(props)
+        const yearsFromSuffixedProps = Object.keys(props)
             .map(key => {
                 const match = key.match(regex);
                 return match ? Number(match[1]) : null;
             })
             .filter(year => Number.isFinite(year))
             .sort((a, b) => a - b);
-        return [...new Set(years)];
+        if (yearsFromSuffixedProps.length > 0) {
+            return [...new Set(yearsFromSuffixedProps)];
+        }
+
+        // Fallback for datasets that only carry a single, non-time-series value
+        // plus a `year` metadata field. This prevents a misleading 2020-2025 slider.
+        const yearsFromYearField = (this.pillarsData?.features || [])
+            .map(feature => Number(feature?.properties?.year))
+            .filter(year => Number.isFinite(year))
+            .sort((a, b) => a - b);
+
+        return [...new Set(yearsFromYearField)];
     }
 
     setConflictYear(year) {

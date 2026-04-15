@@ -1,0 +1,26 @@
+﻿country,pillar,sub pillar,label
+Kenya,Food Security Index,pop_frac_3plus,Fraction of population in IPC Phase 3 or higher
+Kenya,Education Index,years_of_schooling,Years of Schooling Deprivation
+Kenya,Education Index,primary_school_net_attendance_gp_index,Primary school net attendance gender parity index
+Kenya,Education Index,net_attendance_total,Secondary Attendance (Total)
+Kenya,Education Index,secondary_school_net_attendance_gp_index,Secondary school net attendance gender parity index
+Kenya,Health Access Index,health_fac_per_10k_pop,"Health facilities per 10,000 population"
+Kenya,Health Access Index,hp_hc_per_10k_pop,"Health posts plus health centres per 10,000 population"
+Kenya,Health Access Index,hospitals_per_100k_pop,"Hospitals per 100,000 population"
+Kenya,Health Access Index,healthcare_access_pop,Population with healthcare access
+Kenya,Education Index,school_access_pop,Population with school access
+Kenya,Health Access Index,nutrition,Nutrition Deprivation
+Kenya,Health Access Index,child_mortality,Child Mortality Deprivation
+Kenya,Poverty Reduction Index,cooking_fuel,Cooking Fuel Deprivation
+Kenya,Poverty Reduction Index,sanitation,Sanitation Deprivation
+Kenya,Poverty Reduction Index,drinking_water,Drinking Water Deprivation
+Kenya,Poverty Reduction Index,electricity,Electricity Deprivation
+Kenya,Poverty Reduction Index,housing,Housing Deprivation
+Kenya,Poverty Reduction Index,assets,Assets Deprivation
+Kenya,Poverty Reduction Index,poverty_headcount_pct,Poverty headcount (population below poverty line)
+Kenya,Poverty Reduction Index,gcp_pc,Gross County Product Per Capita
+Kenya,Climate Resilience Index,soil_moist,Soil Moisture
+Kenya,Climate Resilience Index,fapar,FAPAR
+Kenya,Climate Resilience Index,pdsi,PDSI
+Kenya,Climate Resilience Index,ndvi,NDVI
+Kenya,Poverty Reduction Index,youth_bulge,Share of male population aged 15 to 29

@@ -207,10 +207,41 @@ export const PILLAR_CONFIG = {
         description: 'Household food security based on food expenditure <br> share and total expenditure capacity'
     },
     pop_frac_3plus: {
-        name: 'Food Security Sub-pillar: pop_frac_3plus',
+        name: 'Food Security Sub-pillar: Fraction of population in IPC Phase 3 or higher',
         file: () => getCountryPath('sepi_with_pillars_9_2.geojson'),
-        property: 'pop_frac_3plus',
+        property: 'Fraction of population in IPC Phase 3 or higher',
+        fallbackProperty: 'pop_frac_3plus',
         description: 'Population fraction in IPC Phase 3+ (crisis or worse food insecurity)'
+    },
+    years_of_schooling: {
+        name: 'Education Sub-pillar: Years of Schooling Deprivation',
+        file: () => getCountryPath('sepi_with_pillars_9_2.geojson'),
+        property: 'years_of_schooling',
+        description: 'Years of schooling deprivation indicator'
+    },
+    primary_school_net_attendance_gp_index: {
+        name: 'Education Sub-pillar: Primary school net attendance gender parity index',
+        file: () => getCountryPath('sepi_with_pillars_9_2.geojson'),
+        property: 'primary_school_net_attendance_gp_index',
+        description: 'Primary school net attendance gender parity indicator'
+    },
+    net_attendance_total: {
+        name: 'Education Sub-pillar: Secondary Attendance (Total)',
+        file: () => getCountryPath('sepi_with_pillars_9_2.geojson'),
+        property: 'net_attendance_total',
+        description: 'Secondary attendance total indicator'
+    },
+    secondary_school_net_attendance_gp_index: {
+        name: 'Education Sub-pillar: Secondary school net attendance gender parity index',
+        file: () => getCountryPath('sepi_with_pillars_9_2.geojson'),
+        property: 'secondary_school_net_attendance_gp_index',
+        description: 'Secondary school net attendance gender parity indicator'
+    },
+    school_access_pop: {
+        name: 'Education Sub-pillar: Population with school access',
+        file: () => getCountryPath('sepi_with_pillars_9_2.geojson'),
+        property: 'school_access_pop',
+        description: 'Share of population with school access'
     },
     poverty: {
         name: 'Poverty Reduction Index',
@@ -218,17 +249,281 @@ export const PILLAR_CONFIG = {
         property: 'poverty',
         description: 'Non-poverty levels combining <br> general and extreme poverty measures'
     },
+    cooking_fuel: {
+        name: 'Poverty Sub-pillar: Cooking Fuel Deprivation',
+        file: () => getCountryPath('sepi_with_pillars_9_2.geojson'),
+        property: 'cooking_fuel',
+        description: 'Cooking fuel deprivation indicator'
+    },
+    sanitation: {
+        name: 'Poverty Sub-pillar: Sanitation Deprivation',
+        file: () => getCountryPath('sepi_with_pillars_9_2.geojson'),
+        property: 'sanitation',
+        description: 'Sanitation deprivation indicator'
+    },
+    drinking_water: {
+        name: 'Poverty Sub-pillar: Drinking Water Deprivation',
+        file: () => getCountryPath('sepi_with_pillars_9_2.geojson'),
+        property: 'drinking_water',
+        description: 'Drinking water deprivation indicator'
+    },
+    electricity: {
+        name: 'Poverty Sub-pillar: Electricity Deprivation',
+        file: () => getCountryPath('sepi_with_pillars_9_2.geojson'),
+        property: 'electricity',
+        description: 'Electricity deprivation indicator'
+    },
+    housing: {
+        name: 'Poverty Sub-pillar: Housing Deprivation',
+        file: () => getCountryPath('sepi_with_pillars_9_2.geojson'),
+        property: 'housing',
+        description: 'Housing deprivation indicator'
+    },
+    assets: {
+        name: 'Poverty Sub-pillar: Assets Deprivation',
+        file: () => getCountryPath('sepi_with_pillars_9_2.geojson'),
+        property: 'assets',
+        description: 'Assets deprivation indicator'
+    },
+    poverty_headcount_pct: {
+        name: 'Poverty Sub-pillar: Poverty headcount (population below poverty line)',
+        file: () => getCountryPath('sepi_with_pillars_9_2.geojson'),
+        property: 'poverty_headcount_pct',
+        description: 'Share of population below poverty line'
+    },
+    gcp_pc: {
+        name: 'Poverty Sub-pillar: Gross County Product Per Capita',
+        file: () => getCountryPath('sepi_with_pillars_9_2.geojson'),
+        property: 'gcp_pc',
+        description: 'Gross county product per capita indicator'
+    },
+    youth_bulge: {
+        name: 'Poverty Sub-pillar: Share of male population aged 15 to 29',
+        file: () => getCountryPath('sepi_with_pillars_9_2.geojson'),
+        property: 'youth_bulge',
+        description: 'Share of male population aged 15 to 29'
+    },
     health: {
         name: 'Health Access Index',
         file: () => getCountryPath('sepi_with_pillars_9_2.geojson'),
         property: 'health',
         description: 'Healthcare infrastructure access<br> based on facilities per population and density'
     },
+    health_fac_per_10k_pop: {
+        name: 'Health Sub-pillar: Health facilities per 10,000 population',
+        file: () => getCountryPath('sepi_with_pillars_9_2.geojson'),
+        property: 'health_fac_per_10k_pop',
+        description: 'Health facilities per 10,000 population'
+    },
+    hp_hc_per_10k_pop: {
+        name: 'Health Sub-pillar: Health posts plus health centres per 10,000 population',
+        file: () => getCountryPath('sepi_with_pillars_9_2.geojson'),
+        property: 'hp_hc_per_10k_pop',
+        description: 'Health posts plus health centres per 10,000 population'
+    },
+    hospitals_per_100k_pop: {
+        name: 'Health Sub-pillar: Hospitals per 100,000 population',
+        file: () => getCountryPath('sepi_with_pillars_9_2.geojson'),
+        property: 'hospitals_per_100k_pop',
+        description: 'Hospitals per 100,000 population'
+    },
+    healthcare_access_pop: {
+        name: 'Health Sub-pillar: Population with healthcare access',
+        file: () => getCountryPath('sepi_with_pillars_9_2.geojson'),
+        property: 'healthcare_access_pop',
+        description: 'Share of population with healthcare access'
+    },
+    nutrition: {
+        name: 'Health Sub-pillar: Nutrition Deprivation',
+        file: () => getCountryPath('sepi_with_pillars_9_2.geojson'),
+        property: 'nutrition',
+        description: 'Nutrition deprivation indicator'
+    },
+    child_mortality: {
+        name: 'Health Sub-pillar: Child Mortality Deprivation',
+        file: () => getCountryPath('sepi_with_pillars_9_2.geojson'),
+        property: 'child_mortality',
+        description: 'Child mortality deprivation indicator'
+    },
     climate_vulnerability: {
         name: 'Climate Resilience Index',
         file: () => getCountryPath('sepi_with_pillars_9_2.geojson'),
         property: 'climate_vulnerability',
         description: 'Climate resilience based on temperature, <br> vegetation change, and elevation factors'
+    },
+    soil_moist: {
+        name: 'Climate Sub-pillar: Soil Moisture',
+        file: () => getCountryPath('sepi_with_pillars_9_2.geojson'),
+        property: 'soil_moist',
+        description: 'Soil moisture indicator'
+    },
+    fapar: {
+        name: 'Climate Sub-pillar: FAPAR',
+        file: () => getCountryPath('sepi_with_pillars_9_2.geojson'),
+        property: 'fapar',
+        description: 'Fraction of absorbed photosynthetically active radiation'
+    },
+    pdsi: {
+        name: 'Climate Sub-pillar: PDSI',
+        file: () => getCountryPath('sepi_with_pillars_9_2.geojson'),
+        property: 'pdsi',
+        description: 'Palmer Drought Severity Index'
+    },
+    ndvi: {
+        name: 'Climate Sub-pillar: NDVI',
+        file: () => getCountryPath('sepi_with_pillars_9_2.geojson'),
+        property: 'ndvi',
+        description: 'Normalized Difference Vegetation Index'
+    },
+    literacy_percent_total: {
+        name: 'Education Sub-pillar: Literacy percent total',
+        file: () => getCountryPath('sepi_with_pillars_9_2.geojson'),
+        property: 'literacy_percent_total',
+        description: 'Literacy percent total'
+    },
+    percent_no_formal_education: {
+        name: 'Education Sub-pillar: Percent no formal education',
+        file: () => getCountryPath('sepi_with_pillars_9_2.geojson'),
+        property: 'percent_no_formal_education',
+        description: 'Percent no formal education'
+    },
+    percent_highest_level_secondary_education: {
+        name: 'Education Sub-pillar: Percent highest level secondary education',
+        file: () => getCountryPath('sepi_with_pillars_9_2.geojson'),
+        property: 'percent_highest_level_secondary_education',
+        description: 'Percent highest level secondary education'
+    },
+    percent_highest_level_primary_education: {
+        name: 'Education Sub-pillar: Percent highest level primary education',
+        file: () => getCountryPath('sepi_with_pillars_9_2.geojson'),
+        property: 'percent_highest_level_primary_education',
+        description: 'Percent highest level primary education'
+    },
+    percent_highest_level_university_education: {
+        name: 'Education Sub-pillar: Percent highest level university education',
+        file: () => getCountryPath('sepi_with_pillars_9_2.geojson'),
+        property: 'percent_highest_level_university_education',
+        description: 'Percent highest level university education'
+    },
+    school_attendance: {
+        name: 'Education Sub-pillar: School Attendance Deprivation',
+        file: () => getCountryPath('sepi_with_pillars_9_2.geojson'),
+        property: 'school_attendance',
+        description: 'School attendance deprivation indicator'
+    },
+    percent_enrollment_male: {
+        name: 'Education Sub-pillar: Percent of male students',
+        file: () => getCountryPath('sepi_with_pillars_9_2.geojson'),
+        property: 'percent_enrollment_male',
+        description: 'Percent of male students'
+    },
+    percent_enrollment_female: {
+        name: 'Education Sub-pillar: Percent of female students',
+        file: () => getCountryPath('sepi_with_pillars_9_2.geojson'),
+        property: 'percent_enrollment_female',
+        description: 'Percent of female students'
+    },
+    gender_parity_index: {
+        name: 'Education Sub-pillar: Gender parity index',
+        file: () => getCountryPath('sepi_with_pillars_9_2.geojson'),
+        property: 'gender_parity_index',
+        description: 'Gender parity index'
+    },
+    dropout_pct: {
+        name: 'Education Sub-pillar: Student dropout rate',
+        file: () => getCountryPath('sepi_with_pillars_9_2.geojson'),
+        property: 'dropout_pct',
+        description: 'Student dropout rate'
+    },
+    pqtr_pct: {
+        name: 'Education Sub-pillar: Pupil-qualified teacher ratio',
+        file: () => getCountryPath('sepi_with_pillars_9_2.geojson'),
+        property: 'pqtr_pct',
+        description: 'Pupil-qualified teacher ratio'
+    },
+    on_payroll_pct: {
+        name: 'Education Sub-pillar: Share of teachers on payroll',
+        file: () => getCountryPath('sepi_with_pillars_9_2.geojson'),
+        property: 'on_payroll_pct',
+        description: 'Share of teachers on payroll'
+    },
+    mch_ctr_per_10k_pop: {
+        name: 'Health Sub-pillar: MCH centres per 10,000 population',
+        file: () => getCountryPath('sepi_with_pillars_9_2.geojson'),
+        property: 'mch_ctr_per_10k_pop',
+        description: 'MCH centres per 10,000 population'
+    },
+    access_to_healthcare: {
+        name: 'Health Sub-pillar: Access to Healthcare Deprivation',
+        file: () => getCountryPath('sepi_with_pillars_9_2.geojson'),
+        property: 'access_to_healthcare',
+        description: 'Access to healthcare deprivation indicator'
+    },
+    food_security_deprivation: {
+        name: 'Health Sub-pillar: Food Security Deprivation',
+        file: () => getCountryPath('sepi_with_pillars_9_2.geojson'),
+        property: 'food_security',
+        description: 'Food security deprivation indicator'
+    },
+    water: {
+        name: 'Poverty Sub-pillar: Drinking Water Deprivation',
+        file: () => getCountryPath('sepi_with_pillars_9_2.geojson'),
+        property: 'water',
+        description: 'Drinking water deprivation indicator'
+    },
+    overcrowding: {
+        name: 'Poverty Sub-pillar: Overcrowding Deprivation',
+        file: () => getCountryPath('sepi_with_pillars_9_2.geojson'),
+        property: 'overcrowding',
+        description: 'Overcrowding deprivation indicator'
+    },
+    unemployment: {
+        name: 'Poverty Sub-pillar: Unemployment Deprivation',
+        file: () => getCountryPath('sepi_with_pillars_9_2.geojson'),
+        property: 'unemployment',
+        description: 'Unemployment deprivation indicator'
+    },
+    shocks: {
+        name: 'Poverty Sub-pillar: Shocks Deprivation',
+        file: () => getCountryPath('sepi_with_pillars_9_2.geojson'),
+        property: 'shocks',
+        description: 'Shocks deprivation indicator'
+    },
+    total_expenditure_usd: {
+        name: 'Poverty Sub-pillar: Total expenditure usd',
+        file: () => getCountryPath('sepi_with_pillars_9_2.geojson'),
+        property: 'total_expenditure_usd',
+        description: 'Total expenditure in USD'
+    },
+    food_percentage_share_pct: {
+        name: 'Poverty Sub-pillar: Food percentage share percent',
+        file: () => getCountryPath('sepi_with_pillars_9_2.geojson'),
+        property: 'food_percentage_share_pct',
+        description: 'Food percentage share percent'
+    },
+    extreme_poverty_headcount_pct: {
+        name: 'Poverty Sub-pillar: Extreme poverty headcount',
+        file: () => getCountryPath('sepi_with_pillars_9_2.geojson'),
+        property: 'extreme_poverty_headcount_pct',
+        description: 'Extreme poverty headcount'
+    },
+    youth_unemployment: {
+        name: 'Poverty Sub-pillar: Share of youth unemployed',
+        file: () => getCountryPath('sepi_with_pillars_9_2.geojson'),
+        property: 'youth_unemployment',
+        description: 'Share of youth unemployed'
+    },
+    annual_cmb_mean: {
+        name: 'Poverty Sub-pillar: Average annual CMB cost',
+        file: () => getCountryPath('sepi_with_pillars_9_2.geojson'),
+        property: 'annual_cmb_mean',
+        description: 'Average annual CMB cost'
+    },
+    non_agri_wage: {
+        name: 'Poverty Sub-pillar: Average non-agricultural wage',
+        file: () => getCountryPath('sepi_with_pillars_9_2.geojson'),
+        property: 'non_agri_wage',
+        description: 'Average non-agricultural wage'
     },
     conflict_events: {
         name: 'Conflict Events (2020-2025)',
@@ -247,7 +542,7 @@ export const PILLAR_CONFIG = {
     conflict_events_per_1k: {
         name: 'Conflict Events per 1k',
         file: () => getCountryPath('sepi_with_pillars_9_2.geojson'),
-        property: 'count_conflict_events_per_1k',
+        property: 'count_conflicts_events_per_1k',
         fallbackProperty: 'ACLED_conflict_events_per_1k_pop',
         description: 'Conflict events per 1,000 population by year'
     },
