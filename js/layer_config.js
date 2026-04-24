@@ -23,18 +23,24 @@ export function getCurrentCountry() {
 }
 
 export function getCountryPath(filename, country = currentCountry) {
+    // South Sudan currently uses a newer pillars dataset filename.
+    if (country === 'South_Sudan' && filename === 'sepi_with_pillars_9_2.geojson') {
+        return `data/${country}/sepi_with_pillars_9_3.geojson`;
+    }
     return `data/${country}/${filename}`;
 }
 
 export function getCountryOutlineCandidates(country = currentCountry) {
     const lowerCountry = country.toLowerCase();
+    const countrySpecificOutline = `${lowerCountry}_outline.geojson`;
     return [
         getCountryPath('outline.geojson', country),
-        getCountryPath(`${lowerCountry}_outline.geojson`, country),
-        getCountryPath('somalia_outline.geojson', country),
-        getCountryPath('kenya_outline.geojson', country),
-        getCountryPath('south_sudan_outline.geojson', country),
-        getCountryPath('cutline.geojson', country)
+        getCountryPath(countrySpecificOutline, country),
+        getCountryPath('cutline.geojson', country),
+        // Legacy fallback locations used by older country bundles.
+        getCountryPath(`old/${countrySpecificOutline}`, country),
+        getCountryPath('old/outline.geojson', country),
+        getCountryPath('old/cutline.geojson', country)
     ];
 }
 

@@ -446,9 +446,8 @@ async function loadDefaultCountryOutline() {
 async function loadOutlineWithFallbacks(country) {
     const countryKey = toCountryOutlineKey(country);
     if (countryOutlines[countryKey]) {
-        clearAllCountryOutlinesFromMap();
         activeCountryOutline = countryOutlines[countryKey];
-        addOutlineToMapBottom(activeCountryOutline);
+        showAllCountryOutlines(countryKey);
         window.activeCountryOutline = activeCountryOutline;
         return;
     }
@@ -458,15 +457,15 @@ async function loadOutlineWithFallbacks(country) {
         const outline = await loadCountryOutline(country.toLowerCase(), outlinePath);
         if (outline) {
             countryOutlines[countryKey] = outline;
-            clearAllCountryOutlinesFromMap();
             activeCountryOutline = outline;
-            addOutlineToMapBottom(outline);
+            showAllCountryOutlines(countryKey);
             window.activeCountryOutline = outline;
             console.log(`${country} outline loaded from ${outlinePath}`);
             return;
         }
     }
     console.warn(`No valid outline file found for ${country}`);
+    showAllCountryOutlines(countryKey);
 }
 
 async function preloadCountryOutlines() {
@@ -502,6 +501,20 @@ function addOutlineToMapBottom(outline) {
     outline.addTo(map);
     outline.bringToBack?.();
     outline.eachLayer(layer => layer.bringToBack?.());
+}
+
+function showAllCountryOutlines(activeCountryKey) {
+    clearAllCountryOutlinesFromMap();
+    Object.entries(countryOutlines).forEach(([key, outline]) => {
+        if (!outline) return;
+        addOutlineToMapBottom(outline);
+
+        // Keep the selected country's outline on top so context remains clear.
+        if (key === activeCountryKey) {
+            outline.bringToFront?.();
+            outline.eachLayer(layer => layer.bringToFront?.());
+        }
+    });
 }
 
 function clearCountryDependentLayers() {
