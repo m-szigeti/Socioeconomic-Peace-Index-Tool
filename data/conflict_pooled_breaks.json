@@ -1,0 +1,46 @@
+{
+  "version": 1,
+  "quantileAnchors": [
+    0.02,
+    0.98
+  ],
+  "sourceGeojsons": [
+    "data/Kenya/sepi_with_pillars_Apr_28_Kenya.geojson",
+    "data/Somalia/sepi_with_pillars_Apr_28_Somalia.geojson",
+    "data/South_Sudan/sepi_with_pillars_Apr_28_South_Sudan.geojson"
+  ],
+  "pillarScales": {
+    "conflict_events": {
+      "quantileLow": 0.02,
+      "quantileHigh": 0.98,
+      "useLog1p": true,
+      "transformLow": 0.0,
+      "transformHigh": 6.273223984526477,
+      "sampleCount": 740
+    },
+    "conflict_fatalities": {
+      "quantileLow": 0.02,
+      "quantileHigh": 0.98,
+      "useLog1p": true,
+      "transformLow": 0.0,
+      "transformHigh": 6.903687824719189,
+      "sampleCount": 740
+    },
+    "conflict_events_per_1k": {
+      "quantileLow": 0.02,
+      "quantileHigh": 0.98,
+      "useLog1p": false,
+      "transformLow": 0.0,
+      "transformHigh": 0.3905236324000003,
+      "sampleCount": 740
+    },
+    "conflict_fatalities_per_1k": {
+      "quantileLow": 0.02,
+      "quantileHigh": 0.98,
+      "useLog1p": false,
+      "transformLow": 0.0,
+      "transformHigh": 0.8313654050400007,
+      "sampleCount": 740
+    }
+  }
+}
