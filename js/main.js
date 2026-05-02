@@ -16,6 +16,7 @@ let infoPanel = null;
 let map = null;
 let activeLayers = new Set();
 let tiffLayers = {}; // Global TIFF layers storage for proper cleanup
+const ENABLE_STARTUP_WELCOME_POPUP = false; // Keep popup feature but disable auto-show on restart.
 
 // Track async loading states to prevent race conditions
 const loadingTracker = {};
@@ -82,7 +83,9 @@ document.addEventListener('DOMContentLoaded', async function() {
         // Auto-enable SEPI layer and show welcome
         setTimeout(() => {
             enableDefaultLayers();
-            new WelcomePopup(); 
+            if (ENABLE_STARTUP_WELCOME_POPUP) {
+                new WelcomePopup();
+            }
         }, 1000);
         
         // Initialize opacity displays
