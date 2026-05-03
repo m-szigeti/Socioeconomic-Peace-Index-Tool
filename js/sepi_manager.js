@@ -7,6 +7,24 @@ import { getCountryPath } from './layer_config.js';
 /**
  * SEPI Manager - Handles all SEPI layer functionality
  */
+/** Reduce flaky loads on slow networks / CDN (e.g. GitHub Pages cold fetch). */
+async function fetchJsonWithRetry(url, attempts = 3, delayMs = 350) {
+    let lastErr;
+    for (let i = 0; i < attempts; i++) {
+        try {
+            const response = await fetch(url);
+            if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+            return response.json();
+        } catch (err) {
+            lastErr = err;
+            if (i < attempts - 1) {
+                await new Promise((r) => setTimeout(r, delayMs));
+            }
+        }
+    }
+    throw lastErr;
+}
+
 export class SEPIManager {
     constructor(map, layers) {
         this.map = map;
@@ -49,10 +67,7 @@ export class SEPIManager {
         try {
             this.config.dataUrl = getCountryPath('sepi_with_pillars_9_2.geojson');
             console.log('Loading SEPI data from:', this.config.dataUrl);
-            const response = await fetch(this.config.dataUrl);
-            if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-            
-            const geojsonData = await response.json();
+            const geojsonData = await fetchJsonWithRetry(this.config.dataUrl);
             if (geojsonData.features && geojsonData.features.length > 0) {
                 const firstFeature = geojsonData.features[0];
                 

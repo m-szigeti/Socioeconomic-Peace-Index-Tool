@@ -119,6 +119,9 @@ function hideSEPIInfo() {
             // Initialize color ramp selectors after DOM is ready
             initializeColorRampSelectors();
             applyCountrySubpillarVisibility(getCurrentCountry());
+
+            // Signal main.js to load default SEPI (Somalia) — avoids fragile setTimeout races vs CDN/network.
+            document.dispatchEvent(new CustomEvent('sidebarInitialized'));
         });
 
         function countryToMappingKey(country) {
@@ -217,22 +220,10 @@ function hideSEPIInfo() {
                 conflictYearControl.style.display = type === 'conflict' ? 'block' : 'none';
             };
             
-            // Set initial state - Overall Peace Index active by default
+            // Set initial state - Overall Peace Index active by default (layer load: sidebarInitialized → main.js)
             const defaultOption = document.querySelector('.sepi-option[data-sepi-type="main"]');
             if (defaultOption) {
                 defaultOption.classList.add('active');
-                
-                // Trigger SEPI layer loading
-                setTimeout(() => {
-                    const event = new CustomEvent('sepiOptionChanged', {
-                        detail: { 
-                            type: 'main',
-                            pillarId: null 
-                        },
-                        bubbles: true
-                    });
-                    defaultOption.dispatchEvent(event);
-                }, 500);
             }
             
             // Add click listeners to all SEPI options

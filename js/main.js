@@ -70,6 +70,18 @@ document.addEventListener('DOMContentLoaded', async function() {
         layerManager = new LayerManager(map, updateLegend, hideLegend);
         window.switchApplicationCountry = switchApplicationCountry;
 
+        /** Sidebar HTML + controls are built in `index.html` (second DOMContentLoaded handler).
+         * Fire-and-forget timeouts race LayerManager + fetch on slow hosts (e.g. GitHub Pages). */
+        document.addEventListener(
+            'sidebarInitialized',
+            () => {
+                void activateDefaultSEPISelection().catch((err) =>
+                    console.error('Initial Somalia / SEPI activation failed:', err)
+                );
+            },
+            { once: true }
+        );
+
         // Setup admin labels
         const labelLayers = createAdminLabelLayers(map, layerManager.getActiveLayers().vector, countryOutlines, null);
         layerManager.setLabelLayers(labelLayers);
