@@ -783,11 +783,17 @@ export class InfoPanel {
         const panel = this.container?.querySelector('#sepi-ranking-panel');
         const chart = this.container?.querySelector('#sepi-ranking-chart');
         if (!panel || !chart) return;
+        const titleEl = panel.querySelector('h5');
+        const subtitleEl = panel.querySelector('p');
 
         const sepiLayerInfo = this.activeLayers.get('sepi');
-        const geojsonLayer = sepiLayerInfo?.layer;
-        const valueKey = sepiLayerInfo?.selectedAttribute || 'peacebuilding_index';
-        if (!geojsonLayer?.eachLayer) {
+        const pillarLayerInfo = this.activeLayers.get('pillar');
+        const layerInfo = sepiLayerInfo || pillarLayerInfo;
+        const geojsonLayer = layerInfo?.layer;
+        const valueKey = layerInfo?.rankingAttribute || layerInfo?.selectedAttribute || 'peacebuilding_index';
+        const layerName = layerInfo?.name || 'SEPI';
+
+        if (!geojsonLayer?.eachLayer || this.activeLayers.has('conflict')) {
             panel.style.display = 'none';
             return;
         }
@@ -830,6 +836,12 @@ export class InfoPanel {
             `;
         }).join('');
 
+        if (titleEl) {
+            titleEl.textContent = `${layerName.replace(/^Pillar:\s*/i, '')} District Ranking`;
+        }
+        if (subtitleEl) {
+            subtitleEl.textContent = 'Ranked from highest to lowest score.';
+        }
         chart.innerHTML = `<div style="max-height: 280px; overflow-y: auto; padding-right: 2px;">${html}</div>`;
         panel.style.display = 'block';
     }

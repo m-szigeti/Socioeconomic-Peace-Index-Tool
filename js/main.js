@@ -834,6 +834,7 @@ function updateInfoPanelWithSEPI() {
                 type: layerType,
                 layer: layerManager.pillarManager.getCurrentLayer(),
                 selectedAttribute: currentPillar,
+                rankingAttribute: layerManager.pillarManager?.currentPropertyName || currentPillar,
                 featureCount: layerManager.pillarManager.getCurrentLayer()?.getLayers?.()?.length || 0,
                 description: pillarDescription,
                 source: isConflictData ? 'ACLED API' : 'SEPI pillar dataset',
@@ -841,6 +842,13 @@ function updateInfoPanelWithSEPI() {
                     ? (layerManager.pillarManager?.conflictYear || 'Selected year')
                     : 'Latest available'
             });
+
+            // Keep only the currently relevant derived layer entry to avoid stale state in Active Layers UI.
+            if (isConflictData) {
+                infoPanel.removeLayer('pillar');
+            } else {
+                infoPanel.removeLayer('conflict');
+            }
 
             if (isConflictData) {
                 const timelinePayload = layerManager.pillarManager.getConflictTimelinePayload?.(
