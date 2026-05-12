@@ -179,12 +179,12 @@ export class LayerTemplates {
                     </div>
 
                     <div class="sepi-option" data-sepi-type="conflict" data-pillar-id="conflict_events_per_1k">
-                        <span class="sepi-option-text">Conflict Events per 1k</span>
+                        <span class="sepi-option-text">Conflict Events per 100k population</span>
                         <span class="sepi-checkmark">✓</span>
                     </div>
 
                     <div class="sepi-option" data-sepi-type="conflict" data-pillar-id="conflict_fatalities_per_1k">
-                        <span class="sepi-option-text">Conflict Fatalities per 1k</span>
+                        <span class="sepi-option-text">Conflict Fatalities per 100k population</span>
                         <span class="sepi-checkmark">✓</span>
                     </div>
 

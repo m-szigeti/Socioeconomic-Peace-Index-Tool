@@ -182,6 +182,63 @@ export class InfoPanel {
                                 The overall score is a geometric mean of all five pillars. A very low score on any one pillar significantly depresses the overall score.
                             </div>
 
+                            <div style="font-size:12px; font-weight:700; color:#6d6d6d; letter-spacing:0.06em; margin:6px 0 8px; border-bottom:1px solid #d9d9d9; padding-bottom:5px;">ABOUT SEPI — WORKED EXAMPLE</div>
+                            <div style="background:#f2f3f1; border:1px solid #d8d9d6; border-radius:8px; padding:10px; margin-bottom:12px;">
+                                <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px; margin-bottom:8px;">
+                                    <div style="background:#f4f1e9; border:1px solid #cbc8bf; border-radius:8px; padding:8px; text-align:center;">
+                                        <div style="font-weight:700; color:#4a4a4a; font-size:11px;">Primary attendance</div>
+                                        <div style="font-size:11px; color:#6a6a6a;">84% (range 42–96%)</div>
+                                    </div>
+                                    <div style="background:#f4f1e9; border:1px solid #cbc8bf; border-radius:8px; padding:8px; text-align:center;">
+                                        <div style="font-weight:700; color:#4a4a4a; font-size:11px;">Secondary attendance</div>
+                                        <div style="font-size:11px; color:#6a6a6a;">68% (range 28–88%)</div>
+                                    </div>
+                                    <div style="background:#f4f1e9; border:1px solid #cbc8bf; border-radius:8px; padding:8px; text-align:center;">
+                                        <div style="font-weight:700; color:#4a4a4a; font-size:11px;">School access</div>
+                                        <div style="font-size:11px; color:#6a6a6a;">91% (range 55–98%)</div>
+                                    </div>
+                                </div>
+
+                                <div style="text-align:center; font-size:11px; color:#777; margin:4px 0;">↓ min-max normalize to [0,1]</div>
+
+                                <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px; margin-bottom:8px;">
+                                    <div style="background:#d9ece6; border:1px solid #7cb9aa; border-radius:8px; padding:8px; text-align:center;">
+                                        <div style="font-weight:700; color:#1b6e5d; font-size:20px; line-height:1;">0.78</div>
+                                        <div style="font-size:11px; color:#1b6e5d;">normalized</div>
+                                    </div>
+                                    <div style="background:#d9ece6; border:1px solid #7cb9aa; border-radius:8px; padding:8px; text-align:center;">
+                                        <div style="font-weight:700; color:#1b6e5d; font-size:20px; line-height:1;">0.67</div>
+                                        <div style="font-size:11px; color:#1b6e5d;">normalized</div>
+                                    </div>
+                                    <div style="background:#d9ece6; border:1px solid #7cb9aa; border-radius:8px; padding:8px; text-align:center;">
+                                        <div style="font-weight:700; color:#1b6e5d; font-size:20px; line-height:1;">0.84</div>
+                                        <div style="font-size:11px; color:#1b6e5d;">normalized</div>
+                                    </div>
+                                </div>
+
+                                <div style="text-align:center; font-size:11px; color:#777; margin:4px 0;">(0.78 + 0.67 + 0.84) / 3</div>
+
+                                <div style="background:#d9e7f5; border:1px solid #8db0d9; border-radius:8px; padding:10px; text-align:center; margin:6px auto 8px; max-width:320px;">
+                                    <div style="font-weight:700; color:#245a93;">Education pillar score: 0.76</div>
+                                    <div style="font-size:11px; color:#2f6ea8;">arithmetic mean of normalized indicators</div>
+                                </div>
+
+                                <div style="display:grid; grid-template-columns:repeat(5,1fr); gap:6px; margin-bottom:8px;">
+                                    <div style="background:#e2edf8; border:1px solid #95b3d6; border-radius:8px; padding:6px; text-align:center; font-size:11px;"><strong>Food</strong><br>0.68</div>
+                                    <div style="background:#e2edf8; border:1px solid #6e9ccf; border-radius:8px; padding:6px; text-align:center; font-size:11px;"><strong>Education</strong><br>0.76</div>
+                                    <div style="background:#e2edf8; border:1px solid #95b3d6; border-radius:8px; padding:6px; text-align:center; font-size:11px;"><strong>Health</strong><br>0.71</div>
+                                    <div style="background:#e2edf8; border:1px solid #95b3d6; border-radius:8px; padding:6px; text-align:center; font-size:11px;"><strong>Economic</strong><br>0.55</div>
+                                    <div style="background:#e2edf8; border:1px solid #95b3d6; border-radius:8px; padding:6px; text-align:center; font-size:11px;"><strong>Climate</strong><br>0.63</div>
+                                </div>
+
+                                <div style="text-align:center; font-size:11px; color:#777; margin:4px 0;">geometric mean of all five pillars</div>
+
+                                <div style="background:#dfead2; border:1px solid #90b274; border-radius:10px; padding:10px; text-align:center; margin:6px auto 0; max-width:280px;">
+                                    <div style="font-weight:700; color:#355a1f;">Overall SEPI: 0.67</div>
+                                    <div style="font-size:11px; color:#426d28;">County X, Kenya · High performance range</div>
+                                </div>
+                            </div>
+
                             <div style="font-size:12px; font-weight:700; color:#6d6d6d; letter-spacing:0.06em; margin:6px 0 8px; border-bottom:1px solid #d9d9d9; padding-bottom:5px;">SCORE RANGES</div>
                             <div style="font-size:12px; color:#444; line-height:1.55;">
                                 <div><span style="display:inline-block; width:14px; height:14px; border-radius:3px; background:#c5312a; margin-right:8px; vertical-align:middle;"></span><strong>0.0 - 0.2</strong> &nbsp; Very low — severe deprivation</div>
@@ -766,9 +823,9 @@ export class InfoPanel {
                     <div style="width:22px; color:#6c757d; text-align:right; flex-shrink:0;">${idx + 1}.</div>
                     <div style="width:120px; color:#343a40; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; flex-shrink:0;" title="${escapeHtml(row.name)}">${escapeHtml(row.name)}</div>
                     <div style="flex:1; height:14px; background:#e9ecef; border-radius:7px; overflow:hidden;">
-                        <div style="width:${pct}%; height:100%; background:#2c5f2d;"></div>
+                        <div style="width:${pct}%; height:100%; background:#60a5fa;"></div>
                     </div>
-                    <div style="width:40px; text-align:right; color:#2c5f2d; font-weight:600; flex-shrink:0;">${row.value.toFixed(2)}</div>
+                    <div style="width:40px; text-align:right; color:#2563eb; font-weight:600; flex-shrink:0;">${row.value.toFixed(2)}</div>
                 </div>
             `;
         }).join('');
@@ -864,7 +921,7 @@ export class InfoPanel {
             const overallX = hasDistrict ? gx - barWidth - 2 : gx - barWidth / 2;
             const overallY = topPad + chartH - overallHeight;
 
-            ctx.fillStyle = '#dc3545';
+            ctx.fillStyle = '#60a5fa';
             ctx.fillRect(overallX, overallY, barWidth, overallHeight);
 
             if (hasDistrict) {
@@ -872,7 +929,7 @@ export class InfoPanel {
                 const districtHeight = (districtValue / yMax) * chartH;
                 const districtX = gx + 2;
                 const districtY = topPad + chartH - districtHeight;
-                ctx.fillStyle = '#6c757d';
+                ctx.fillStyle = '#93c5fd';
                 ctx.fillRect(districtX, districtY, barWidth, districtHeight);
             }
 
@@ -897,12 +954,12 @@ export class InfoPanel {
         ctx.fillText(`${yMax.toFixed(yMax >= 10 ? 0 : 2)}`, 6, topPad + 4);
 
         ctx.textAlign = 'left';
-        ctx.fillStyle = '#dc3545';
+        ctx.fillStyle = '#60a5fa';
         ctx.fillRect(leftPad, height - 14, 10, 10);
         ctx.fillStyle = '#555';
         ctx.fillText(timelineData.aggregationLabel || 'Overall', leftPad + 14, height - 5);
         if (hasDistrict) {
-            ctx.fillStyle = '#6c757d';
+            ctx.fillStyle = '#93c5fd';
             ctx.fillRect(leftPad + 170, height - 14, 10, 10);
             ctx.fillStyle = '#555';
             ctx.fillText(timelineData.districtName || 'Selected district', leftPad + 184, height - 5);
@@ -926,6 +983,14 @@ export class InfoPanel {
         
         if (layer.selectedAttribute) {
             details.push(`Attribute: ${layer.selectedAttribute}`);
+        }
+
+        if (layer.source) {
+            details.push(`Source: ${layer.source}`);
+        }
+
+        if (layer.year) {
+            details.push(`Year: ${layer.year}`);
         }
         
         if (layer.colorRamp) {

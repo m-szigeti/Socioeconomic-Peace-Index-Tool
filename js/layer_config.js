@@ -423,18 +423,18 @@ export const PILLAR_CONFIG = {
         description: 'Number of recorded fatalities from conflict events by year'
     },
     conflict_events_per_1k: {
-        name: 'Conflict Events per 1k',
+        name: 'Conflict Events per 100k population',
         file: () => getCountryPath('sepi_with_pillars_9_2.geojson'),
         property: 'count_conflicts_events_per_1k',
         fallbackProperty: 'ACLED_conflict_events_per_1k_pop',
-        description: 'Conflict events per 1,000 population by year'
+        description: 'Conflict events per 100,000 population by year'
     },
     conflict_fatalities_per_1k: {
-        name: 'Conflict Fatalities per 1k',
+        name: 'Conflict Fatalities per 100k population',
         file: () => getCountryPath('sepi_with_pillars_9_2.geojson'),
         property: 'total_fatalities_per_1k',
         fallbackProperty: 'total_fatalities_per_1k_pop',
-        description: 'Conflict fatalities per 1,000 population by year'
+        description: 'Conflict fatalities per 100,000 population by year'
     }
 };
 

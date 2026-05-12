@@ -25,9 +25,43 @@ const countryOutlines = {};
 
 /** `sidebarInitialized` can fire while this module is still awaiting outline preload — avoid double load. */
 let initialSepiActivationDone = false;
+const pillarOverviewByDashboardName = new Map();
+let pillarOverviewLoadPromise = null;
 
 function resolveConfigUrl(pathOrResolver) {
     return typeof pathOrResolver === 'function' ? pathOrResolver() : pathOrResolver;
+}
+
+function parseCsvLine(line) {
+    return line.split(/,(?=(?:[^\"]*\"[^\"]*\")*[^\"]*$)/).map((cell) =>
+        cell.replace(/^\"|\"$/g, '').replace(/\"\"/g, '"').trim()
+    );
+}
+
+async function loadPillarOverviewDescriptions() {
+    if (pillarOverviewLoadPromise) return pillarOverviewLoadPromise;
+    pillarOverviewLoadPromise = fetch('descriptions_Pillar.csv')
+        .then((response) => (response.ok ? response.text() : ''))
+        .then((csvText) => {
+            if (!csvText) return;
+            const rows = csvText.split(/\r?\n/).filter((line) => line.trim());
+            if (rows.length < 2) return;
+            const header = parseCsvLine(rows[0]);
+            const dashboardCol = header.findIndex((col) => col === 'Dashboard Pillar Name');
+            const overviewCol = header.findIndex((col) => col === 'pillar_overview');
+            if (dashboardCol < 0 || overviewCol < 0) return;
+            for (let i = 1; i < rows.length; i += 1) {
+                const cells = parseCsvLine(rows[i]);
+                const key = cells[dashboardCol];
+                const overview = cells[overviewCol];
+                if (!key || !overview) continue;
+                pillarOverviewByDashboardName.set(key.trim(), overview.trim());
+            }
+        })
+        .catch((err) => {
+            console.debug('Pillar description CSV unavailable:', err?.message || err);
+        });
+    return pillarOverviewLoadPromise;
 }
 
 // Layer configuration for raster layers (consolidated)
@@ -64,6 +98,7 @@ document.addEventListener('DOMContentLoaded', async function() {
         initializeLegend();
         setupDropdownToggles();
         initializeColorRampSelectors();
+        void loadPillarOverviewDescriptions();
         
         // Preload all country outlines for map controls.
         await preloadCountryOutlines();
@@ -761,7 +796,9 @@ function updateInfoPanelWithSEPI() {
             layer: layerManager.sepiManager.sepiLayer,
             selectedAttribute: layerManager.sepiManager?.config?.property || 'peacebuilding_index',
             featureCount: layerManager.sepiManager.sepiLayer?.getLayers?.()?.length || 0,
-            description: getConfigSidebarDescription('sepiLayer')
+            description: getConfigSidebarDescription('sepiLayer'),
+            source: 'SEPI composite dataset',
+            year: 'Latest available'
         });
     } else {
         infoPanel.removeLayer('sepi');
@@ -779,6 +816,13 @@ function updateInfoPanelWithSEPI() {
 
             const pillarCfg = PILLAR_CONFIG[currentPillar];
             let pillarDescription = pillarCfg?.description || '';
+            if (!isConflictData) {
+                const dashboardName = getPillarDisplayName(currentPillar);
+                const csvOverview = pillarOverviewByDashboardName.get(dashboardName);
+                if (csvOverview) {
+                    pillarDescription = csvOverview;
+                }
+            }
             if (isConflictData && layerManager.pillarManager?.conflictPooledScale) {
                 const note =
                     'Scale: pooled 2nd–98th percentile across Kenya, Somalia, and South Sudan (counts use log before pooling).';
@@ -791,7 +835,11 @@ function updateInfoPanelWithSEPI() {
                 layer: layerManager.pillarManager.getCurrentLayer(),
                 selectedAttribute: currentPillar,
                 featureCount: layerManager.pillarManager.getCurrentLayer()?.getLayers?.()?.length || 0,
-                description: pillarDescription
+                description: pillarDescription,
+                source: isConflictData ? 'ACLED API' : 'SEPI pillar dataset',
+                year: isConflictData
+                    ? (layerManager.pillarManager?.conflictYear || 'Selected year')
+                    : 'Latest available'
             });
 
             if (isConflictData) {
@@ -839,8 +887,8 @@ function getPillarDisplayName(pillarId) {
         rs_pdsi: 'PDSI',
         conflict_events: 'Conflict Events',
         conflict_fatalities: 'Conflict Fatalities',
-        conflict_events_per_1k: 'Conflict Events per 1k',
-        conflict_fatalities_per_1k: 'Conflict Fatalities per 1k'
+        conflict_events_per_1k: 'Conflict Events per 100k population',
+        conflict_fatalities_per_1k: 'Conflict Fatalities per 100k population'
     };
     
     return pillarNames[pillarId] || pillarId;
@@ -870,8 +918,8 @@ function getLayerDisplayName(layerId) {
         'pointLayer2': 'Cities',
         'conflict_events': 'Conflict Events',
         'conflict_fatalities': 'Conflict Fatalities',
-        'conflict_events_per_1k': 'Conflict Events per 1k',
-        'conflict_fatalities_per_1k': 'Conflict Fatalities per 1k'
+        'conflict_events_per_1k': 'Conflict Events per 100k population',
+        'conflict_fatalities_per_1k': 'Conflict Fatalities per 100k population'
     };
     
     return layerNames[layerId] || layerId.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase());

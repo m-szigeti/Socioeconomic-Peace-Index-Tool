@@ -45,6 +45,9 @@ export class SEPIManager {
             { id: 'health', keys: ['health', 'pillar_health'], icon: '🏥' },
             { id: 'climate', keys: ['climate_vulnerability', 'pillar_climate'], icon: '🌾' }
         ];
+        this.adm1OverviewByCountryAndName = new Map();
+        this.adm1OverviewByName = new Map();
+        this.adm1OverviewLoadPromise = null;
         
         // District information lookup
         this.districtInfo = {
@@ -67,6 +70,106 @@ export class SEPIManager {
             'Middle Juba': 'Southern region with Juba River. Agricultural potential.',
             'Lower Juba': 'Southernmost region with Kismayo port. Trade and fishing.'
         };
+        void this.loadAdm1OverviewCsv();
+    }
+
+    normalizeLookupKey(value) {
+        return String(value || '')
+            .toLowerCase()
+            .replace(/[^a-z0-9]/g, '');
+    }
+
+    parseCsvRows(csvText) {
+        const rows = [];
+        let row = [];
+        let cell = '';
+        let inQuotes = false;
+        for (let i = 0; i < csvText.length; i += 1) {
+            const ch = csvText[i];
+            const next = csvText[i + 1];
+            if (ch === '"') {
+                if (inQuotes && next === '"') {
+                    cell += '"';
+                    i += 1;
+                } else {
+                    inQuotes = !inQuotes;
+                }
+                continue;
+            }
+            if (ch === ',' && !inQuotes) {
+                row.push(cell);
+                cell = '';
+                continue;
+            }
+            if ((ch === '\n' || ch === '\r') && !inQuotes) {
+                if (ch === '\r' && next === '\n') i += 1;
+                row.push(cell);
+                if (row.some((c) => String(c).trim() !== '')) rows.push(row);
+                row = [];
+                cell = '';
+                continue;
+            }
+            cell += ch;
+        }
+        if (cell.length || row.length) {
+            row.push(cell);
+            if (row.some((c) => String(c).trim() !== '')) rows.push(row);
+        }
+        return rows;
+    }
+
+    async loadAdm1OverviewCsv() {
+        if (this.adm1OverviewLoadPromise) return this.adm1OverviewLoadPromise;
+        this.adm1OverviewLoadPromise = fetch('all_adm1_overview.csv')
+            .then((response) => (response.ok ? response.text() : ''))
+            .then((csvText) => {
+                if (!csvText) return;
+                const rows = this.parseCsvRows(csvText);
+                if (rows.length < 2) return;
+                const header = rows[0].map((h) => String(h).trim());
+                const countryIdx = header.indexOf('country');
+                const adm1Idx = header.indexOf('adm1_name');
+                const overviewIdx = header.indexOf('adm1_overview');
+                const sourceIdx = header.indexOf('overview_source_url');
+                if (adm1Idx < 0 || overviewIdx < 0) return;
+
+                for (let i = 1; i < rows.length; i += 1) {
+                    const row = rows[i];
+                    const country = String(row[countryIdx] || '').trim();
+                    const adm1Name = String(row[adm1Idx] || '').trim();
+                    const overview = String(row[overviewIdx] || '').trim();
+                    const sourceUrl = String(row[sourceIdx] || '').trim();
+                    if (!adm1Name || !overview) continue;
+                    const entry = { country, adm1Name, overview, sourceUrl };
+                    const nameKey = this.normalizeLookupKey(adm1Name);
+                    if (nameKey) this.adm1OverviewByName.set(nameKey, entry);
+                    const countryKey = this.normalizeLookupKey(country);
+                    if (countryKey && nameKey) {
+                        this.adm1OverviewByCountryAndName.set(`${countryKey}|${nameKey}`, entry);
+                    }
+                }
+            })
+            .catch((err) => {
+                console.debug('ADM1 overview CSV unavailable:', err?.message || err);
+            });
+        return this.adm1OverviewLoadPromise;
+    }
+
+    getAdm1OverviewEntry(properties, districtName) {
+        const country = properties?.country || properties?.country_2 || '';
+        const nameKey = this.normalizeLookupKey(districtName);
+        const countryKey = this.normalizeLookupKey(country);
+        if (countryKey && nameKey) {
+            const keyed = this.adm1OverviewByCountryAndName.get(`${countryKey}|${nameKey}`);
+            if (keyed) return keyed;
+        }
+        return this.adm1OverviewByName.get(nameKey) || null;
+    }
+
+    extractYearHint(text) {
+        if (!text) return '';
+        const match = String(text).match(/(19|20)\d{2}/);
+        return match ? match[0] : '';
     }
     
     /**
@@ -306,7 +409,10 @@ chartHTML += `
                            properties.admin1_name || properties.region || 
                            properties.district || 'Unknown District';
         
-        const districtDetails = this.districtInfo[districtName];
+        const csvOverview = this.getAdm1OverviewEntry(properties, districtName);
+        const districtDetails = csvOverview?.overview || this.districtInfo[districtName];
+        const sourceUrl = csvOverview?.sourceUrl || '';
+        const sourceYear = this.extractYearHint(sourceUrl) || this.extractYearHint(districtDetails);
         
         return `
             <div class="sepi-popup-header">
@@ -327,6 +433,12 @@ chartHTML += `
                         <div style="font-size: 12px; color: #856404; line-height: 1.4;">
                             ${districtDetails}
                         </div>
+                        ${sourceUrl ? `
+                            <div style="margin-top: 8px; font-size: 11px; color: #856404;">
+                                <strong>Source:</strong> <a href="${sourceUrl}" target="_blank" rel="noopener noreferrer" style="color: #856404; text-decoration: underline;">Reference link</a>
+                                ${sourceYear ? `&nbsp;|&nbsp;<strong>Year:</strong> ${sourceYear}` : ''}
+                            </div>
+                        ` : ''}
                     </div>
                 ` : ''}
             </div>
